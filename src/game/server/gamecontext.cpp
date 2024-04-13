@@ -1582,7 +1582,6 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						
 						UpdateStats(ClientID);
 						ResetVotes(ClientID, AUTH);
-						Server()->GetTopClanHouse();
 						return;
 					}
 					else SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你没有那么多钱,小穷光蛋"), NULL);							
@@ -2067,7 +2066,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				// VIP 购买功能
 				else if(str_comp(aCmd, "bvip") == 0)
 				{
-					Server()->SetItemPrice(ClientID, VIPPACKAGE, 0, 1000);
+					Server()->SetItemPrice(ClientID, VIPPACKAGE, 0, 400);
 					BuyItem(VIPPACKAGE, ClientID, 1);
 					return;
 				}	
@@ -3975,16 +3974,19 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		m_apPlayers[ClientID]->m_LastVotelist = AUTH;	
 		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
 		AddVote_Localization(ClientID, "null", "充钱与特权");
-		//AddVote_Localization(ClientID, "null", "1 欧元 - 100 点券(donate coin)");
-		AddVote_Localization(ClientID, "null", "向管理员 天上的星星 捐赠(打钱)");// 这边以后肯定要改 :)
+		AddVote_Localization(ClientID, "null", _("{int:rmb} 人民币 - {int:donate} 点券"), "rmb", &g_Config.m_InfRmb, "donate", &g_Config.m_InfDonate);
+		AddVote_Localization(ClientID, "null", "向管理员 FFS或Minjun 捐赠(打钱)");
+		AddVote_Localization(ClientID, "null", "FFS联系方式, QQ: 1562151175, 微信: teeffs");
+		AddVote_Localization(ClientID, "null", "Minjun联系方式QQ: 2398396911");
 		if(!g_Config.m_SvDonate) AddVote_Localization(ClientID, "null", "服务器目前资金足够,暂时不需要充值");
 		AddVote("", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "$ 你充了 {int:don}", "don", &m_apPlayers[ClientID]->AccData.Donate);
-		AddVote_Localization(ClientID, "bvip", "☞ VIP 包 [1000]");
+		AddVote_Localization(ClientID, "bvip", "☞ VIP 包 [400]");
 		AddVote_Localization(ClientID, "null", "物品 禁止PVP, 技能点(SP)盒子, 10,000 钱袋");
 		AddVote_Localization(ClientID, "null", "VIP 称号(吃菜经验/打怪掉落X2) + 专属特效");
+		AddVote_Localization(ClientID, "null", "VIP可叠加!");
 		AddVote_Localization(ClientID, "bsp", "☞ 技能点盒子 [200]");
-		AddVote_Localization(ClientID, "null", "获得 20 升级点 + 10 技能点");
+		AddVote_Localization(ClientID, "null", "获得 10 升级点 + 10  技能点");
 		AddVote_Localization(ClientID, "bantipvp", "☞ 物品 禁止PVP [200]");
 		AddVote_Localization(ClientID, "null", "你将会获得禁止PVP设置");
 		AddVote("", "null", ClientID);

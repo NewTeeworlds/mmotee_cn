@@ -3784,6 +3784,7 @@ void CServer::InitClanID(int ClanID, Sign Need, const char* SubType, int Price, 
 {
 	if(!ClanID)
 		return;
+	dbg_msg("asd", "%s %d", SubType, Price);
 
 	CSqlJob* pJob = new CSqlJob_Server_InitClanID(this, ClanID, Need, SubType, Price, Save);
 	pJob->Start();
