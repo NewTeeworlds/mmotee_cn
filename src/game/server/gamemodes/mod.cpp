@@ -18,7 +18,7 @@
 CGameControllerMOD::CGameControllerMOD(class CGameContext *pGameServer)
 : IGameController(pGameServer)
 {
-	m_pGameType = g_Config.m_SvGametype;
+	m_pGameType = "MMOTee-Azataz-F idm";
 	m_pHeroFlag = 0;
 }
 
@@ -145,20 +145,16 @@ void CGameControllerMOD::Snap(int SnappingClient)
 
 	pGameInfoObj->m_GameFlags = 0;
 	pGameInfoObj->m_GameStateFlags = 0;
-	if(m_GameOverTick != -1)
-		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_GAMEOVER;
-	if(m_SuddenDeath)
-		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_SUDDENDEATH;
 	if(GameServer()->m_World.m_Paused)
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_PAUSED;
-	pGameInfoObj->m_RoundStartTick = m_RoundStartTick;
+	pGameInfoObj->m_RoundStartTick = Server()->Tick();
 	pGameInfoObj->m_WarmupTimer = 0;
 
 	pGameInfoObj->m_ScoreLimit = 0;
 	pGameInfoObj->m_TimeLimit = 0;
 
-	pGameInfoObj->m_RoundNum = (str_length(g_Config.m_SvMaprotation) && g_Config.m_SvRoundsPerMap) ? g_Config.m_SvRoundsPerMap : 0;
-	pGameInfoObj->m_RoundCurrent = m_RoundCount+1;
+	pGameInfoObj->m_RoundNum = 0;
+	pGameInfoObj->m_RoundCurrent = 0;
 
 	int ClassMask = 0;
 	ClassMask |= CMapConverter::MASK_DEFENDER;
@@ -166,10 +162,12 @@ void CGameControllerMOD::Snap(int SnappingClient)
 	ClassMask |= CMapConverter::MASK_HERO;
 	ClassMask |= CMapConverter::MASK_SUPPORT;
 
+	// FFS注: 这段代码或将导致三体文明毁灭（WTF???）
 	if(GameServer()->m_apPlayers[SnappingClient])
 	{
 		if(GameServer()->m_apPlayers[SnappingClient]->AccData.Class == PLAYERCLASS_NONE && !GameServer()->m_apPlayers[SnappingClient]->IsBot())
 		{
+			pGameInfoObj->m_RoundStartTick = 0;
 			int Page = -1;
 			
 			if(GameServer()->m_apPlayers[SnappingClient]->MapMenu() == 1)
