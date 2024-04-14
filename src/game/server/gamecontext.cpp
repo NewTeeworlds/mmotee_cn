@@ -1584,7 +1584,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你向工会捐了 {int:count} 黄金"), "count", &Get, NULL);
 
 						UpdateStats(ClientID);
-						ResetVotes(ClientID, CLAN);
+						ResetVotes(ClientID, AUTH);
 						return;
 					}
 					else
@@ -3439,7 +3439,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", "ღ 黄金: {int:gold} 白银: {int:Money}", "gold", &m_apPlayers[ClientID]->AccData.Gold, "Money", &m_apPlayers[ClientID]->AccData.Money);
 		AddVote("······················· ", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "# {str:psevdo}", "psevdo", LocalizeText(ClientID, "子菜单--信息"));
-		AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群: 736636701");
+		AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(MMOTee): 736636701");
+		AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(TeeFun 1群): 895105949");
+		AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(TeeFun 2群): 553903715");
 		AddVote_Localization(ClientID, "rules", "☞ 注意事项");
 		AddVoteMenu_Localization(ClientID, RESLIST, MENUONLY, "☞ 通缉犯");
 		AddVoteMenu_Localization(ClientID, EVENTLIST, MENUONLY, "☞ 事件与奖金");

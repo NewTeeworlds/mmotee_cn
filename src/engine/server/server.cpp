@@ -3684,7 +3684,7 @@ public:
 				return true;
 			}
 
-			str_format(aBuf, sizeof(aBuf), "SELECT %s FROM %s_Clans WHERE ClanID = '%d';", pSqlServer->GetPrefix(), m_sType.ClrStr(), m_ClanID);
+			str_format(aBuf, sizeof(aBuf), "SELECT %s FROM %s_Clans WHERE ClanID = '%d';", m_sType.ClrStr(), pSqlServer->GetPrefix(), m_ClanID);
 			pSqlServer->executeSqlQuery(aBuf);
 			if(pSqlServer->GetResults()->next())
 			{
