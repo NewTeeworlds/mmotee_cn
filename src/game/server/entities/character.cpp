@@ -659,9 +659,6 @@ void CCharacter::FireWeapon()
 			if(ShotSpread > 10)
 				ShotSpread = 10;
 
-			CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
-			Msg.AddInt(ShotSpread / 2 * 2 + 1);
-
 			float Spreading[20 * 2 + 1];
 			for (int i = 0; i < 20 * 2 + 1; i++)
 				Spreading[i] = -1.2f + 0.06f * i;
@@ -675,7 +672,6 @@ void CCharacter::FireWeapon()
 				
 				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
 			}
-			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 		} break;
 

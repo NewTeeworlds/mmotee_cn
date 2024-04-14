@@ -138,7 +138,7 @@ MACRO_CONFIG_INT(InfSlimePoisonDuration, inf_slime_poison_duration, 5, 0, 10000,
 //MACRO_CONFIG_INT(InfSlimeHealRate, inf_slime_heal_rate, 2, 0, 10000, CFGFLAG_SERVER, "Slug-Slime heals infected for X hearts every second")
 //MACRO_CONFIG_INT(InfInfzoneHealRate, inf_infzone_heal_rate, 3, 0, 10000, CFGFLAG_SERVER, "Infection zone heals infected for X hearts every second")
 
-MACRO_CONFIG_INT(InfRmb,inf_rmb, 0, 1, 1000, CFGFLAG_SERVER, "rmb")
-MACRO_CONFIG_INT(InfDonate,inf_donate, 0, 20, 1000, CFGFLAG_SERVER, "donate")
+MACRO_CONFIG_INT(InfRmb,inf_rmb, 1, 0, 1000, CFGFLAG_SERVER, "rmb")
+MACRO_CONFIG_INT(InfDonate,inf_donate, 20, 0, 1000, CFGFLAG_SERVER, "donate")
 
 #endif

@@ -69,6 +69,9 @@ void CHealthHealer::Tick()
 
 void CHealthHealer::Snap(int SnappingClient)
 {
+	if (NetworkClipped(SnappingClient))
+		return;
+
 	float AngleStep = 2.0f * pi / CHealthHealer::NUM_SIDE;
 	float Radius = 50.0f-(int)m_ReloadTick;
 	for(int i=0; i<CHealthHealer::NUM_SIDE; i++)

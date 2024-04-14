@@ -43,6 +43,9 @@ void CFlyingPoint::Tick()
 
 void CFlyingPoint::Snap(int SnappingClient)
 {
+	if (NetworkClipped(SnappingClient))
+		return;
+
 	CNetObj_Projectile *pObj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_ID, sizeof(CNetObj_Projectile)));
 	if(pObj)
 	{
