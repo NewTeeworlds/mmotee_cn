@@ -943,13 +943,18 @@ void CGameContext::AreaTick()
 
 void CGameContext::OnTick()
 {
+	int64_t ProcessTime = time_get();
 	// copy tuning
 	m_World.m_Core.m_Tuning = m_Tuning;
 	m_World.Tick();
+	dbg_msg("m_World.Tick()", "in %.10fs", (float)(time_get() - ProcessTime) / time_freq());
 
 	// if(world.paused) // make sure that the game object always updates
+	ProcessTime = time_get();
 	m_pController->Tick();
+	dbg_msg("m_pController->Tick()", "in %.10fs", (float)(time_get() - ProcessTime) / time_freq());
 
+	ProcessTime = time_get();
 	int NumActivePlayers = 0;
 	for (auto &m_apPlayer : m_apPlayers)
 	{
@@ -962,6 +967,7 @@ void CGameContext::OnTick()
 			m_apPlayer->PostTick();
 		}
 	}
+	dbg_msg("CPlayer::Tick()", "in %.10fs", (time_get() - ProcessTime) / time_freq());
 
 	// Check for new broadcast
 	for (int i = 0; i < MAX_NOBOT; i++)
@@ -1077,7 +1083,8 @@ void CGameContext::OnTick()
 	{
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "制作者名单:", NULL);
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "原作者:Kurosio", NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "制作者/管理:天上的星星", NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "制作者/管理:天上的星星, Flower", NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "服主:Min-jun", NULL);
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "汉化:MC_TYH、Ninecloud及MMOTEE全体国服玩家", NULL);
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "地图制作:天际, 卖鱼强", NULL);
 	}
@@ -1085,8 +1092,12 @@ void CGameContext::OnTick()
 	{
 		Server()->UpdateOffline();
 	}
+	ProcessTime = time_get();
 	AreaTick();
+	dbg_msg("AreaTick()", "in %.10fs", (time_get() - ProcessTime) / time_freq());
+	ProcessTime = time_get();
 	BossTick();
+	dbg_msg("BossTick()", "in %.10fs", (time_get() - ProcessTime) / time_freq());
 
 #ifdef CONF_DEBUG
 	if (g_Config.m_DbgDummies)
