@@ -209,6 +209,7 @@ public:
 	int m_RefreshTime;
 	bool InShop;
 	bool InWork;
+	bool InBoss;
 
 public:
 	void DestroyChildEntities();

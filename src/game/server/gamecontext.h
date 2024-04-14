@@ -66,7 +66,7 @@ enum
 	INANTIPVP,
 	INCRAFT,
 	INQUEST,
-	EXITANTIPVP
+	EXITANTIPVP,
 };
 
 enum
@@ -175,6 +175,7 @@ public:
 		BUYITEMONLY,
 		SETTINGSONLY,
 		SELLITEMWORK,
+		CREATEBOSSONLY,
 	};
 
 	// Визуальные функции
@@ -291,6 +292,7 @@ public:
 	virtual void AddVote_Localization(int To, const char *aCmd, const char *pText, ...);
 	virtual void AddVoteMenu_Localization(int To, int MenuID, int Type, const char *pText, ...);
 	virtual void AddNewCraftVote(int ClientID, const char *Need, int ItemID);
+	virtual void AddNewBossVote(int ClientID, const char *NanDu, const char *Reward, int Boss);
 
 	const char *LocalizeText(int ClientID, const char *pText);
 

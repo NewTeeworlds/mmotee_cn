@@ -85,6 +85,15 @@ bool CPlayer::GetWork()
 
 	return false;
 }
+
+bool CPlayer::GetBoss()
+{
+	if (m_pCharacter && m_pCharacter->InBoss)
+		return true;
+
+	return false;
+}
+
 /*
 Rand Craft Box 概率：
 95% 中的 50% 为 Body Boomer，50% 为 Foot Kwah
@@ -763,7 +772,7 @@ void CPlayer::Snap(int SnappingClient)
 	if (Server()->IsClientLogged(m_ClientID) && GetTeam() != TEAM_SPECTATORS)
 	{
 		char pSendName[32];
-		str_format(pSendName, sizeof(pSendName), "%d:%s", AccData.Level, Server()->ClientName(m_ClientID));
+		str_format(pSendName, sizeof(pSendName), "%s", Server()->ClientName(m_ClientID));
 		StrToInts(&pClientInfo->m_Name0, 4, pSendName);
 
 		if (IsBot() && m_pCharacter)
@@ -777,6 +786,7 @@ void CPlayer::Snap(int SnappingClient)
 				break;
 			case BOT_GUARD:
 			case BOT_BOSSSLIME:
+			case BOT_BOSSVAMPIRE:
 				str_format(pSendName, sizeof(pSendName), "%s[%d\%]", Server()->ClientName(m_ClientID), (int)getlv);
 				break;
 			case BOT_NPCW:
@@ -815,7 +825,7 @@ void CPlayer::Snap(int SnappingClient)
 	pPlayerInfo->m_Local = 0;
 	pPlayerInfo->m_ClientID = id;
 
-	if (GetBotType() == BOT_BOSSSLIME || !IsBot())
+	if (IsBoss() || !IsBot())
 		pPlayerInfo->m_Score = AccData.Level;
 	else
 		pPlayerInfo->m_Score = 0;
@@ -1083,8 +1093,15 @@ void CPlayer::TryRespawn()
 
 			AccUpgrade.Health = (int)(AccData.Level / 3);
 			AccUpgrade.Damage = 100;
-			if (g_Config.m_SvCityStart == 1)
-				AccUpgrade.Damage = 400;
+			break;
+		case BOT_BOSSVAMPIRE:
+			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World);
+			AccData.Level = 1000 + random_int(0, 3);
+
+			m_BigBot = true;
+
+			AccUpgrade.Health = (int)(AccData.Level / 3);
+			AccUpgrade.Damage = 400;
 			break;
 		case BOT_GUARD:
 			m_pCharacter = new (m_ClientID) CNpcSold(&GameServer()->m_World);
@@ -1291,4 +1308,17 @@ void CPlayer::SetMoveChar()
 	str_format(aBuf, sizeof(aBuf), "%s|%s", Server()->ClientClan(m_ClientID), TitleGot());
 	str_copy(pTitle, aBuf, sizeof(pTitle));
 	tickstr = 90;
+}
+
+bool CPlayer::IsBoss()
+{
+	switch (GetBotType())
+	{
+	case BOT_BOSSSLIME:
+	case BOT_BOSSVAMPIRE:
+		return true;
+	
+	default:
+		return false;
+	}
 }

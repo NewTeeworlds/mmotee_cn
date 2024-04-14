@@ -52,12 +52,14 @@ public:
 
 	bool GetShop();
 	bool GetWork();
+	bool GetBoss();
 
 	bool IsBot() const { return m_Bot; }
 	int GetBotType() const { return m_BotType; }
 	int GetBotSubType() const { return m_BotSubType; }
 	void SetBotType(int BotType) { m_BotType = BotType; }
 	void SetBotSubType(int BotSubType) { m_BotSubType = BotSubType; }
+	bool IsBoss();
 
 	// Пользовальские переменные
 	// 自定义变量

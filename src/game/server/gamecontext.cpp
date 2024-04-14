@@ -400,6 +400,12 @@ void CGameContext::AddVoteMenu_Localization(int To, int MenuID, int Type, const 
 				str_format(Buf, sizeof(Buf), "cra%d", MenuID);
 				AddVote(Buffer.buffer(), Buf, i);
 			}
+			else if (Type == CREATEBOSSONLY)
+			{
+				char Buf[8];
+				str_format(Buf, sizeof(Buf), "cb%d", MenuID);
+				AddVote(Buffer.buffer(), Buf, i);
+			}
 		}
 	}
 
@@ -485,21 +491,22 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 	const char *pLanguage = m_apPlayers[ClientID]->GetLanguage();
 
 	dynamic_string Buffer;
-	if (BossType == BOT_BOSSSLIME)
+	switch (BossType)
 	{
-		if (!g_Config.m_SvCityStart)
-		{
-			arghealth = 500;
-			// argtext = "Healer";
-			Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:霰弹枪&火箭炮 射速:一般\n奖励:\n- 钱袋 x100-300\n- 5% - 合成用物品\n- 20% - 合成用物品盒子"), NULL);
-		}
-		else if (g_Config.m_SvCityStart == 1)
-		{
-			arghealth = 1000;
-			// argtext = "All";
-			Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:霰弹枪&火箭炮 射速:快\n奖励:\n- 钱袋 x300-500\n- 5% - 合成用物品\n- 20% - 合成用物品盒子"), NULL);
-		}
+	case BOT_BOSSSLIME:
+		arghealth = 500;
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:霰弹枪&火箭炮 射速:一般\n奖励:\n- 钱袋 x100-300\n- 5% - Slime材料\n- 20% - 材料盲盒"), NULL);
+		break;
+
+	case BOT_BOSSVAMPIRE:
+		arghealth = 1000;
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:霰弹枪&火箭炮 射速:快\n奖励:\n- 钱袋 x300-500\n- 5% - 高级材料\n- 20% - 高级消耗品盲盒"), NULL);
+		break;
+
+	default:
+		break;
 	}
+
 	int Time = m_BossStartTick / Server()->TickSpeed();
 	SendMOTD_Localization(ClientID, "Boss:{str:name}\n生命值:玩家等级*{int:hp}\n{str:guide}\n\n等待玩家进入Boss战，还剩下 {int:siska} 秒.",
 						  "name", GetBossName(m_BossType), "hp", &arghealth, "guide", Buffer.buffer(), "siska", &Time);
@@ -2485,6 +2492,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						CreateItem(ClientID, i, chartoint(pReason, MAX_COUNT));
 						return;
 					}
+
+					str_format(aBuf, sizeof(aBuf), "cb%d", i);
+					if (str_comp(aCmd, aBuf) == 0)
+					{
+						StartBoss(ClientID, clamp(chartoint(pReason, 120), 20, 120), i);
+						return;
+					}
 				}
 
 				for (int i = 0; i < 64; ++i)
@@ -3942,6 +3956,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", "这个菜单可以捐赠黄金给公会");
 		AddVote_Localization(ClientID, "null", "钱是为了大家的");
 		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写数量");
+		AddVote_Localization(ClientID, "null", "为空则默认捐赠1000黄金");
 		AddVote("", "null", ClientID);
 		AddVote_Localization(ClientID, "cm1", "- 捐赠黄金给公会");
 
@@ -4142,7 +4157,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", Server()->GetItemDesc(ClientID, SelectItem));
 		AddVote("", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写数量");
-		AddVote_Localization(ClientID, "null", "如果投票的理由处不是一个数字或没有东西，就使用一个");
+		AddVote_Localization(ClientID, "null", "为空则默认使用一个");
 		AddVote("", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "▶ 你选中了物品 {str:name}", "name", Server()->GetItemName(ClientID, m_apPlayers[ClientID]->m_SelectItem));
 
@@ -4183,7 +4198,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddVote_Localization(ClientID, "null", "拿起你的杀猪刀朝可爱的小猪砍去，");
 				AddVote_Localization(ClientID, "null", "你将有机会会获得它的肉。");
 				AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "4000经验/200000白银");
+				AddVote_Localization(ClientID, "null", "任务奖励: {str:got}, 解锁Boss:Slime", "got", "4000经验/200000白银");
 			}
 			else if (m_apPlayers[ClientID]->AccData.Quest == 2)
 			{
@@ -4192,7 +4207,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddVote_Localization(ClientID, "null", "拿起你的杀猪刀朝可爱的小猪砍去，");
 				AddVote_Localization(ClientID, "null", "你将有机会会获得它的肉。");
 				AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "4000经验/250000白银");
+				AddVote_Localization(ClientID, "null", "任务奖励: {str:got}, 解锁Boss:Vampire", "got", "4000经验/250000白银");
 			}
 			else if (m_apPlayers[ClientID]->AccData.Quest == 3)
 			{
@@ -4329,6 +4344,31 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 		return;
 	}
+	else if (Type == CREATEBOSS)
+	{
+		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?");
+		AddVote_Localization(ClientID, "null", "发起Boss战");
+		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写等待时间");
+		AddVote_Localization(ClientID, "null", "为空则默认20秒(至少20秒)");
+		AddVote_Localization(ClientID, "null", "");
+		if(m_apPlayers[ClientID]->AccData.Quest > 1)
+			AddNewBossVote(ClientID, "困难", "奖励:钱袋, Slime材料, 盲盒(概率掉)", BOT_BOSSSLIME);
+		if(m_apPlayers[ClientID]->AccData.Quest > 2)
+			AddNewBossVote(ClientID, "极难", "奖励:钱袋, 高级消耗品(概率掉)", BOT_BOSSVAMPIRE);
+		if(m_apPlayers[ClientID]->AccData.Quest <= 1)
+			AddVote_Localization(ClientID, "null", "你需要完成任务来解锁Boss!");
+
+	}
+}
+
+void CGameContext::AddNewBossVote(int ClientID, const char *NanDu, const char *Reward, int Boss)
+{
+	AddVote_Localization(ClientID, "null", "Boss名: {str:name}", "name", GetBossName(Boss));
+	AddVote_Localization(ClientID, "null", "难度: {str:nandu}", "nandu", NanDu);
+	AddVote_Localization(ClientID, "null", "奖励: {str:reward}", "reward", Reward);
+	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSONLY, "- 挑战 {str:name} !", "name", GetBossName(Boss));
+	AddVote("--------------------", "null", ClientID);
+	AddVote("  ", "null", ClientID);
 }
 
 void CGameContext::AddNewCraftVote(int ClientID, const char *Need, int ItemID)
@@ -4338,6 +4378,7 @@ void CGameContext::AddNewCraftVote(int ClientID, const char *Need, int ItemID)
 	AddVote_Localization(ClientID, "null", "描述: {str:desc}", "desc", Server()->GetItemDesc(ClientID, ItemID));
 	AddVoteMenu_Localization(ClientID, ItemID, CRAFTONLY, "- 合成 {str:name} !", "name", Server()->GetItemName(ClientID, ItemID));
 	AddVote("--------------------", "null", ClientID);
+	AddVote("  ", "null", ClientID);
 	return;
 }
 
@@ -4947,10 +4988,11 @@ void CGameContext::UpdateBotInfo(int ClientID)
 	}
 	else if (BotType == BOT_BOSSSLIME)
 	{
-		if (!BotSubType)
-			str_copy(NameSkin, "twinbop", sizeof(NameSkin));
-		else if (BotSubType == 1)
-			str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
+		str_copy(NameSkin, "twinbop", sizeof(NameSkin));
+	}
+	else if (BotType == BOT_BOSSVAMPIRE)
+	{
+		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
 	}
 	else if (BotType == BOT_FARMER)
 	{
@@ -5271,7 +5313,6 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 	}
 	else
 	{
-		SendBroadcast_Localization(ClientID, 190, 150, _("请创建一个新的请求(/createboss)."));
 		DeleteBotBoss();
 		return;
 	}
@@ -5298,9 +5339,6 @@ void CGameContext::EnterBoss(int ClientID, int BossType)
 
 	if (!m_BossStartTick && m_BossStart)
 		return SendBroadcast_Localization(ClientID, 250, 150, _("Boss战进行中. 等待其结束或者创建新的Boss."));
-
-	if (!m_BossStartTick && !m_BossStart)
-		return SendBroadcast_Localization(ClientID, 250, 150, _("需要创建请求(/createboss)."));
 
 	m_apPlayers[ClientID]->m_InBossed = true;
 	if (Server()->GetClanID(ClientID) > 0)
@@ -5342,15 +5380,17 @@ int CGameContext::GetBossCount()
 
 const char *CGameContext::GetBossName(int BossType)
 {
-	if (BossType == BOT_BOSSSLIME)
+	switch (BossType)
 	{
-		if (!g_Config.m_SvCityStart)
-			return "Slime";
-		else if (g_Config.m_SvCityStart == 1)
-			return "Vampire";
-		else
-			return "(unknow)";
+	case BOT_BOSSSLIME:
+		return "Slime";
+		break;
+
+	case BOT_BOSSVAMPIRE:
+		return "Vampire";
+		break;
+	
+	default:
+		break;
 	}
-	else
-		return "(unknow)";
 }

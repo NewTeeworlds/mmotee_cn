@@ -2145,10 +2145,10 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 			str_copy(m_aClients[ClientID].m_aName, "Fighter", MAX_NAME_LENGTH);
 		break;
 	case BOT_BOSSSLIME:
-		if (!BotSubType)
-			str_copy(m_aClients[ClientID].m_aName, "Slime", MAX_NAME_LENGTH);
-		else if (BotSubType == 1)
-			str_copy(m_aClients[ClientID].m_aName, "Vampir", MAX_NAME_LENGTH);
+		str_copy(m_aClients[ClientID].m_aName, "Slime", MAX_NAME_LENGTH);
+		break;
+	case BOT_BOSSVAMPIRE:
+		str_copy(m_aClients[ClientID].m_aName, "Vampire", MAX_NAME_LENGTH);
 		break;
 	case BOT_FARMER:
 		str_copy(m_aClients[ClientID].m_aName, "Nesquik", MAX_NAME_LENGTH);

@@ -271,7 +271,7 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 		}
 		else if(pPlayer->m_InBossed && !GameServer()->m_BossStart)
 			Type = 7;
-		else if(GameServer()->m_BossStart && GameServer()->m_BossType == BOT_BOSSSLIME && pPlayer->m_InBossed)
+		else if(GameServer()->m_BossStart && GameServer()->m_BossType && pPlayer->m_InBossed)
 			Type = 8;
 		else if(pPlayer->m_InArea && GameServer()->m_AreaType == 1)
 			Type = 9;
@@ -299,7 +299,7 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 			Type = 5;
 		else if(pPlayer->GetBotType() == BOT_L3MONSTER)
 			Type = 6;
-		else if(pPlayer->GetBotType() == BOT_BOSSSLIME)
+		else if(pPlayer->IsBoss())
 			Type = 8;
 		else if(pPlayer->GetBotType() == BOT_GUARD)
 			Type = 2;

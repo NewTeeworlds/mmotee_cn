@@ -30,6 +30,7 @@ enum BotType
 	BOT_NPCW,
 	BOT_FARMER,
 	BOT_BOSSCLEANER,
+	BOT_BOSSVAMPIRE
 };
 
 enum
@@ -66,7 +67,9 @@ enum Menus
 	JOBSSET,
 	MAILMENU,
 	ARMORMENU,
-	MAXMENU
+	MAXMENU,
+
+	CREATEBOSS
 };
 
 // items

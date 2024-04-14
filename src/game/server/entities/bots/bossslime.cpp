@@ -100,7 +100,7 @@ void CBossSlime::TickBotAI()
 	for (int i=0; i<g_Config.m_SvMaxClients; i++)
 	{
 	    CPlayer *pPlayer = GameServer()->m_apPlayers[i];
-	    if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->GetBotType() == BOT_BOSSSLIME)
+	    if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->IsBoss())
             continue;
 
 		int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);

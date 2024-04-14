@@ -171,6 +171,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_InCrafted = false;
 	m_InQuest = false;
 	InWork = false;
+	InBoss = false;
 	
 	// FIXED BUG sry in Price, Initialized
 	if(Server()->GetItemPrice(m_pPlayer->GetCID(), IGUN, 0) <= 0)
@@ -566,7 +567,7 @@ void CCharacter::FireWeapon()
 			if(ShotSpread > 36)
 				ShotSpread = 36;
 
-			if(m_pPlayer->GetBotType() == BOT_BOSSSLIME)
+			if(m_pPlayer->IsBoss())
 				ShotSpread = 40;
 
 			float Spreading[20 * 2 + 1];
@@ -618,7 +619,7 @@ void CCharacter::FireWeapon()
 				if(ShotSpread > 10)
 					ShotSpread = 10;
 
-				if(m_pPlayer->GetBotType() == BOT_BOSSSLIME)
+				if(m_pPlayer->IsBoss())
 					ShotSpread = 15;
 
 	
@@ -876,10 +877,21 @@ void CCharacter::Tick()
 
 		// 通过计数初始化boss的生命值
 		// 计算方法：玩家等级之和*500
-		if(m_pPlayer->GetBotType() == BOT_BOSSSLIME && !GameServer()->m_BossStart)
+		if(m_pPlayer->IsBoss() && !GameServer()->m_BossStart)
 		{
-			if(!g_Config.m_SvCityStart) m_Health = 10+GameServer()->GetBossLeveling()*500;
-			else if(g_Config.m_SvCityStart == 1) m_Health = 10+GameServer()->GetBossLeveling()*1000;
+			switch (m_pPlayer->GetBotType())
+			{
+			case BOT_BOSSSLIME:
+				m_Health = 10+GameServer()->GetBossLeveling()*500;
+				break;
+			
+			case BOT_BOSSVAMPIRE:
+				m_Health = 10+GameServer()->GetBossLeveling()*1000;
+				break;
+
+			default:
+				break;
+			}
 
 			m_pPlayer->m_HealthStart = m_Health;
 		}
@@ -1162,9 +1174,6 @@ void CCharacter::Tick()
 				}
 			}
 			break;
-		case ZONE_BOSS:
-			GameServer()->EnterBoss(m_pPlayer->GetCID(), BOT_BOSSSLIME);
-			break;
 		case ZONE_GAMEROOM:
 			GameServer()->EnterArea(m_pPlayer->GetCID());
 			break;
@@ -1244,6 +1253,19 @@ void CCharacter::Tick()
 				GameServer()->CreateSound(m_Pos, 11);
 				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 				m_InWater = false;
+				break;
+			}
+
+			if (PlayerPos == ZONE_BOSS && !InBoss)
+			{
+				InBoss = true;
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), CREATEBOSS);
+				break;
+			}
+			else if (PlayerPos != ZONE_BOSS && InBoss)
+			{
+				InBoss = false;
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
 				break;
 			}
 			break;
@@ -1624,7 +1646,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	{
 		// 打败了boss
 		// 原注释：если босс проебал то отсосите все пидорасы ебаные ебал всех
-		if(m_pPlayer->GetBotType() == BOT_BOSSSLIME && !GameServer()->m_WinWaitBoss)
+		if(m_pPlayer->IsBoss() && !GameServer()->m_WinWaitBoss)
 		{
 			int CountWin = GameServer()->GetBossCount();
 			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Boss {str:bossn} 被{int:cwin}个玩家击败."), "bossn", GameServer()->GetBossName(GameServer()->m_BossType), "cwin", &CountWin, NULL);			
@@ -2074,7 +2096,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 		}
 
-		if(m_pPlayer->GetBotType() == BOT_BOSSSLIME)
+		if(m_pPlayer->IsBoss())
 		{
 			for(int i = 0; i < MAX_NOBOT; ++i)
 			{
@@ -2089,21 +2111,26 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 						if(Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT) != 2) 
 							GameServer()->SendChatTarget_Localization(i, CHATCATEGORY_DEFAULT, _("玩家之间分享掉落的物品"), NULL);		
 						
-						if(!g_Config.m_SvCityStart)
+						switch (m_pPlayer->GetBotType())
 						{
+						case BOT_BOSSSLIME:
 							CreateDropRandom(MONEYBAG, 100+random_int(0, 200), false, i, Force/(50+randforce));
 							CreateDropRandom(RARESLIMEDIRT, 1, 90, i, Force/(45+randforce));
 							CreateDropRandom(FORMULAFORRING, 1, 90, i, Force/(40+randforce));
 							CreateDropRandom(FORMULAEARRINGS, 1, 90, i, Force/(35+randforce));
 							CreateDropRandom(FORMULAWEAPON, 1, 90, i, Force/(40+randforce));
 							CreateDropRandom(RANDOMCRAFTITEM, 1, 15, i, Force/(45+randforce));
-						}
-						else if(g_Config.m_SvCityStart == 1)
-						{
+							break;
+						
+						case BOT_BOSSVAMPIRE:
 							CreateDropRandom(MONEYBAG, 300+random_int(0, 200), false, i, Force/(50+randforce));
 							CreateDropRandom(BOOKEXPMIN, 1, 15, i, Force/(45+randforce));
 							CreateDropRandom(BOOKMONEYMIN, 1, 80, i, Force/(45+randforce));
 							CreateDropRandom(CLANBOXEXP, 1, 50, i, Force/(45+randforce));
+							break;
+
+						default:
+							break;
 						}
 					}  
 				}
@@ -2474,7 +2501,7 @@ void CCharacter::ClassSpawnAttributes()
 	if(m_pPlayer->GetCharacter())
 	{
 		// 给boss武器 
-		if(m_pPlayer->GetBotType() == BOT_BOSSSLIME)
+		if(m_pPlayer->IsBoss())
 		{
 			Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 99999);
 			Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 10);

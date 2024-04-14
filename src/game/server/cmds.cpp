@@ -16,7 +16,6 @@
 /invite <玩家名称> 邀请玩家进入公会 (需要公会所有者权限)
 3.其他常用指令
 /cmdlist 显示命令列表 (不全)
-/createboss 创建boss
 /lang (语言ID) 设置语言 (留空显示可用语言列表)
 4.管理员指令
 /sd <声音ID> 设置声音(?)
@@ -158,16 +157,10 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		return;
 	}
 
-	else if (!strncmp(Msg->m_pMessage, "/createboss", 11))
-	{
-		GameServer()->StartBoss(ClientID, 60, BOT_BOSSSLIME);
-		return;
-	}
-
 	else if (!strncmp(Msg->m_pMessage, "/cmdlist", 8))
 	{
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "? ---- 命令列表");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/invite <玩家昵称>, /createboss, /cmdlist, /lang <语言>");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/invite <玩家昵称>, /cmdlist, /lang <语言>");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/login (用户名) <密码>, /register <用户名> <密码>");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/newclan <公会名称>, /password <密码> <重复密码>");
 		return;
