@@ -889,6 +889,10 @@ void CCharacter::Tick()
 				m_Health = 10+GameServer()->GetBossLeveling()*1000;
 				break;
 
+			case BOT_BOSSPIGKING:
+				m_Health = 10+GameServer()->GetBossLeveling()*2;
+				break;
+
 			default:
 				break;
 			}
@@ -1258,6 +1262,11 @@ void CCharacter::Tick()
 
 			if (PlayerPos == ZONE_BOSS && !InBoss)
 			{
+				if (GameServer()->m_BossStartTick)
+				{
+					GameServer()->EnterBoss(GetPlayer()->GetCID(), GameServer()->m_BossType);
+					break;
+				}
 				InBoss = true;
 				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 200, INCREATEBOSS);
 				GameServer()->ResetVotes(m_pPlayer->GetCID(), CREATEBOSS);
@@ -2130,6 +2139,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(CLANBOXEXP, 1, 50, i, Force/(45+randforce));
 							break;
 
+						case BOT_BOSSPIGKING:
+							CreateDropRandom(MONEYBAG, random_int(50, 200), false, i, Force/(50+randforce));
+							CreateDropRandom(PIGPORNO, random_int(3, 14), false, i, Force/(35+randforce));
+							CreateDropRandom(WOOD, random_int(50, 300), 15, i, Force/(12+randforce));
+							break;
+
 						default:
 							break;
 						}
@@ -2504,16 +2519,38 @@ void CCharacter::ClassSpawnAttributes()
 		// 给boss武器 
 		if(m_pPlayer->IsBoss())
 		{
-			Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 99999);
-			Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 10);
-			Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 4000);
+			switch (m_pPlayer->GetBotType())
+			{
+			case BOT_BOSSSLIME:
+			case BOT_BOSSVAMPIRE:
+				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 99999);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 10);
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_SHOTGUN, 4000);
 
-			Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 99999);
-			Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 10);
-			Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 4000);
+				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 99999);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 10);
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GRENADE, 4000);
 
-			GiveWeapon(WEAPON_GRENADE, -1);
-			GiveWeapon(WEAPON_SHOTGUN, -1);
+				GiveWeapon(WEAPON_GRENADE, -1);
+				GiveWeapon(WEAPON_SHOTGUN, -1);
+				break;
+
+			case BOT_BOSSPIGKING:
+				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 10000);	
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 1000);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 0);
+
+				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GUN, 15);
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GUN, 1000);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 500);
+	
+				GiveWeapon(WEAPON_HAMMER, 10000);
+				GiveWeapon(WEAPON_GUN, 15);
+			break;
+			
+			default:
+				break;
+			}
 			return;
 		}
 		

@@ -357,7 +357,8 @@ INSERT INTO `tw_uItemList` VALUES
 (131,10,'技能扩展','- 增加部分技能的上限'),
 (132,12,'充值称号 - GG爆!','- 暴击伤害99%几率增加50倍'),
 (133,12,'充值称号 - TANK!','- 生命上限增加70倍'),
-(134,12,'特殊称号 - TeeFun!','- TeeFun成员都得有');
+(134,12,'特殊称号 - TeeFun!','- TeeFun成员都得有'),
+(135,10,'技能-大石碎胸口','- 发射一块巨石，按在胸口');
 -- (131,10,'中秋节称号','- 射速+10'),
 -- (132,5,'活动用品','用于合成');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
@@ -521,7 +522,8 @@ INSERT INTO `tw_uItemList_en` VALUES
 (131,10,'Extend Limit','- Item for extending upgrade limit'),
 (132,12,'Donate Title - GG Bond!','- 暴击伤害99%几率增加50倍'),
 (133,12,'Donate Title - TANK!','- 生命上限增加70倍'),
-(134,12,'Special Title - TeeFun!','- TeeFun成员都得有');
+(134,12,'Special Title - TeeFun!','- TeeFun成员都得有'),
+(134,12,'Skill The Boulder','');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;

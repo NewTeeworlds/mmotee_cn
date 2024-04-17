@@ -12,6 +12,7 @@
 #include <game/server/entities/bots/kwah.h>
 #include <game/server/entities/bots/boomer.h>
 #include <game/server/entities/bots/bossslime.h>
+#include <game/server/entities/bots/bosspig.h>
 #include <game/server/entities/bots/farmer.h>
 
 MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
@@ -787,6 +788,7 @@ void CPlayer::Snap(int SnappingClient)
 			case BOT_GUARD:
 			case BOT_BOSSSLIME:
 			case BOT_BOSSVAMPIRE:
+			case BOT_BOSSPIGKING:
 				str_format(pSendName, sizeof(pSendName), "%s[%d\%]", Server()->ClientName(m_ClientID), (int)getlv);
 				break;
 			case BOT_NPCW:
@@ -1103,6 +1105,13 @@ void CPlayer::TryRespawn()
 			AccUpgrade.Health = (int)(AccData.Level / 3);
 			AccUpgrade.Damage = 400;
 			break;
+		case BOT_BOSSPIGKING:
+			m_pCharacter = new (m_ClientID) CBossPig(&GameServer()->m_World);
+			AccData.Level = 100 + random_int(3, 13);
+			m_BigBot = true;
+			AccUpgrade.Health = (int)(AccData.Level / 6);
+			AccUpgrade.Damage = 10;
+			break;
 		case BOT_GUARD:
 			m_pCharacter = new (m_ClientID) CNpcSold(&GameServer()->m_World);
 			AccData.Level = 500 + random_int(0, 10);
@@ -1316,6 +1325,7 @@ bool CPlayer::IsBoss()
 	{
 	case BOT_BOSSSLIME:
 	case BOT_BOSSVAMPIRE:
+	case BOT_BOSSPIGKING:
 		return true;
 	
 	default:
