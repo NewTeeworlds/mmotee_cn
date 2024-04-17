@@ -629,6 +629,9 @@ void CGameContext::SendBroadcast_LStat(int To, int Priority, int LifeSpan, int T
 	case INQUEST:
 		Server()->Localization()->Format_L(Buffer, pLanguage, _("你好{str:name}(*′▽｀)ノノ! 你现在在任务大厅，任务菜单可用了."), "name", Server()->ClientName(To), NULL), Buffer.append("\n");
 		break;
+	case INCREATEBOSS:
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("你好{str:name}(*′▽｀)ノノ! 你现在可以在投票里挑战Boss了！"), "name", Server()->ClientName(To), NULL), Buffer.append("\n");
+		break;
 	default:
 		Buffer.clear();
 	}

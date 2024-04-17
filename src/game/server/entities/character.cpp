@@ -1259,6 +1259,7 @@ void CCharacter::Tick()
 			if (PlayerPos == ZONE_BOSS && !InBoss)
 			{
 				InBoss = true;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 200, INCREATEBOSS);
 				GameServer()->ResetVotes(m_pPlayer->GetCID(), CREATEBOSS);
 				break;
 			}

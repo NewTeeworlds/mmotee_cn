@@ -3626,6 +3626,7 @@ private:
 	CSqlString<64> m_sType;
 
 public:
+	
 	CSqlJob_Server_InitClanID(CServer* pServer, int ClanID, Sign Need, const char* SubType, int Price, bool Save)
 	{
 		m_pServer = pServer;
@@ -3784,7 +3785,6 @@ void CServer::InitClanID(int ClanID, Sign Need, const char* SubType, int Price, 
 {
 	if(!ClanID)
 		return;
-	dbg_msg("asd", "%s %d", SubType, Price);
 
 	CSqlJob* pJob = new CSqlJob_Server_InitClanID(this, ClanID, Need, SubType, Price, Save);
 	pJob->Start();
@@ -5574,5 +5574,48 @@ public:
 inline void CServer::UpdateOffline()
 {
 	CSqlJob* pJob = new CSqlJob_Server_UpdateOffline(this);
+	pJob->Start();
+}
+
+class CSqlJob_Server_InitAuction : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+
+public:
+	CSqlJob_Server_InitAuction(CServer* pServer)
+	{
+		m_pServer = pServer;
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		try
+		{
+			char aBuf[256];
+			str_format(aBuf, sizeof(aBuf), "SELECT * FROM %s_Auction;", pSqlServer->GetPrefix());
+			pSqlServer->executeSqlQuery(aBuf);
+			while(pSqlServer->GetResults()->next())
+			{
+				int ID = pSqlServer->GetResults()->getInt("ID");
+				m_pServer->m_stAuction[ID].ID = ID;
+				m_pServer->m_stAuction[ID].ItemID = pSqlServer->GetResults()->getInt("ItemID");
+				m_pServer->m_stAuction[ID].ItemValue = pSqlServer->GetResults()->getInt("ItemValue");
+				m_pServer->m_stAuction[ID].Price = pSqlServer->GetResults()->getInt("Price");
+				m_pServer->m_stAuction[ID].Enchant = pSqlServer->GetResults()->getInt("Enchant");
+				m_pServer->m_stAuction[ID].UserID = pSqlServer->GetResults()->getInt("UserID");
+			}
+		}
+		catch (sql::SQLException const &e)
+		{
+			return false;
+		}
+		return true;
+	}
+};
+
+void CServer::InitAuction()
+{
+	CSqlJob* pJob = new CSqlJob_Server_InitAuction(this);
 	pJob->Start();
 }

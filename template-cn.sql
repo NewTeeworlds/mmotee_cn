@@ -590,6 +590,22 @@ LOCK TABLES `tw_UserStatus` WRITE;
 INSERT INTO `tw_UserStatus` VALUES (1,'2021-01-01 09:05:32','127.0.0.1','天上的星星',0,'',0,0,0,'2021-01-01 09:05:32');
 /*!40000 ALTER TABLE `tw_UserStatus` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+DROP TABLE IF EXISTS `tw_Auction`;
+CREATE TABLE `tw_Auction` (
+  `ID` int(11) NOT NULL,
+  `ItemID` int(11) NOT NULL,
+  `ItemValue` int(11) NOT NULL,
+  `Price` int(11) NOT NULL,
+  `Enchant` int(11) NOT NULL DEFAULT 0,
+  `UserID` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+LOCK TABLES `tw_Auction` WRITE;
+INSERT INTO `tw_Auction` VALUES (1,2,5,10,0,1);
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

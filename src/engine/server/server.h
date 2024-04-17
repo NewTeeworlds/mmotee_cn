@@ -213,6 +213,17 @@ public:
 	};
 	std::map<int, _m_stClan> m_stClan;
 
+	struct _m_stAuction
+	{
+		int ID;
+		int ItemID;
+		int ItemValue;
+		int Price;
+		int Enchant;
+		int UserID;
+	};
+	std::map<int, _m_stAuction> m_stAuction;
+	
 	virtual int GetClan(Clan Type, int ClanID);
 	virtual bool GetLeader(int ClientID, int ClanID);
 	virtual bool GetAdmin(int ClientID, int ClanID);
@@ -474,6 +485,8 @@ public:
 	virtual void InitClan();
 	virtual void InitClanID(int ClanID, Sign Need, const char* SubType, int Price, bool Save);
 	virtual void UpdClanCount(int ClanID);
+	
+	virtual void InitAuction();
 
 	virtual void Ban(int ClientID, int Seconds, const char* pReason);
 	

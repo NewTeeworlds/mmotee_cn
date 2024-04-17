@@ -67,6 +67,7 @@ enum
 	INCRAFT,
 	INQUEST,
 	EXITANTIPVP,
+	INCREATEBOSS,
 };
 
 enum
