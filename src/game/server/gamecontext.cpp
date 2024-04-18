@@ -504,7 +504,7 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 		break;
 
 	case BOT_BOSSPIGKING:
-		arghealth = 2;
+		arghealth = 100;
 		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子&手枪 射速:快\n奖励:\n- 钱袋 x50-200\n- 猪肉\n- 15% - 木材"), NULL);
 		break;
 

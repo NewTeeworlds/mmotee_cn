@@ -890,7 +890,8 @@ void CCharacter::Tick()
 				break;
 
 			case BOT_BOSSPIGKING:
-				m_Health = 10+GameServer()->GetBossLeveling()*2;
+				m_Health = 10+GameServer()->GetBossLeveling()*100;
+				m_pPlayer->AccUpgrade.Damage = GameServer()->GetBossLeveling()*10;
 				break;
 
 			default:
@@ -2141,8 +2142,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 						case BOT_BOSSPIGKING:
 							CreateDropRandom(MONEYBAG, random_int(50, 200), false, i, Force/(50+randforce));
-							CreateDropRandom(PIGPORNO, random_int(3, 14), false, i, Force/(35+randforce));
-							CreateDropRandom(WOOD, random_int(50, 300), 15, i, Force/(12+randforce));
+							CreateDropRandom(PIGPORNO, random_int(1, 3), false, i, Force/(35+randforce));
+							CreateDropRandom(WOOD, random_int(20, 30), 15, i, Force/(12+randforce));
 							break;
 
 						default:
