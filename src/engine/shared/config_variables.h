@@ -141,4 +141,6 @@ MACRO_CONFIG_INT(InfSlimePoisonDuration, inf_slime_poison_duration, 5, 0, 10000,
 MACRO_CONFIG_INT(InfRmb,inf_rmb, 1, 0, 1000, CFGFLAG_SERVER, "rmb")
 MACRO_CONFIG_INT(InfDonate,inf_donate, 20, 0, 1000, CFGFLAG_SERVER, "donate")
 
+MACRO_CONFIG_STR(SvWarningPassword, sv_warning_password, 32, "", CFGFLAG_SERVER, "If someone use this password, fuck him off.")
+
 #endif

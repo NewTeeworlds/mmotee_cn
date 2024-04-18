@@ -517,6 +517,8 @@ public:
 	virtual void UpdateUpgrade(int ClientID, Player Type, int Size);
 
 	virtual int GetTimeShiftUnit() const { return m_TimeShiftUnit; } //In ms
+
+	virtual void LogWarning(const char Warning[256]);
 };
 
 #endif

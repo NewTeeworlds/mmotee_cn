@@ -1167,6 +1167,19 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					str_format(aBuf, sizeof(aBuf), "ClientID=%d authed (moderator)", ClientID);
 					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 				}
+				else if(g_Config.m_SvWarningPassword[0] && str_comp(pPw, g_Config.m_SvWarningPassword) == 0)
+				{
+					SendRconLine(ClientID, "? Fuck off.");
+
+					char aAddrStr[64];
+					char aBuf[128];
+					net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), false);
+					str_format(aBuf, sizeof(aBuf), "!Warning! UserID: %d, ClientID=%d, Name:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientID, ClientName(ClientID), aAddrStr);
+					dbg_msg("WARNING!WARNING!WARNING!", aBuf);
+					LogWarning(aBuf);
+					
+					Ban(ClientID, -1, "尝试黑入服务器");
+				}
 				else if(g_Config.m_SvRconMaxTries)
 				{
 					m_aClients[ClientID].m_AuthTries++;
@@ -5620,5 +5633,43 @@ public:
 void CServer::InitAuction()
 {
 	CSqlJob* pJob = new CSqlJob_Server_InitAuction(this);
+	pJob->Start();
+}
+
+class CSqlJob_Server_LogWarning : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+	char m_aWarning[256];
+
+public:
+	CSqlJob_Server_LogWarning(CServer* pServer, const char Warning[256])
+	{
+		m_pServer = pServer;
+		str_copy(m_aWarning, Warning, sizeof(m_aWarning));
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		try
+		{
+			char aBuf[256];
+			str_format(aBuf, sizeof(aBuf), "INSERT INTO `%s_WarningLog` VALUES ('%s');", pSqlServer->GetPrefix(), m_aWarning);
+			pSqlServer->executeSqlQuery(aBuf);
+			if(pSqlServer->GetResults()->next())
+				return true;
+			return false;
+		}
+		catch (sql::SQLException const &e)
+		{
+			return false;
+		}
+		return true;
+	}
+};
+
+void CServer::LogWarning(const char Warning[256])
+{
+	CSqlJob* pJob = new CSqlJob_Server_LogWarning(this, Warning);
 	pJob->Start();
 }
