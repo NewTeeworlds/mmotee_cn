@@ -358,7 +358,12 @@ INSERT INTO `tw_uItemList` VALUES
 (132,12,'充值称号 - GG爆!','- 暴击伤害99%几率增加50倍'),
 (133,12,'充值称号 - TANK!','- 生命上限增加70倍'),
 (134,12,'特殊称号 - TeeFun!','- TeeFun成员都得有'),
-(135,10,'技能-大石碎胸口','- 发射一块巨石，按在胸口');
+(135,10,'技能-大石碎胸口','- 渔王还想，继续做渔王'),
+(136,10,'守卫的头','- ...我早就看他不顺眼了'),
+(137,10,'称号-守卫','- 生命+25000'),
+(138,10,'显示设置','- TAB显示'),
+(139,5,'守卫锤子碎片','- 用于合成守卫的锤子'),
+(140,1,'神器-守卫锤子','- 守卫的锤子,秒杀一切罪孽!');
 -- (131,10,'中秋节称号','- 射速+10'),
 -- (132,5,'活动用品','用于合成');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
@@ -523,7 +528,12 @@ INSERT INTO `tw_uItemList_en` VALUES
 (132,12,'Donate Title - GG Bond!','- 暴击伤害99%几率增加50倍'),
 (133,12,'Donate Title - TANK!','- 生命上限增加70倍'),
 (134,12,'Special Title - TeeFun!','- TeeFun成员都得有'),
-(134,12,'Skill The Boulder','');
+(135,12,'Skill The Boulder',''),
+(136,12,"Guard's Head",''),
+(137,10,'Title Guard','- 生命+25000'),
+(138,10,'Show Clan','- TAB显示'),
+(139,10,'Guard Hammer Shard','- 用于合成守卫锤子'),
+(140,1,'Guard Hammer','- 守卫的锤子,强者愈弱,弱者愈强');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;

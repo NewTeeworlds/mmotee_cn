@@ -109,6 +109,7 @@ enum
 	QUEST4 = 80,
 	QUEST5 = 100,
 	QUEST6 = 120,
+	QUEST7 = 3,
 };
 enum
 {
@@ -177,6 +178,7 @@ public:
 		SETTINGSONLY,
 		SELLITEMWORK,
 		CREATEBOSSONLY,
+		CREATEBOSSSOLO,
 	};
 
 	// Визуальные функции

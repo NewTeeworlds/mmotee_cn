@@ -13,7 +13,7 @@ CSnapFullPickup::CSnapFullPickup(CGameWorld *pGameWorld, vec2 Pos, int Owner, in
 	m_boolreback = false;
 	m_Owner = Owner;
 
-	m_Num = Num;
+	m_Num = clamp(Num, 0, (int)NUM_SIDE);
 	m_Type = Type;
 	m_SubType = SubType;
 	m_Changing = Changing;

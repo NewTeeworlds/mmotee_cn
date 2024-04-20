@@ -11,7 +11,7 @@ CSnapFullProject::CSnapFullProject(CGameWorld *pGameWorld, vec2 Pos, int Owner, 
 	m_LoadingTick = Server()->TickSpeed();
 	m_Owner = Owner;
 	
-	m_Num = Num;
+	m_Num = clamp(Num, 0, (int)NUM_SIDE);
 	m_Type = Type;
 	m_Changing = Changing;
 

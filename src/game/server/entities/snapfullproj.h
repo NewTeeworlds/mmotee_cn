@@ -11,7 +11,7 @@ class CSnapFullProject : public CEntity
 public:
 	enum
 	{
-		NUM_SIDE = 64,
+		NUM_SIDE = 4,
 		NUM_IDS = NUM_SIDE,
 	};
 	

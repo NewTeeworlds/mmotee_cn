@@ -13,6 +13,7 @@
 #include <game/server/entities/bots/boomer.h>
 #include <game/server/entities/bots/bossslime.h>
 #include <game/server/entities/bots/bosspig.h>
+#include <game/server/entities/bots/bossguard.h>
 #include <game/server/entities/bots/farmer.h>
 
 MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
@@ -246,24 +247,17 @@ void CPlayer::RandomBoxTick()
 
 void CPlayer::BasicAuthedTick()
 {
-	if (tickstr)
+	char aBuf[64];
+	if (Server()->GetItemSettings(GetCID(), SSHOWCLAN))
 	{
-		tickstr--;
-		if (tickstr == 1)
-		{
-			tickstr = 15;
-			int sz = strlen(pTitle);
-			if (sz - sz + 10 <= sz - 1)
-			{
-				memmove(pTitle, pTitle + 1, sz - 1);
-				pTitle[sz - 1] = '\0';
-
-				if (sz - sz + 10 >= sz - 1)
-					tickstr = 90;
-			}
-			else
-				SetMoveChar();
-		}
+		str_format(aBuf, sizeof(aBuf), "%s", Server()->ClientClan(m_ClientID));
+		str_copy(pTitle, aBuf, sizeof(pTitle));
+		tickstr = 200;
+	}
+	else
+	{
+		str_format(aBuf, sizeof(aBuf), ":%s", TitleGot());
+		str_copy(pTitle, aBuf, sizeof(pTitle));
 	}
 
 	if (Server()->GetItemCount(m_ClientID, PIGPORNO) > 1000 && !Server()->GetItemCount(m_ClientID, PIGPIG))
@@ -789,6 +783,7 @@ void CPlayer::Snap(int SnappingClient)
 			case BOT_BOSSSLIME:
 			case BOT_BOSSVAMPIRE:
 			case BOT_BOSSPIGKING:
+			case BOT_BOSSGUARD:
 				str_format(pSendName, sizeof(pSendName), "%s[%d\%]", Server()->ClientName(m_ClientID), (int)getlv);
 				break;
 			case BOT_NPCW:
@@ -1112,6 +1107,12 @@ void CPlayer::TryRespawn()
 			AccUpgrade.Health = (int)(AccData.Level / 6);
 			AccUpgrade.Damage = 10;
 			break;
+		case BOT_BOSSGUARD:
+			m_pCharacter = new (m_ClientID) CBossGuard(&GameServer()->m_World);
+			AccData.Level = 500 + random_int(0, 10);
+			AccUpgrade.Damage = (int)(AccData.Level * 5);
+			m_BigBot = true;
+			break;
 		case BOT_GUARD:
 			m_pCharacter = new (m_ClientID) CNpcSold(&GameServer()->m_World);
 			AccData.Level = 500 + random_int(0, 10);
@@ -1155,6 +1156,11 @@ void CPlayer::TryRespawn()
 	else
 	{
 		m_pCharacter = new (m_ClientID) CCharacter(&GameServer()->m_World);
+		if(Server()->GetItemSettings(GetCID(), TITLE_GUARD))
+		{
+			AccUpgrade.Damage = (int)(AccData.Level * 5);
+			AccUpgrade.Health = (int)(AccData.Level * 50);
+		}
 	}
 
 	m_pCharacter->Spawn(this, SpawnPos);
@@ -1276,47 +1282,41 @@ const char *CPlayer::TitleGot()
 		switch (i)
 		{
 		case 1:
-			return "_VIP Bronze";
+			return "青铜VIP1";
 		case 2:
-			return "_VIP Sliver";
+			return "白银VIP2";
 		case 3:
-			return "_VIP Gold";
+			return "黄金VIP3";
 		case 4:
-			return "_VIP Gold";
+			return "巨石VIP4";
 		default:
-			return "_Platinum";
+			return "至尊铂金5";
 		}
 	}
 	else if (Server()->GetItemSettings(m_ClientID, TITLEQUESTS))
-		return "1LVQuests";
+		return "任务达人";
 	else if (Server()->GetItemSettings(m_ClientID, BOSSDIE))
-		return "#Boss?Die";
+		return "Boss克星";
 	else if (Server()->GetItemSettings(m_ClientID, PIGPIG))
-		return "_Piggie_";
+		return "猪猪";
 	else if (Server()->GetItemSettings(m_ClientID, BIGCRAFT))
-		return "_Crafter_";
+		return "合成大师";
 	else if (Server()->GetItemSettings(m_ClientID, TITLESUMMER))
-		return "_I<3Summer";
+		return "沐浴阳光";
 	else if (Server()->GetItemSettings(m_ClientID, TITLEENCHANT))
-		return "Enchant+10";
+		return "魔法师";
 	else if(Server()->GetItemSettings(m_ClientID, TITLE_DONATE_BAOJI50))
-		return "Donate GG爆";
+		return "GG爆";
 	else if(Server()->GetItemSettings(m_ClientID, TITLE_DONATE_SHENGMIN70))
-		return "Donate TANK!";
+		return "TANK!";
 	else if(Server()->GetItemSettings(m_ClientID, TITLE_SPECIAL_TEEFUN))
-		return "TeeFun成员";
+		return "TeeFun";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_GUARD))
+		return "Guard杀手";
 	//else if(Server()->GetItemSettings(m_ClientID, TITLEMOON))
 	//	return "~〇~ Moon ~〇~";	
 	else 
-		return "_Newbie_";
-}
-
-void CPlayer::SetMoveChar()
-{
-	char aBuf[64];
-	str_format(aBuf, sizeof(aBuf), "%s|%s", Server()->ClientClan(m_ClientID), TitleGot());
-	str_copy(pTitle, aBuf, sizeof(pTitle));
-	tickstr = 90;
+		return "新玩家";
 }
 
 bool CPlayer::IsBoss()
@@ -1326,6 +1326,7 @@ bool CPlayer::IsBoss()
 	case BOT_BOSSSLIME:
 	case BOT_BOSSVAMPIRE:
 	case BOT_BOSSPIGKING:
+	case BOT_BOSSGUARD:
 		return true;
 	
 	default:

@@ -31,7 +31,8 @@ enum BotType
 	BOT_FARMER,
 	BOT_BOSSCLEANER,
 	BOT_BOSSVAMPIRE,
-	BOT_BOSSPIGKING
+	BOT_BOSSPIGKING,
+	BOT_BOSSGUARD,
 };
 
 enum
@@ -239,6 +240,11 @@ enum Items
 	TITLE_SPECIAL_TEEFUN,
 
 	SKILL_DASHISUIXIONGKOU,
+	GUARD_HEAD,
+	TITLE_GUARD,
+	SSHOWCLAN,
+	GUARD_HAMMER_FRAG,
+	GUARD_HAMMER,
 	MAX_ITEM,
 	// 1 - Weapon Upgradins, 2 - Rare Artifacts, 3 - Quest Item's, 4 - Useds Items, 5 - Crafted Item
 	// Sufix S - SettingsItem

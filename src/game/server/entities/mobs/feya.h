@@ -10,7 +10,7 @@ class CFeya : public CEntity
 public:
 	enum
 	{
-		NUM_SIDE = 3,
+		NUM_SIDE = 2,
 		NUM_IDS,
 	};
 	

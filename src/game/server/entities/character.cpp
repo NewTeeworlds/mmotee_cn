@@ -891,7 +891,12 @@ void CCharacter::Tick()
 
 			case BOT_BOSSPIGKING:
 				m_Health = 10+GameServer()->GetBossLeveling()*100;
-				m_pPlayer->AccUpgrade.Damage = GameServer()->GetBossLeveling()*10;
+				m_pPlayer->AccUpgrade.Damage = GameServer()->GetBossLeveling();
+				break;
+
+			case BOT_BOSSGUARD:
+				m_Health = 10+GameServer()->GetBossLeveling()*1250;
+				m_pPlayer->AccUpgrade.Damage = GameServer()->GetBossLeveling()*50;
 				break;
 
 			default:
@@ -1944,6 +1949,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	
 	if(From >= 0 && pFrom && pFrom->GetCharacter())
 	{
+		if(Server()->GetItemCount(From, GUARD_HAMMER) && Weapon == WEAPON_HAMMER && random_prob(0.80f))
+			Dmg = m_Health;
+
 		//TODO
 		if(Server()->GetItemCount(From, FREEAZER))
 		{
@@ -1962,7 +1970,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			if(random_prob(1.0f/RandProc))
 			{
 				if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT)) 
-					GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("Passive skill don't get damage"), NULL);
+					GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("被动技能不受伤害"), NULL);
 				return true;
 			}
 		}
@@ -2105,6 +2113,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					CreateDropRandom(NIMFBODY, 1, 40, From, Force/(50+randforce));
 				}
 			}
+			if(pFrom && m_pPlayer->GetBotType() == BOT_GUARD)
+			{
+				CreateDropRandom(GUARD_HEAD, 1, 20, From, Force/(50+randforce));
+				CreateDropRandom(PIGPORNO, 4, 100, From, Force/(50+randforce));
+			}
 		}
 
 		if(m_pPlayer->IsBoss())
@@ -2144,6 +2157,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(MONEYBAG, random_int(50, 200), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(1, 3), false, i, Force/(35+randforce));
 							CreateDropRandom(WOOD, random_int(20, 30), 15, i, Force/(12+randforce));
+							break;
+
+						case BOT_BOSSGUARD:
+							CreateDropRandom(MONEYBAG, random_int(500, 1000), false, i, Force/(50+randforce));
+							CreateDropRandom(PIGPORNO, random_int(5, 10), false, i, Force/(35+randforce));
+							CreateDropRandom(GUARD_HAMMER_FRAG, random_int(1, 4), 25, i, Force/(12+randforce));
 							break;
 
 						default:
@@ -2548,6 +2567,14 @@ void CCharacter::ClassSpawnAttributes()
 				GiveWeapon(WEAPON_HAMMER, 10000);
 				GiveWeapon(WEAPON_GUN, 15);
 			break;
+
+			case BOT_BOSSGUARD:
+				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 10000);	
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 1000);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 0);
+	
+				GiveWeapon(WEAPON_HAMMER, 10000);
+				break;
 			
 			default:
 				break;
@@ -2557,10 +2584,13 @@ void CCharacter::ClassSpawnAttributes()
 		
 		// Рисовка артифактов
 		if(m_pPlayer->m_BigBot || Server()->GetItemCount(m_pPlayer->GetCID(), SNAPAMMOREGEN))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 9, WEAPON_HAMMER, true);
-			
+		{
+			m_pPlayer->m_TeeInfos.m_UseCustomColor = 1;
+			m_pPlayer->m_TeeInfos.m_ColorBody = 16711495;
+		}
+
 		if(Server()->GetItemCount(m_pPlayer->GetCID(), SPECSNAPDRAW))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 6, WEAPON_SHOTGUN, true);
+			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 2, WEAPON_SHOTGUN, true);
 
 		if(Server()->GetItemSettings(m_pPlayer->GetCID(), RAREEVENTHAMMER))
 			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, 4, true);
@@ -2568,7 +2598,7 @@ void CCharacter::ClassSpawnAttributes()
 			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, WEAPON_GRENADE, true);
 			
 		if(Server()->GetItemCount(m_pPlayer->GetCID(), SNAPHANDLE))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 5, 1, true);
+			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 4, 1, true);
 	}
 	
 	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 10000);	

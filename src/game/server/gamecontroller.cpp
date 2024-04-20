@@ -195,8 +195,8 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 			if (pP->GetCharacter())
 			{
 				pP->GetCharacter()->DeleteAllPickup();
-				pP->GetCharacter()->CreatePickupDraw(2, 0, 3, true);
-				pP->GetCharacter()->CreatePickupDraw(2, 1, 3, true);
+				pP->GetCharacter()->CreatePickupDraw(1, 0, 3, true);
+				pP->GetCharacter()->CreatePickupDraw(1, 1, 3, true);
 			}
 			pP->m_TeeInfos.m_ColorBody = 2883328;
 		}
@@ -205,8 +205,8 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 			if (pP->GetCharacter())
 			{
 				pP->GetCharacter()->DeleteAllPickup();
-				pP->GetCharacter()->CreatePickupDraw(3, 0, 3, true);
-				pP->GetCharacter()->CreatePickupDraw(3, 1, 3, true);
+				pP->GetCharacter()->CreatePickupDraw(2, 0, 3, true);
+				pP->GetCharacter()->CreatePickupDraw(2, 1, 3, true);
 			}
 			pP->m_TeeInfos.m_ColorBody = 9436928;
 		}
@@ -215,8 +215,8 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 			if (pP->GetCharacter())
 			{
 				pP->GetCharacter()->DeleteAllPickup();
-				pP->GetCharacter()->CreatePickupDraw(6, 0, 3, true);
-				pP->GetCharacter()->CreatePickupDraw(6, 1, 3, true);
+				pP->GetCharacter()->CreatePickupDraw(3, 0, 3, true);
+				pP->GetCharacter()->CreatePickupDraw(2, 1, 3, true);
 			}
 			pP->m_TeeInfos.m_ColorBody = 15204096;
 		}

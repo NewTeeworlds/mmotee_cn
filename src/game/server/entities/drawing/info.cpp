@@ -24,13 +24,13 @@ void CInfo::Tick()
 		if (m_Type)
 		{
 			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "Mat %d", Server()->GetMaterials(m_InfoID));
+			str_format(aBuf, sizeof(aBuf), "M %d", Server()->GetMaterials(m_InfoID));
 			GameServer()->CreateLolText(this, true, vec2(0,0), vec2 (0, 0), 250, aBuf);
 		}
 		else
 		{
 			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "House %s Top%d", Server()->GetClanName(Server()->GetTopHouse(m_InfoID)), (m_InfoID + 1));
+			str_format(aBuf, sizeof(aBuf), "House %s %d", Server()->GetClanName(Server()->GetTopHouse(m_InfoID)), (m_InfoID + 1));
 			GameServer()->CreateLolText(this, true, vec2(0,0), vec2 (0, 0), 500, aBuf);
 		}
 	}

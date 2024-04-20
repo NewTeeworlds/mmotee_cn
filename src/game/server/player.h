@@ -211,8 +211,7 @@ public:
 	void ResetUpgrade(int ClientID);
 	void ResetSkill(int ClientID);
 
-	void SetMoveChar();
-
+	int tickstr;
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;
@@ -225,7 +224,7 @@ private:
 	int m_Team;
 
 	char pTitle[64];
-	int tickstr;
+	bool m_ShowClan;
 
 	// Пользовальские переменные
 	// 自定义变量

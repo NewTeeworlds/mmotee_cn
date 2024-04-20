@@ -406,6 +406,12 @@ void CGameContext::AddVoteMenu_Localization(int To, int MenuID, int Type, const 
 				str_format(Buf, sizeof(Buf), "cb%d", MenuID);
 				AddVote(Buffer.buffer(), Buf, i);
 			}
+			else if (Type == CREATEBOSSSOLO)
+			{
+				char Buf[8];
+				str_format(Buf, sizeof(Buf), "cbs%d", MenuID);
+				AddVote(Buffer.buffer(), Buf, i);
+			}
 		}
 	}
 
@@ -506,6 +512,11 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 	case BOT_BOSSPIGKING:
 		arghealth = 100;
 		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子&手枪 射速:快\n奖励:\n- 钱袋 x50-200\n- 猪肉\n- 15% - 木材"), NULL);
+		break;
+
+	case BOT_BOSSGUARD:
+		arghealth = 1250;
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 20% - 守卫锤子碎片"), NULL);
 		break;
 
 	default:
@@ -1698,6 +1709,19 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 							UpdateStats(ClientID);
 						}
 					}
+					else if (m_apPlayers[ClientID]->AccData.Quest == 7)
+					{
+						if (Server()->GetItemCount(ClientID, GUARD_HEAD) < QUEST7)
+							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+						else
+						{
+							m_apPlayers[ClientID]->MoneyAdd(5550000);
+							m_apPlayers[ClientID]->AccData.Quest++;
+							Server()->RemItem(ClientID, GUARD_HEAD, QUEST7, -1);
+							SendMail(ClientID, 2, TITLE_GUARD, 1);
+							UpdateStats(ClientID);
+						}
+					}
 					ResetVotes(ClientID, QUEST);
 
 					return;
@@ -2241,6 +2265,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					ResetVotes(ClientID, SETTINGS);
 					return;
 				}
+				else if (str_comp(aCmd, "ssshowclan") == 0)
+				{
+					Server()->SetItemSettings(ClientID, SSHOWCLAN);
+					ResetVotes(ClientID, SETTINGS);
+					return;
+				}
 
 				// ИНВЕНТАРЬ ФУНКЦИИ
 				// 库存功能
@@ -2507,6 +2537,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						StartBoss(ClientID, clamp(chartoint(pReason, 120), 20, 120), i);
 						return;
 					}
+					
+					str_format(aBuf, sizeof(aBuf), "cbs%d", i);
+					if (str_comp(aCmd, aBuf) == 0)
+					{
+						StartBoss(ClientID, clamp(chartoint(pReason, 10), 5, 10), i);
+						return;
+					}
 				}
 
 				for (int i = 0; i < 64; ++i)
@@ -2595,7 +2632,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			Server()->ListInventory(ClientID, -1, true);
 			pPlayer->SetTeam(1, false);
 			ResetVotes(ClientID, AUTH);
-			pPlayer->SetMoveChar();
+
+			if(!Server()->GetItemCount(ClientID, SSHOWCLAN))
+				GiveItem(ClientID, SSHOWCLAN, 1);
 		}
 		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_World.m_Paused)
 		{
@@ -3333,6 +3372,23 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 		UpdateStats(ClientID);
 	}
 	break;
+	case GUARD_HAMMER:
+	{
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, GUARD_HAMMER_FRAG) < 10)
+		{
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "守卫锤子碎片x10", NULL);
+			return;
+		}
+		Server()->RemItem(ClientID, GUARD_HAMMER_FRAG, 10, -1);
+		if (random_prob(0.94f))
+		{
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 在合成 {str:item}x{int:coun} 的时候失败了"),
+										"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
+			return;
+		}
+	}
+	break;
 	}
 	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 合成了物品 {str:item}x{int:coun}"),
 								"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
@@ -3676,6 +3732,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		CreateNewShop(ClientID, TITLEENCHANT, 1, 0, 0);
 		CreateNewShop(ClientID, TITLE_DONATE_BAOJI50, 1, 0, 0);
 		CreateNewShop(ClientID, TITLE_DONATE_SHENGMIN70, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_GUARD, 1, 0, 0);
 
 		AddBack(ClientID);
 		return;
@@ -3738,6 +3795,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 		Data = Server()->GetItemSettings(ClientID, SANTIPVP) ? "☑" : "☐";
 		AddVote_Localization(ClientID, "ssantipvp", "☞ VIP特权: 禁止PVP {str:stat}", "stat", Data);
+
+		Data = Server()->GetItemSettings(ClientID, SSHOWCLAN) ? "☑" : "☐";
+		AddVote_Localization(ClientID, "ssshowclan", "☞ TAB显示公会 {str:stat}", "stat", Data);
 
 		Data = "正常";
 		if (Server()->GetItemSettings(ClientID, SCHAT) == 1)
@@ -4252,6 +4312,16 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddVote_Localization(ClientID, "null", "你一共有 {str:got} 个所需物品", "got", "武器的蓝图, 1050000白银");
 				AddVote_Localization(ClientID, "null", "+ 称号 ♥任务_#");
 			}
+			else if (m_apPlayers[ClientID]->AccData.Quest == 7)
+			{
+				int Need = QUEST7;
+				int Counts = Server()->GetItemCount(ClientID, GUARD_HEAD);
+				AddVote_Localization(ClientID, "null", "贪污的守卫 - 守卫头 [{int:get}/{int:need}]", "get", &Counts, "need", &Need);
+				AddVote_Localization(ClientID, "null", "有三个守卫贪了我900万卷心菜!");
+				AddVote_Localization(ClientID, "null", "把他们杀了!杀掉1个另一个就会出来!");
+				AddVote_Localization(ClientID, "null", "已获得：守卫头 [{int:get}/{int:need}]", "get", &Counts, "need", &Need);
+				AddVote_Localization(ClientID, "null", "任务奖励：称号-守卫, Boss:守卫");
+			}
 			else
 			{
 				Trying = false;
@@ -4310,6 +4380,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddNewCraftVote(ClientID, "灵魂碎片x25", CUSTOMSKIN);
 				AddNewCraftVote(ClientID, "灵魂碎片x50", CUSTOMCOLOR);
 				AddNewCraftVote(ClientID, "土豆x60,番茄x60,萝卜x60", JUMPIMPULS);
+				AddNewCraftVote(ClientID, "守卫锤子碎片x10", GUARD_HAMMER);
 			}
 			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 3)
 			{
@@ -4358,6 +4429,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", "发起Boss战");
 		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写等待时间");
 		AddVote_Localization(ClientID, "null", "为空则默认20秒(至少20秒)");
+		AddVote_Localization(ClientID, "null", "单挑Boss难度会降低哦");
 		AddVote_Localization(ClientID, "null", "");
 		if(m_apPlayers[ClientID]->AccData.Quest > 1)
 			AddNewBossVote(ClientID, "简单", "奖励:钱袋, 猪肉, 木材", BOT_BOSSPIGKING);
@@ -4365,6 +4437,8 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddNewBossVote(ClientID, "困难", "奖励:钱袋, Slime材料, 盲盒(概率掉)", BOT_BOSSSLIME);
 		if(m_apPlayers[ClientID]->AccData.Quest > 4)
 			AddNewBossVote(ClientID, "极难", "奖励:钱袋, 高级消耗品(概率掉)", BOT_BOSSVAMPIRE);
+		if(m_apPlayers[ClientID]->AccData.Quest > 7)
+			AddNewBossVote(ClientID, "地狱", "奖励:钱袋，猪肉，守卫锤子碎片", BOT_BOSSGUARD);
 		if(m_apPlayers[ClientID]->AccData.Quest <= 1)
 			AddVote_Localization(ClientID, "null", "你需要完成任务来解锁Boss!");
 
@@ -4376,7 +4450,8 @@ void CGameContext::AddNewBossVote(int ClientID, const char *NanDu, const char *R
 	AddVote_Localization(ClientID, "null", "Boss名: {str:name}", "name", GetBossName(Boss));
 	AddVote_Localization(ClientID, "null", "难度: {str:nandu}", "nandu", NanDu);
 	AddVote_Localization(ClientID, "null", "奖励: {str:reward}", "reward", Reward);
-	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSONLY, "- 挑战{str:name} !", "name", GetBossName(Boss));
+	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSONLY, "- 挑战{str:name}!", "name", GetBossName(Boss));
+	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSSOLO, "..或者单挑{str:name}!(点我单挑)", "name", GetBossName(Boss));
 	AddVote("--------------------", "null", ClientID);
 	AddVote("  ", "null", ClientID);
 }
@@ -5337,10 +5412,13 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 	m_apPlayers[ClientID]->m_InBossed = true;
 	m_apPlayers[ClientID]->GetCharacter()->Die(ClientID, WEAPON_WORLD);
 
-	SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 创建了Boss战, Boss 是 {str:names}"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
-	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("欲加入的玩家, 请进入Boss房(boss room)"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
-	SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	if (WaitTime > 10)
+	{
+		SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 创建了Boss战, Boss 是 {str:names}"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("欲加入的玩家, 请进入Boss房(boss room)"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
+		SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	}
 }
 
 void CGameContext::EnterBoss(int ClientID, int BossType)
@@ -5406,6 +5484,10 @@ const char *CGameContext::GetBossName(int BossType)
 
 	case BOT_BOSSPIGKING:
 		return "捣蛋猪";
+		break;
+
+	case BOT_BOSSGUARD:
+		return "守卫";
 		break;
 	
 	default:
