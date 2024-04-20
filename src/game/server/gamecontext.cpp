@@ -5079,9 +5079,13 @@ void CGameContext::UpdateBotInfo(int ClientID)
 	{
 		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
 	}
-	else if (BotType == BOT_BOSSVAMPIRE)
+	else if (BotType == BOT_BOSSPIGKING)
 	{
 		str_copy(NameSkin, "pinky", sizeof(NameSkin));
+	}
+	else if (BotType == BOT_BOSSGUARD)
+	{
+		str_copy(NameSkin, "cammo", sizeof(NameSkin));
 	}
 	else if (BotType == BOT_FARMER)
 	{
