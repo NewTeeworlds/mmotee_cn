@@ -147,7 +147,7 @@ void CGameControllerMOD::Snap(int SnappingClient)
 	pGameInfoObj->m_GameStateFlags = 0;
 	if(GameServer()->m_World.m_Paused)
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_PAUSED;
-	pGameInfoObj->m_RoundStartTick = Server()->Tick();
+	pGameInfoObj->m_RoundStartTick = m_RoundStartTick;
 	pGameInfoObj->m_WarmupTimer = 0;
 
 	pGameInfoObj->m_ScoreLimit = 0;
@@ -156,6 +156,7 @@ void CGameControllerMOD::Snap(int SnappingClient)
 	pGameInfoObj->m_RoundNum = 0;
 	pGameInfoObj->m_RoundCurrent = 0;
 
+	/*
 	int ClassMask = 0;
 	ClassMask |= CMapConverter::MASK_DEFENDER;
 	ClassMask |= CMapConverter::MASK_MEDIC;
@@ -186,7 +187,7 @@ void CGameControllerMOD::Snap(int SnappingClient)
 				pGameInfoObj->m_TimeLimit += (TimeShift/(Server()->TickSpeed()/20))/60;
 			}
 		}
-	}
+	}*/
 	
 
 }

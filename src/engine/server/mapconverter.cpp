@@ -556,6 +556,7 @@ int CMapConverter::AddExternalImage(const char* pImageName, int Width, int Heigh
 
 void CMapConverter::Finalize()
 {
+	return;
 	int SoldierImageID = AddExternalImage("../skins/brownbear", 256, 128);
 	int HeroImageID = AddExternalImage("../skins/redstripe", 256, 128);
 	int NinjaImageID = AddExternalImage("../skins/x_ninja", 256, 128);
