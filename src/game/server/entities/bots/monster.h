@@ -18,7 +18,7 @@ public:
 	//character's size
 	static const int ms_PhysSize = 28;
 
-	CMonster(CGameWorld *pWorld);
+	CMonster(CGameWorld *pWorld, int MapID);
 
 	virtual void Tick();
 	virtual bool TakeDamage(vec2 Force, int Dmg, int From, int Weapon);

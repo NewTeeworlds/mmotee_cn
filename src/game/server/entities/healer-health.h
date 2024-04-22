@@ -16,7 +16,7 @@ public:
 	};
 	
 public:
-	CHealthHealer(CGameWorld *pGameWorld, vec2 Pos, int Owner, int ReloadTick, int LifeSpan);
+	CHealthHealer(CGameWorld *pGameWorld, vec2 Pos, int Owner, int ReloadTick, int LifeSpan, int MapID);
 	virtual ~CHealthHealer();
 
 	virtual void Snap(int SnappingClient);

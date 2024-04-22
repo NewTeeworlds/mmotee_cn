@@ -4,8 +4,8 @@
 #include <engine/shared/config.h>
 #include "buff.h"
 
-CBuff::CBuff(CGameWorld *pGameWorld, vec2 Pos, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_BUFFS)
+CBuff::CBuff(CGameWorld *pGameWorld, vec2 Pos, int Owner, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_BUFFS, MapID)
 {
 	m_Pos = Pos;
 	GameWorld()->InsertEntity(this);

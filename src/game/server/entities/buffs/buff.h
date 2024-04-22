@@ -9,7 +9,7 @@
 class CBuff : public CEntity
 {
 public:
-	CBuff(CGameWorld *pGameWorld, vec2 Pos, int Owner);
+	CBuff(CGameWorld *pGameWorld, vec2 Pos, int Owner, int MapID);
 
 	virtual void Snap(int SnappingClient);
 	virtual void Tick();

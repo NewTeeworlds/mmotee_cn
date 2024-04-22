@@ -8,7 +8,7 @@
 class CBiologistLaser : public CEntity
 {
 public:
-	CBiologistLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg, bool Explode);
+	CBiologistLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg, bool Explode, int MapID);
 
 	virtual void Reset();
 	virtual void Tick();

@@ -6,8 +6,8 @@
 #include "biologist-mine.h"
 #include "biologist-laser.h"
 
-CBiologistMine::CBiologistMine(CGameWorld *pGameWorld, vec2 Pos, vec2 EndPos, int Owner, int Health)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_BIOLOGIST_MINE)
+CBiologistMine::CBiologistMine(CGameWorld *pGameWorld, vec2 Pos, vec2 EndPos, int Owner, int Health, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_BIOLOGIST_MINE, MapID)
 {
 	m_Pos = Pos;
 	m_EndPos = EndPos;

@@ -17,7 +17,7 @@ class CSnapIDPool
 {
 	enum
 	{
-		MAX_IDS = 16*1024,
+		MAX_IDS = 64*1024,
 	};
 
 	class CID
@@ -191,6 +191,10 @@ public:
 		char m_aUsername[MAX_NAME_LENGTH];
 		int m_SelectItem;
 		bool m_CustClt;
+
+		int m_MapID;
+		int m_NextMapID;
+		bool m_ChangeMap;
 	};
 
 	struct _m_stClan
@@ -313,7 +317,7 @@ public:
 	CEcon m_Econ;
 	CServerBan m_ServerBan;
 
-	IEngineMap *m_pMap;
+	std::vector<IEngineMap*> m_vpMap;
 
 	int64 m_GameStartTime;
 	int m_RunServer;
@@ -323,14 +327,23 @@ public:
 	int m_PrintCBIndex;
 
 	int64 m_Lastheartbeat;
-	char m_aCurrentMap[64];
 	
-	unsigned m_CurrentMapCrc;
-	unsigned char *m_pCurrentMapData;
-	unsigned int m_CurrentMapSize;
+	enum
+	{
+		MAP_DEFAULT_ID=0,
+	};
+
+	struct CMapData
+	{
+		char m_aCurrentMap[64];
+		unsigned m_CurrentMapCrc;
+		unsigned char *m_pCurrentMapData;
+		int m_CurrentMapSize;
+	};
+
+	std::vector<CMapData> m_vMapData;
 
 	CRegister m_Register;
-	CMapChecker m_MapChecker;
 
 	CServer();
 	virtual ~CServer();
@@ -340,6 +353,12 @@ public:
 	virtual void SetClientName(int ClientID, const char *pName);
 	virtual void SetClientClan(int ClientID, char const *pClan);
 	virtual void SetClientCountry(int ClientID, int Country);
+
+	//Multimap
+	virtual void SetClientMap(int ClientID, int MapID);
+	virtual void SetClientMap(int ClientID, char* MapName);
+
+	virtual IEngineMap* GetMap(int MapID) const override {return m_vpMap[MapID];}
 
 	void Kick(int ClientID, const char *pReason);
 
@@ -356,6 +375,7 @@ public:
 	const char *GetSelectName(int ClientID, int SelID);
 	int ClientCountry(int ClientID);
 	bool ClientIngame(int ClientID);
+	int ClientMapID(int ClientID) const override;
 	int MaxClients() const;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
@@ -368,9 +388,9 @@ public:
 
 	static int ClientRejoinCallback(int ClientID, void *pUser);
 
-	void SendMap(int ClientID);
-	void SendMapData(int ClientID, int Chunk);
-	
+	void SendMap(int ClientID, int MapID);
+	void ChangeClientMap(int ClientID);
+
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
 	static void SendRconLineAuthed(const char *pLine, void *pUser);
@@ -386,8 +406,8 @@ public:
 
 	void PumpNetwork();
 
-	char *GetMapName();
-	int LoadMap(const char *pMapName);
+	char *GetMapName(int MapID, char* aMapName);
+	virtual int LoadMap(const char *pMapName, int MapID);
 
 	void InitRegister(CNetServer *pNetServer, IEngineMasterServer *pMasterServer, IConsole *pConsole);
 	int Run();
@@ -405,6 +425,8 @@ public:
 	
 	static bool ConAddSqlServer(IConsole::IResult *pResult, void *pUserData);
 	static bool ConDumpSqlServers(IConsole::IResult *pResult, void *pUserData);
+	static bool ConSetMapByID(IConsole::IResult *pResult, void *pUser);
+	static bool ConSetMapByName(IConsole::IResult *pResult, void *pUser);
 	void RegisterCommands();
 
 	virtual int SnapNewID();

@@ -7,8 +7,8 @@
 #define M_PI 3.14159265358979323846
 
 
-CSword::CSword(CGameWorld *pGameWorld, vec2 Pos, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_SWORD)
+CSword::CSword(CGameWorld *pGameWorld, vec2 Pos, int Owner, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_SWORD, MapID)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
@@ -41,7 +41,7 @@ void CSword::Tick()
 	m_Pos2 = normalize(vec2(pOwner->GetCharacter()->m_Core.m_Input.m_TargetX, pOwner->GetCharacter()->m_Core.m_Input.m_TargetY));
 	float a = GetAngle(m_Pos2);	
 	m_Pos2 = vec2(cos(a + M_PI / 1 * 4)*(180.0) + m_Pos.x, sin(a + M_PI / 1 * 4)*(180.0) + m_Pos.y);
-	GameServer()->Collision()->IntersectLine(m_Pos, m_Pos2, 0x0, &m_Pos2);
+	GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, m_Pos2, 0x0, &m_Pos2);
 
 	// Find other sword
 	for(CSword *p = (CSword*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_SWORD); p; p = (CSword *)p->TypeNext())

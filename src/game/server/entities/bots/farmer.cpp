@@ -11,8 +11,8 @@
 
 MACRO_ALLOC_POOL_ID_IMPL(CNpcFarmer, MAX_CLIENTS)
 
-CNpcFarmer::CNpcFarmer(CGameWorld *pWorld)
-: CCharacter(pWorld)
+CNpcFarmer::CNpcFarmer(CGameWorld *pWorld, int MapID)
+: CCharacter(pWorld, MapID)
 {
 	m_BotDir = 0;
 	m_BotLastPos = m_Pos;
@@ -117,7 +117,7 @@ void CNpcFarmer::TickBotAI()
 		
 		if (Dist < 400.0f)
 		{
-			int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
+			int Collide = GameServer()->Collision(GetMapID())->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
 			if(g_Config.m_SvCityStart != 1 && Collide)
 				continue;
 			

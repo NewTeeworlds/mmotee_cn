@@ -20,6 +20,7 @@
 #include "gameworld.h"
 #include "player.h"
 
+#include <map>
 #ifdef _MSC_VER
 typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
@@ -121,8 +122,8 @@ class CGameContext : public IGameServer
 	IServer *m_pServer;
 	IStorage *m_pStorage;
 	class IConsole *m_pConsole;
-	CLayers m_Layers;
-	CCollision m_Collision;
+	std::vector<CLayers> m_vLayers;
+	std::vector<CCollision> m_vCollision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
 	// int m_TargetToKill;
@@ -146,9 +147,8 @@ public:
 	IServer *Server() const { return m_pServer; }
 	IStorage *Storage() const { return m_pStorage; }
 	class IConsole *Console() { return m_pConsole; }
-	CCollision *Collision() { return &m_Collision; }
+	CCollision *Collision(int MapID) { return &(m_vCollision[MapID]); }
 	CTuningParams *Tuning() { return &m_Tuning; }
-	virtual class CLayers *Layers() { return &m_Layers; }
 
 	CGameContext();
 	~CGameContext();
@@ -255,7 +255,7 @@ public:
 	// 帮助别人(?)
 	void UpdateBotInfo(int ClientID);
 	void CreateBot(int ClientID, int BotType, int BotSubType = 0);
-	void CreateLolText(CEntity *pParent, bool Follow, vec2 Pos, vec2 Vel, int Lifespan, const char *pText);
+	void CreateLolText(CEntity *pParent, bool Follow, vec2 Pos, vec2 Vel, int Lifespan, const char *pText, int MapID);
 	const char *LevelString(int max, int value, int step, char ch1, char ch2);
 	void SendMail(int ClientID, int MailType, int ItemID, int ItemNum);
 
@@ -315,6 +315,7 @@ public:
 	void SendTuningParams(int ClientID);
 
 	virtual void OnInit();
+	virtual void OnInitMap(int MapID);
 	virtual void OnConsoleInit();
 	virtual void OnShutdown();
 
@@ -341,12 +342,14 @@ public:
 public:
 	int m_ChatResponseTargetID;
 	int m_ChatPrintCBIndex;
-	int m_ZoneHandle_Damage;
-	int m_ZoneHandle_Teleport;
-	int m_ZoneHandle_Bonus;
+	std::map<int, int> m_ZoneHandle_Damage;
+	std::map<int, int> m_ZoneHandle_Teleport;
+	std::map<int, int> m_ZoneHandle_Bonus;
 	int m_InviteClanID[MAX_NOBOT];
 	int m_InviteTick[MAX_NOBOT];
 
+	void PrepareClientChangeMap(int ClientID) override;
+	virtual void KillCharacter(int ClientID);
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState

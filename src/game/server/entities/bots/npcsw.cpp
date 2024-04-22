@@ -11,8 +11,8 @@
 
 MACRO_ALLOC_POOL_ID_IMPL(CNpcWSold, MAX_CLIENTS)
 
-CNpcWSold::CNpcWSold(CGameWorld *pWorld)
-: CCharacter(pWorld)
+CNpcWSold::CNpcWSold(CGameWorld *pWorld, int MapID)
+: CCharacter(pWorld, MapID)
 {
 	m_BotDir = 0;
 	m_BotLastPos = m_Pos;
@@ -117,7 +117,7 @@ void CNpcWSold::TickBotAI()
 		
 		if (Dist < 400.0f)
 		{
-			int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
+			int Collide = GameServer()->Collision(GetMapID())->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
 			if(Collide)
 				continue;
 			

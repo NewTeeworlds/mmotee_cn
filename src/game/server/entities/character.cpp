@@ -5,7 +5,7 @@
 #include <base/vmath.h>
 #include <new>
 #include <engine/shared/config.h>
-#include <engine/server/mapconverter.h>
+
 #include <game/server/gamecontext.h>
 #include <game/mapitems.h>
 
@@ -59,8 +59,8 @@ CInputCount CountInput(int Prev, int Cur)
 MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
 // Character, "physical" player's part
-CCharacter::CCharacter(CGameWorld *pWorld)
-: CEntity(pWorld, CGameWorld::ENTTYPE_CHARACTER)
+CCharacter::CCharacter(CGameWorld *pWorld, int MapID)
+: CEntity(pWorld, CGameWorld::ENTTYPE_CHARACTER, MapID)
 {
 	m_ProximityRadius = ms_PhysSize;
 	m_Health = 0;
@@ -143,7 +143,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	}
 	
 	m_Core.Reset();
-	m_Core.Init(&GameServer()->m_World.m_Core, GameServer()->Collision());
+	m_Core.Init(&GameServer()->m_World.m_Core, GameServer()->Collision(GetMapID()), GetMapID());
 	m_Core.m_Pos = m_Pos;
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
 
@@ -223,9 +223,9 @@ void CCharacter::SetWeapon(int W)
 
 bool CCharacter::IsGrounded()
 {
-	if(GameServer()->Collision()->CheckPoint(m_Pos.x+m_ProximityRadius/2, m_Pos.y+m_ProximityRadius/2+5))
+	if(GameServer()->Collision(GetMapID())->CheckPoint(m_Pos.x+m_ProximityRadius/2, m_Pos.y+m_ProximityRadius/2+5))
 		return true;
-	if(GameServer()->Collision()->CheckPoint(m_Pos.x-m_ProximityRadius/2, m_Pos.y+m_ProximityRadius/2+5))
+	if(GameServer()->Collision(GetMapID())->CheckPoint(m_Pos.x-m_ProximityRadius/2, m_Pos.y+m_ProximityRadius/2+5))
 		return true;
 	return false;
 }
@@ -249,7 +249,7 @@ void CCharacter::HandleNinja()
 		float VelocityBuff = min(1.0f + static_cast<float>(m_NinjaVelocityBuff)/10.0f, 2.0f);
 		m_Core.m_Vel = m_DartDir * g_pData->m_Weapons.m_Ninja.m_Velocity * VelocityBuff;
 		vec2 OldPos = m_Pos;
-		GameServer()->Collision()->MoveBox(&m_Core.m_Pos, &m_Core.m_Vel, vec2(m_ProximityRadius, m_ProximityRadius), 0.f);
+		GameServer()->Collision(GetMapID())->MoveBox(&m_Core.m_Pos, &m_Core.m_Vel, vec2(m_ProximityRadius, m_ProximityRadius), 0.f);
 
 		// reset velocity so the client doesn't predict stuff
 		m_Core.m_Vel = vec2(0.f, 0.f);
@@ -502,10 +502,10 @@ void CCharacter::FireWeapon()
 				for (int i = 0; i < Num; ++i)
 				{
 					CCharacter *pTarget = apEnts[i];
-					if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
+					if ((pTarget == this) || GameServer()->Collision(GetMapID())->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
 						continue;
 
-					new CFlyingPoint(GameWorld(), m_Pos, pTarget->GetPlayer()->GetCID(), m_pPlayer->GetCID(), m_Core.m_Vel);
+					new CFlyingPoint(GameWorld(), m_Pos, pTarget->GetPlayer()->GetCID(), m_pPlayer->GetCID(), m_Core.m_Vel, GetMapID());
 				}
 			}
 
@@ -514,7 +514,7 @@ void CCharacter::FireWeapon()
 			{
 				CCharacter *pTarget = apEnts[i];
 
-				if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
+				if ((pTarget == this) || GameServer()->Collision(GetMapID())->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
 					continue;
 
 				// set his velocity to fast upward (for now)
@@ -547,14 +547,14 @@ void CCharacter::FireWeapon()
 			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXGUN) != 0;
 			
 			if(Server()->GetItemSettings(m_pPlayer->GetCID(), GUNBOUNCE))
-				new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, Direction, Explode, WEAPON_GUN, 80);
+				new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, Direction, Explode, WEAPON_GUN, 80, GetMapID());
 			else
 				new CProjectile(GameWorld(), WEAPON_GUN,
 					m_pPlayer->GetCID(),
 					ProjStartPos,
 					Direction,
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime),
-					g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, Explode, 10, -1, WEAPON_GUN);
+					g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, Explode, 10, -1, WEAPON_GUN, TAKEDAMAGEMODE_NOINFECTION, GetMapID());
 
 			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
@@ -586,17 +586,17 @@ void CCharacter::FireWeapon()
 				float Speed = m_pPlayer->AccUpgrade.Spray > 0 ? 1.0f : mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 				
 				if(Server()->GetItemSettings(m_pPlayer->GetCID(), HYBRIDSG))
-					new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, Explode, WEAPON_GUN, 12);
+					new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, Explode, WEAPON_GUN, 12, GetMapID());
 
 				if(m_pPlayer->GetBotType() == BOT_BOSSSLIME || Server()->GetItemSettings(m_pPlayer->GetCID(), MODULESHOTGUNSLIME))
-					new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, Explode, WEAPON_SHOTGUN, 16);
+					new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, Explode, WEAPON_SHOTGUN, 16, GetMapID());
 				else
 				{
 					new CProjectile(GameWorld(), WEAPON_SHOTGUN, 
 					m_pPlayer->GetCID(), 
 					ProjStartPos, 
 					vec2(cosf(a), sinf(a))*Speed, 
-					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime*2), 20, Explode, 10, -1, WEAPON_SHOTGUN);
+					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime*2), 20, Explode, 10, -1, WEAPON_SHOTGUN, TAKEDAMAGEMODE_NOINFECTION, GetMapID());
 				}
 			}
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
@@ -611,7 +611,7 @@ void CCharacter::FireWeapon()
 					m_pPlayer->m_Mana--;
 
 				m_aWeapons[m_ActiveWeapon].m_Ammo++;
-				new CPizdamet(GameWorld(), m_Pos, m_pPlayer->GetCID());
+				new CPizdamet(GameWorld(), m_Pos, m_pPlayer->GetCID(), GetMapID());
 			}
 			else
 			{
@@ -638,14 +638,14 @@ void CCharacter::FireWeapon()
 					float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 					
 					if(Server()->GetItemSettings(m_pPlayer->GetCID(), GRENADEBOUNCE))
-						new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, true, WEAPON_GRENADE, 100);
+						new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, true, WEAPON_GRENADE, 100, GetMapID());
 					else
 						new CProjectile(GameWorld(), WEAPON_GRENADE, 
 						m_pPlayer->GetCID(), 
 						ProjStartPos, 
 						vec2(cosf(a), sinf(a))*Speed, 
 						(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime), 
-						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE, TAKEDAMAGEMODE_NOINFECTION, GetMapID());
 				}
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 			}
@@ -671,7 +671,7 @@ void CCharacter::FireWeapon()
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 20;
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 				
-				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
+				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode, GetMapID());
 			}
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 		} break;
@@ -922,7 +922,7 @@ void CCharacter::Tick()
 
 		m_pPlayer->m_Health = m_Health;
 		
-		int PlayerPos = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Bonus, m_Pos.x, m_Pos.y);
+		int PlayerPos = GameServer()->Collision(GetMapID())->GetZoneValueAt(GameServer()->m_ZoneHandle_Bonus[GetMapID()], m_Pos.x, m_Pos.y);
 		switch (PlayerPos)
 		{
 		// 公会大门
@@ -1438,20 +1438,20 @@ void CCharacter::Tick()
 				if(length(CursorPos) > 50.0f)
 				{
 					float Angle = 2.0f*pi+atan2(CursorPos.x, -CursorPos.y);
-					float AngleStep = 2.0f*pi/static_cast<float>(CMapConverter::NUM_MENUCLASS);
-					m_pPlayer->m_MapMenuItem = ((int)((Angle+AngleStep/2.0f)/AngleStep))%CMapConverter::NUM_MENUCLASS;
+					float AngleStep = 2.0f*pi/static_cast<float>(NB_HUMANCLASS);
+					m_pPlayer->m_MapMenuItem = ((int)((Angle+AngleStep/2.0f)/AngleStep))%3;
 					
 					switch(m_pPlayer->m_MapMenuItem)
 					{
-						case CMapConverter::MENUCLASS_ASSASINS:
+						case PLAYERCLASS_ASSASINS:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("刺客"), NULL);
 							Broadcast = true;	
 							break;
-						case CMapConverter::MENUCLASS_BERSERK:
+						case PLAYERCLASS_BERSERK:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("战士"), NULL);
 							Broadcast = true;
 							break;
-						case CMapConverter::MENUCLASS_HEALER:
+						case PLAYERCLASS_HEALER:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("医师"), NULL);
 							Broadcast = true;
 							break;
@@ -1464,19 +1464,7 @@ void CCharacter::Tick()
 				
 				if(m_Input.m_Fire&1 && m_pPlayer->m_MapMenuItem >= 0)
 				{
-					int NewClass = -1;
-					switch(m_pPlayer->m_MapMenuItem)
-					{
-						case CMapConverter::MENUCLASS_ASSASINS:
-							NewClass = m_pPlayer->AccData.Class = PLAYERCLASS_ASSASINS;
-							break;
-						case CMapConverter::MENUCLASS_BERSERK:
-							NewClass = m_pPlayer->AccData.Class = PLAYERCLASS_BERSERK;
-							break;
-						case CMapConverter::MENUCLASS_HEALER:
-							NewClass = m_pPlayer->AccData.Class = PLAYERCLASS_HEALER;
-							break;
-					}
+					int NewClass = m_pPlayer->m_MapMenuItem;
 					
 					if(NewClass >= 0)
 					{
@@ -1514,7 +1502,7 @@ void CCharacter::TickDefered()
 	{
 		CCharacterCore::CParams CoreTickParams(&GameWorld()->m_Core.m_Tuning);
 		CWorldCore TempWorld;
-		m_ReckoningCore.Init(&TempWorld, GameServer()->Collision());
+		m_ReckoningCore.Init(&TempWorld, GameServer()->Collision(GetMapID()), GetMapID());
 		m_ReckoningCore.Tick(false, &CoreTickParams);
 		m_ReckoningCore.Move(&CoreTickParams);
 		m_ReckoningCore.Quantize();
@@ -1525,12 +1513,12 @@ void CCharacter::TickDefered()
 	//lastsentcore
 	vec2 StartPos = m_Core.m_Pos;
 	vec2 StartVel = m_Core.m_Vel;
-	bool StuckBefore = GameServer()->Collision()->TestBox(m_Core.m_Pos, vec2(28.0f, 28.0f));
+	bool StuckBefore = GameServer()->Collision(GetMapID())->TestBox(m_Core.m_Pos, vec2(28.0f, 28.0f));
 
 	m_Core.Move(&CoreTickParams);
-	bool StuckAfterMove = GameServer()->Collision()->TestBox(m_Core.m_Pos, vec2(28.0f, 28.0f));
+	bool StuckAfterMove = GameServer()->Collision(GetMapID())->TestBox(m_Core.m_Pos, vec2(28.0f, 28.0f));
 	m_Core.Quantize();
-	bool StuckAfterQuant = GameServer()->Collision()->TestBox(m_Core.m_Pos, vec2(28.0f, 28.0f));
+	bool StuckAfterQuant = GameServer()->Collision(GetMapID())->TestBox(m_Core.m_Pos, vec2(28.0f, 28.0f));
 	m_Pos = m_Core.m_Pos;
 
 	if(!StuckBefore && (StuckAfterMove || StuckAfterQuant))
@@ -2178,18 +2166,18 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				switch(random_int(0, 10))
 				{
-					case 1: new CBonus(GameWorld(), m_Pos, Force/(50+random_int(0, 30)), 2, -1); break;
-					case 4: new CBonus(GameWorld(), m_Pos, Force/(50+random_int(0, 30)), 3, -1); break;
-					case 8: new CBonus(GameWorld(), m_Pos, Force/(50+random_int(0, 30)), 4, -1);
+					case 1: new CBonus(GameWorld(), m_Pos, Force/(50+random_int(0, 30)), 2, -1, GetMapID()); break;
+					case 4: new CBonus(GameWorld(), m_Pos, Force/(50+random_int(0, 30)), 3, -1, GetMapID()); break;
+					case 8: new CBonus(GameWorld(), m_Pos, Force/(50+random_int(0, 30)), 4, -1, GetMapID());
 				}
 				if(random_int(0, 3) == 1)
-					new CBonus(GameWorld(), m_Pos, Force/(40+random_int(0, 30)), 1, m_pPlayer->GetCID());
+					new CBonus(GameWorld(), m_Pos, Force/(40+random_int(0, 30)), 1, m_pPlayer->GetCID(), GetMapID());
 					
-				new CBonus(GameWorld(), m_Pos, Force/(30+random_int(0, 30)), 0, m_pPlayer->GetCID());
+				new CBonus(GameWorld(), m_Pos, Force/(30+random_int(0, 30)), 0, m_pPlayer->GetCID(), GetMapID());
 			}
 		}
 		
-		if(pFrom) new CFlyingPoint(GameWorld(), m_Pos, From, From, m_Core.m_Vel);
+		if(pFrom) new CFlyingPoint(GameWorld(), m_Pos, From, From, m_Core.m_Vel, GetMapID());
 
 		Die(From, Weapon);
 		if (From >= 0 && From != m_pPlayer->GetCID() && GameServer()->m_apPlayers[From])
@@ -2590,15 +2578,15 @@ void CCharacter::ClassSpawnAttributes()
 		}
 
 		if(Server()->GetItemCount(m_pPlayer->GetCID(), SPECSNAPDRAW))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 2, WEAPON_SHOTGUN, true);
+			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 2, WEAPON_SHOTGUN, true, GetMapID());
 
 		if(Server()->GetItemSettings(m_pPlayer->GetCID(), RAREEVENTHAMMER))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, 4, true);
+			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, 4, true, GetMapID());
 		else if(Server()->GetItemCount(m_pPlayer->GetCID(), SNAPDAMAGE))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, WEAPON_GRENADE, true);
+			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 3, WEAPON_GRENADE, true, GetMapID());
 			
 		if(Server()->GetItemCount(m_pPlayer->GetCID(), SNAPHANDLE))
-			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 4, 1, true);
+			new CSnapFullProject(GameWorld(), m_Pos, m_pPlayer->GetCID(), 4, 1, true, GetMapID());
 	}
 	
 	Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 10000);	
@@ -2749,7 +2737,7 @@ void CCharacter::CreateDropItem(int ItemID, int Count, int HowID, int Enchant)
 	vec2 Direction = normalize(vec2(m_LatestInput.m_TargetX, m_LatestInput.m_TargetY));
 	vec2 ProjStartPos = (Direction * max(0.001f, 2.0f));
 
-	new CDropItem(GameWorld(), m_Pos-normalize(m_Pos-ProjStartPos)*m_ProximityRadius*1.5f, Direction/5, ItemID, Count, HowID, Enchant);
+	new CDropItem(GameWorld(), m_Pos-normalize(m_Pos-ProjStartPos)*m_ProximityRadius*1.5f, Direction/5, ItemID, Count, HowID, Enchant, GetMapID());
 }
 
 void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, vec2 Force)
@@ -2759,11 +2747,11 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 	
 	if(Random == false) 
 	{
-		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);		
+		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0, GetMapID());		
 		return;
 	}
 	if(random_prob(1.0f/(float)Random)) 
-		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
+		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0, GetMapID());
 }
 
 void CCharacter::TakeItemChar(int ClientID)
@@ -2797,7 +2785,7 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 
 		vec2 Direction = normalize(vec2(m_LatestInput.m_TargetX, m_LatestInput.m_TargetY));		
 		vec2 To = m_Pos + Direction*1600.0f;
-		if(GameServer()->Collision()->IntersectLine(m_Pos, To, 0x0, &To))
+		if(GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, To, 0x0, &To))
 		{
 			m_pPlayer->m_Mana -= 30;
 
@@ -2807,7 +2795,7 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 				if(pMine->m_Owner == m_pPlayer->GetCID())
 					NumMines++;
 			}
-			if(NumMines < 5) new CBiologistMine(GameWorld(), m_Pos, To, m_pPlayer->GetCID(), 280);
+			if(NumMines < 5) new CBiologistMine(GameWorld(), m_Pos, To, m_pPlayer->GetCID(), 280, GetMapID());
 			else GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("光墙已达最大数量."), NULL);
 		}
 	}
@@ -2823,7 +2811,7 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 			if(pHeal->m_Owner == m_pPlayer->GetCID())
 				pHeal->Reset();
 		}
-		new CHealthHealer(GameWorld(), m_Pos, m_pPlayer->GetCID(), 30, 1000);
+		new CHealthHealer(GameWorld(), m_Pos, m_pPlayer->GetCID(), 30, 1000, GetMapID());
 	}
 	else if(Server()->GetItemCount(ClientID, SSWORD) && Server()->GetItemSettings(ClientID, SSWORD) == Emtion)
 	{
@@ -2836,7 +2824,7 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 				return;
 			}
 		}
-		new CSword(GameWorld(), m_Pos, m_pPlayer->GetCID());
+		new CSword(GameWorld(), m_Pos, m_pPlayer->GetCID(), GetMapID());
 	}
 	else if(Server()->GetItemCount(ClientID, SHEALSUMMER) && Server()->GetItemSettings(ClientID, SHEALSUMMER) == Emtion)
 	{
@@ -2845,7 +2833,7 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 
 		m_pPlayer->m_Mana -= 150;
 		for(int i = 0; i < 40; ++i)
-			new CBuff(GameWorld(), vec2(m_Pos.x-250+random_int(0, 500), m_Pos.y-200+random_int(0, 400)), m_pPlayer->GetCID());
+			new CBuff(GameWorld(), vec2(m_Pos.x-250+random_int(0, 500), m_Pos.y-200+random_int(0, 400)), m_pPlayer->GetCID(), GetMapID());
 
 		// Find other players
 		for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
@@ -2884,7 +2872,7 @@ void CCharacter::CreatePickupDraw(int Num, int Type, int SubType, bool Changing)
 	if(!IsAlive())
 		return;
 	
-	new CSnapFullPickup(GameWorld(), m_Pos, m_pPlayer->GetCID(), Num, Type, SubType, Changing);
+	new CSnapFullPickup(GameWorld(), m_Pos, m_pPlayer->GetCID(), Num, Type, SubType, Changing, GetMapID());
 }
 
 void CCharacter::DeleteAllPickup()

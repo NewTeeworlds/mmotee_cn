@@ -8,10 +8,9 @@
 
 class CCollision
 {
-	int *m_pPhysicsTiles;
+	class CTile *m_pPhysicsTiles;
 	int m_PhysicsWidth;
 	int m_PhysicsHeight;
-	
 	class CLayers *m_pLayers;
 	
 	double m_Time;
@@ -36,7 +35,6 @@ public:
 	};
 
 	CCollision();
-	~CCollision();
 	void Init(class CLayers *pLayers);
 	bool CheckPoint(float x, float y) { return IsTileSolid(round(x), round(y)); }
 	bool CheckPoint(vec2 Pos) { return CheckPoint(Pos.x, Pos.y); }

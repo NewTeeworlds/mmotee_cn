@@ -12,11 +12,13 @@
 	void *operator new(size_t Size) \
 	{ \
 		void *p = malloc(Size); \
+		/*dbg_msg("", "++ %p %d", p, size);*/ \
 		mem_zero(p, Size); \
 		return p; \
 	} \
 	void operator delete(void *pPtr) \
 	{ \
+		/*dbg_msg("", "-- %p", p);*/ \
 		free(pPtr); \
 	} \
 	private:
@@ -34,7 +36,7 @@
 	void *POOLTYPE::operator new(size_t Size, int id) \
 	{ \
 		dbg_assert(sizeof(POOLTYPE) == Size, "size error"); \
-		dbg_assert(!ms_PoolUsed##POOLTYPE[id], "already used"); \
+		/*dbg_assert(!ms_PoolUsed##POOLTYPE[id], "already used");*/ \
 		/*dbg_msg("pool", "++ %s %d", #POOLTYPE, id);*/ \
 		ms_PoolUsed##POOLTYPE[id] = 1; \
 		mem_zero(ms_PoolData##POOLTYPE[id], Size); \
@@ -69,19 +71,23 @@ class CEntity
 	CEntity *m_pPrevTypeEntity;
 	CEntity *m_pNextTypeEntity;
 
-protected:
 	class CGameWorld *m_pGameWorld;
+protected:
 	bool m_MarkedForDestroy;
 	int m_ID;
 	int m_ObjType;
+	int m_MapID;
 public:
-	CEntity(CGameWorld *pGameWorld, int Objtype);
+	CEntity(CGameWorld *pGameWorld, int Objtype, int MapID);
 	virtual ~CEntity();
 
 	class CGameWorld *GameWorld() { return m_pGameWorld; }
 	class CGameContext *GameServer() { return GameWorld()->GameServer(); }
 	class IServer *Server() { return GameWorld()->Server(); }
 
+	int GetMapID() const { return m_MapID; }
+	float GetProximityRadius() const	{ return m_ProximityRadius; }
+	const vec2 &GetPos() const			{ return m_Pos; }
 
 	CEntity *TypeNext() { return m_pNextTypeEntity; }
 	CEntity *TypePrev() { return m_pPrevTypeEntity; }
@@ -122,6 +128,7 @@ public:
 		Function: snap
 			Called when a new snapshot is being generated for a specific
 			client.
+
 		Arguments:
 			snapping_client - ID of the client which snapshot is
 				being generated. Could be -1 to create a complete
@@ -134,16 +141,18 @@ public:
 		Function: networkclipped(int snapping_client)
 			Performs a series of test to see if a client can see the
 			entity.
+
 		Arguments:
 			snapping_client - ID of the client which snapshot is
 				being generated. Could be -1 to create a complete
 				snapshot of everything in the game for demo
 				recording.
+
 		Returns:
 			Non-zero if the entity doesn't have to be in the snapshot.
 	*/
-	virtual int NetworkClipped(int SnappingClient);
-	virtual int NetworkClipped(int SnappingClient, vec2 CheckPos);
+	int NetworkClipped(int SnappingClient);
+	int NetworkClipped(int SnappingClient, vec2 CheckPos);
 
 	bool GameLayerClipped(vec2 CheckPos);
 
@@ -158,21 +167,6 @@ public:
 			Contains the current posititon of the entity.
 	*/
 	vec2 m_Pos;
-};
-
-class CAnimatedEntity : public CEntity
-{
-protected:
-	vec2 m_Pivot;
-	vec2 m_RelPosition;
-	int m_PosEnv;
-
-protected:
-	virtual void Tick();
-	
-public:
-	CAnimatedEntity(CGameWorld *pGameWorld, int Objtype, vec2 Pivot);
-	CAnimatedEntity(CGameWorld *pGameWorld, int Objtype, vec2 Pivot, vec2 RelPosition, int PosEnv);
 };
 
 #endif

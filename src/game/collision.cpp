@@ -26,37 +26,26 @@ CCollision::CCollision()
 	m_Time = 0.0;
 }
 
-CCollision::~CCollision()
-{
-	if(m_pPhysicsTiles)
-		delete[] m_pPhysicsTiles;
-	
-	m_pPhysicsTiles = 0;
-}
-
 void CCollision::Init(class CLayers *pLayers)
 {
 	m_pLayers = pLayers;
 	
 	m_PhysicsWidth = m_pLayers->PhysicsLayer()->m_Width;
 	m_PhysicsHeight = m_pLayers->PhysicsLayer()->m_Height;
-	CTile* pPhysicsTiles = static_cast<CTile *>(m_pLayers->Map()->GetData(m_pLayers->PhysicsLayer()->m_Data));
-	if(m_pPhysicsTiles)
-		delete[] m_pPhysicsTiles;
-	m_pPhysicsTiles = new int[m_PhysicsWidth*m_PhysicsHeight];
+	m_pPhysicsTiles = static_cast<CTile *>(m_pLayers->Map()->GetData(m_pLayers->PhysicsLayer()->m_Data));
 
 	for(int i = 0; i < m_PhysicsWidth*m_PhysicsHeight; i++)
 	{
-		switch(pPhysicsTiles[i].m_Index)
+		switch(m_pPhysicsTiles[i].m_Index)
 		{
 		case TILE_PHYSICS_SOLID:
-			m_pPhysicsTiles[i] = COLFLAG_SOLID;
+			m_pPhysicsTiles[i].m_Index = COLFLAG_SOLID;
 			break;
 		case TILE_PHYSICS_NOHOOK:
-			m_pPhysicsTiles[i] = COLFLAG_SOLID|COLFLAG_NOHOOK;
+			m_pPhysicsTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
 			break;
 		default:
-			m_pPhysicsTiles[i] = 0x0;
+			m_pPhysicsTiles[i].m_Index = 0x0;
 			break;
 		}
 	}
@@ -67,7 +56,7 @@ int CCollision::GetTile(int x, int y)
 	int Nx = clamp(x/32, 0, m_PhysicsWidth-1);
 	int Ny = clamp(y/32, 0, m_PhysicsHeight-1);
 
-	return m_pPhysicsTiles[Ny*m_PhysicsWidth+Nx];
+	return m_pPhysicsTiles[Ny*m_PhysicsWidth+Nx].m_Index;
 }
 
 bool CCollision::IsTileSolid(int x, int y)
@@ -334,7 +323,7 @@ int CCollision::GetZoneValueAt(int ZoneHandle, float x, float y)
 	{
 		int l = m_Zones[ZoneHandle][i];
 		
-		CMapItemLayer *pLayer = m_pLayers->GetLayer(m_pLayers->ZoneGroup()->m_StartLayer+l);
+		const CMapItemLayer *pLayer = m_pLayers->GetLayer(m_pLayers->ZoneGroup()->m_StartLayer+l);
 		if(pLayer->m_Type == LAYERTYPE_TILES)
 		{
 			CMapItemLayerTilemap *pTLayer = (CMapItemLayerTilemap *)pLayer;

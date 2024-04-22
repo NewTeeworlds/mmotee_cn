@@ -13,7 +13,7 @@ private:
 	int m_OwnerID;
 	
 public:
-	CHearth(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, vec2 InitialVel);
+	CHearth(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, vec2 InitialVel, int MapID);
 	
 	virtual void Tick();
 	virtual void Snap(int SnappingClient);

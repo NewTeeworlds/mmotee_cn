@@ -6,8 +6,8 @@
 
 #include "moneybag.h"
 
-CMoneyBag::CMoneyBag(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_MONEYBAG)
+CMoneyBag::CMoneyBag(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_MONEYBAG, MapID)
 {
 	m_Type = Type;
 	m_Pos = Pos;

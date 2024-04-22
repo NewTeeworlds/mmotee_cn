@@ -9,7 +9,7 @@ public:
 	int m_Owner;
 	
 public:
-	CBouncingBullet(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 Dir, bool Explosive, int Weapon, int LifeSpan);
+	CBouncingBullet(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 Dir, bool Explosive, int Weapon, int LifeSpan, int MapID);
 
 	vec2 GetPos(float Time);
 	void FillInfo(CNetObj_Projectile *pProj);

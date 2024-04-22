@@ -14,6 +14,7 @@
 #include <game/gamecore.h>
 #include "gamemodes/mod.h"
 #include <game/server/entities/loltext.h>
+#include <engine/external/json-parser/json.h>
 
 enum
 {
@@ -563,9 +564,9 @@ void CGameContext::SendBroadcast(int To, const char *pText, int Priority, int Li
 	}
 }
 
-void CGameContext::CreateLolText(CEntity *pParent, bool Follow, vec2 Pos, vec2 Vel, int Lifespan, const char *pText)
+void CGameContext::CreateLolText(CEntity *pParent, bool Follow, vec2 Pos, vec2 Vel, int Lifespan, const char *pText, int MapID)
 {
-	CLoltext::Create(&m_World, pParent, Pos, Vel, Lifespan, pText, true, Follow);
+	CLoltext::Create(&m_World, pParent, Pos, Vel, Lifespan, pText, true, Follow, MapID);
 }
 
 void CGameContext::ClearBroadcast(int To, int Priority)
@@ -2888,7 +2889,7 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 获得了 {str:items}x{int:counts}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID, false), "counts", &Count, NULL);
 
 		if (m_apPlayers[ClientID]->GetCharacter())
-			CreateLolText(m_apPlayers[ClientID]->GetCharacter(), false, vec2(0, -75), vec2(0, -1), 50, Server()->GetItemName_en(ItemID));
+			CreateLolText(m_apPlayers[ClientID]->GetCharacter(), false, vec2(0, -75), vec2(0, -1), 50, Server()->GetItemName_en(ItemID), m_apPlayers[ClientID]->GetCharacter()->GetMapID());
 	}
 	if (Server()->GetItemType(ClientID, ItemID) == 10)
 	{
@@ -4819,44 +4820,55 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	for (int i = 0; i < NUM_NETOBJTYPES; i++)
 		Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
-	m_Layers.Init(Kernel());
-	m_Collision.Init(&m_Layers);
-
-	// Get zones
-	m_ZoneHandle_Damage = m_Collision.GetZoneHandle("icDamage");
-	m_ZoneHandle_Teleport = m_Collision.GetZoneHandle("icTele");
-	m_ZoneHandle_Bonus = m_Collision.GetZoneHandle("icBonus");
-
 	// select gametype
 	m_pController = new CGameControllerMOD(this);
 
-	// create all entities from entity layers
-	if (m_Layers.EntityGroup())
+	OnInitMap(0);
+
+	// read file data into buffer
+	char aFileBuf[512];
+	str_format(aFileBuf, sizeof(aFileBuf), "maps.json");
+	const IOHANDLE File = m_pStorage->OpenFile(aFileBuf, IOFLAG_READ, IStorage::TYPE_ALL);
+	if(!File)
 	{
-		char aLayerName[12];
+		dbg_msg("Maps", "Probably deleted or error when the file is invalid.");
+		return;
+	}
+	
+	const int FileSize = (int)io_length(File);
+	char* pFileData = (char*)malloc(FileSize);
+	io_read(File, pFileData, FileSize);
+	io_close(File);
 
-		const CMapItemGroup *pGroup = m_Layers.EntityGroup();
-		for (int l = 0; l < pGroup->m_NumLayers; l++)
+	// parse json data
+	json_settings JsonSettings;
+	mem_zero(&JsonSettings, sizeof(JsonSettings));
+	char aError[256];
+	json_value* pJsonData = json_parse_ex(&JsonSettings, pFileData, aError);
+	if(pJsonData == nullptr)
+	{
+		dbg_msg("Maps", "No data");
+		return;
+	}
+	free(pFileData);
+	
+	char m_aName[64];
+	char m_aPath[512];
+
+	// extract data
+	const json_value& rStart = (*pJsonData)["maps"];
+	if(rStart.type == json_array)
+	{
+		for(unsigned i = 0; i < rStart.u.array.length; ++i)
 		{
-			CMapItemLayer *pLayer = m_Layers.GetLayer(pGroup->m_StartLayer + l);
-			if (pLayer->m_Type == LAYERTYPE_QUADS)
-			{
-				CMapItemLayerQuads *pQLayer = (CMapItemLayerQuads *)pLayer;
-				IntsToStr(pQLayer->m_aName, sizeof(aLayerName) / sizeof(int), aLayerName);
-				const CQuad *pQuads = (const CQuad *)Kernel()->RequestInterface<IMap>()->GetDataSwapped(pQLayer->m_Data);
-
-				for (int q = 0; q < pQLayer->m_NumQuads; q++)
-				{
-					vec2 P0(fx2f(pQuads[q].m_aPoints[0].x), fx2f(pQuads[q].m_aPoints[0].y));
-					vec2 P1(fx2f(pQuads[q].m_aPoints[1].x), fx2f(pQuads[q].m_aPoints[1].y));
-					vec2 P2(fx2f(pQuads[q].m_aPoints[2].x), fx2f(pQuads[q].m_aPoints[2].y));
-					vec2 P3(fx2f(pQuads[q].m_aPoints[3].x), fx2f(pQuads[q].m_aPoints[3].y));
-					vec2 Pivot(fx2f(pQuads[q].m_aPoints[4].x), fx2f(pQuads[q].m_aPoints[4].y));
-					m_pController->OnEntity(aLayerName, Pivot, P0, P1, P2, P3, pQuads[q].m_PosEnv);
-				}
-			}
+			int MapID = rStart[i]["id"];
+			Server()->LoadMap(rStart[i]["map"], MapID);
+			OnInitMap(MapID);
 		}
 	}
+
+	// clean up
+	json_value_free(pJsonData);
 
 	int CurID = 0;
 	if (!g_Config.m_SvCityStart)
@@ -4898,6 +4910,59 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	Server()->InitClan();
 	Server()->GetTopClanHouse();
 	Server()->InitMaterialID();
+}
+
+void CGameContext::OnInitMap(int MapID)
+{
+	if(MapID < (int)m_vLayers.size())//Map exists already, huray
+		return;
+	
+
+	IEngineMap* pMap = Server()->GetMap(MapID);
+
+	m_vLayers.push_back(CLayers());
+	m_vCollision.push_back(CCollision());
+
+	m_vLayers[MapID].Init(Kernel(), pMap);//Default map id
+	m_vCollision[MapID].Init(&(m_vLayers[MapID]));
+
+	// Get zones
+	dbg_msg("test", "%d", MapID);
+	m_ZoneHandle_Damage[MapID] = m_vCollision[MapID].GetZoneHandle("icDamage");
+	m_ZoneHandle_Teleport[MapID] = m_vCollision[MapID].GetZoneHandle("icTele");
+	m_ZoneHandle_Bonus[MapID] = m_vCollision[MapID].GetZoneHandle("icBonus");
+
+	// create all entities from entity layers
+	if (m_vLayers[MapID].EntityGroup())
+	{
+		char aLayerName[12];
+
+		const CMapItemGroup *pGroup = m_vLayers[MapID].EntityGroup();
+		for (int l = 0; l < pGroup->m_NumLayers; l++)
+		{
+			CMapItemLayer *pLayer = m_vLayers[MapID].GetLayer(pGroup->m_StartLayer + l);
+			if (pLayer->m_Type == LAYERTYPE_QUADS)
+			{
+				CMapItemLayerQuads *pQLayer = (CMapItemLayerQuads *)pLayer;
+				IntsToStr(pQLayer->m_aName, sizeof(aLayerName) / sizeof(int), aLayerName);
+				const CQuad *pQuads = (const CQuad *)m_vLayers[MapID].Map()->GetDataSwapped(pQLayer->m_Data);
+
+				for (int q = 0; q < pQLayer->m_NumQuads; q++)
+				{
+					vec2 P0(fx2f(pQuads[q].m_aPoints[0].x), fx2f(pQuads[q].m_aPoints[0].y));
+					vec2 P1(fx2f(pQuads[q].m_aPoints[1].x), fx2f(pQuads[q].m_aPoints[1].y));
+					vec2 P2(fx2f(pQuads[q].m_aPoints[2].x), fx2f(pQuads[q].m_aPoints[2].y));
+					vec2 P3(fx2f(pQuads[q].m_aPoints[3].x), fx2f(pQuads[q].m_aPoints[3].y));
+					vec2 Pivot(fx2f(pQuads[q].m_aPoints[4].x), fx2f(pQuads[q].m_aPoints[4].y));
+					m_pController->OnEntity(aLayerName, Pivot, P0, P1, P2, P3, pQuads[q].m_PosEnv, MapID);
+				}
+			}
+		}
+	}
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "Initalized new Map with ID '%d'", MapID);
+	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "multimap", aBuf);
 }
 
 void CGameContext::OnShutdown()
@@ -5496,5 +5561,26 @@ const char *CGameContext::GetBossName(int BossType)
 	
 	default:
 		break;
+	}
+}
+
+void CGameContext::PrepareClientChangeMap(int ClientID)
+{
+	if (m_apPlayers[ClientID])
+	{
+		m_apPlayers[ClientID]->KillCharacter(WEAPON_WORLD);
+		delete m_apPlayers[ClientID];
+		m_apPlayers[ClientID] = nullptr;
+	}
+	m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, TEAM_RED);
+}
+
+void CGameContext::KillCharacter(int ClientID)
+{
+	if(m_apPlayers[ClientID])
+	{
+		if(m_apPlayers[ClientID]->GetCharacter())
+			m_apPlayers[ClientID]->KillCharacter(-1);
+		//m_apPlayers->SetSpawning(false);
 	}
 }

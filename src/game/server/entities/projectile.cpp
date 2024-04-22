@@ -8,8 +8,8 @@
 #include "projectile.h"
 
 CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
-		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon, int TakeDamageMode)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_PROJECTILE)
+		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon, int TakeDamageMode, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_PROJECTILE, MapID)
 {
 	m_Type = Type;
 	m_Pos = Pos;
@@ -70,7 +70,7 @@ void CProjectile::Tick()
 	float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
 	vec2 PrevPos = GetPos(Pt);
 	vec2 CurPos = GetPos(Ct);
-	int Collide = GameServer()->Collision()->IntersectLine(PrevPos, CurPos, &CurPos, 0);
+	int Collide = GameServer()->Collision(GetMapID())->IntersectLine(PrevPos, CurPos, &CurPos, 0);
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
 
@@ -112,7 +112,7 @@ void CProjectile::Tick()
 	{
 		if(Auto)
 		{
-			if(GameServer()->Collision()->IsTileNoHook(CurPos.x, CurPos.y))
+			if(GameServer()->Collision(GetMapID())->IsTileNoHook(CurPos.x, CurPos.y))
 				GameServer()->m_World.DestroyEntity(this);
 		}
 		

@@ -12,7 +12,7 @@ private:
 	vec2 m_Cursour;
 	
 public:
-	CPizdamet(CGameWorld *pGameWorld, vec2 Pos, int OwnerID);
+	CPizdamet(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, int MapID);
 	
 	virtual void Tick();
 	virtual void Snap(int SnappingClient);

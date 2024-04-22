@@ -16,7 +16,7 @@ public:
 	};
 	
 public:
-	CSnapFullPickup(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, int SubType, bool Changing);
+	CSnapFullPickup(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, int SubType, bool Changing, int MapID);
 	~CSnapFullPickup();
 
 	virtual void Snap(int SnappingClient);

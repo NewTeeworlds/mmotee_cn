@@ -10,8 +10,8 @@
 
 MACRO_ALLOC_POOL_ID_IMPL(CBossSlime, MAX_CLIENTS)
 
-CBossSlime::CBossSlime(CGameWorld *pWorld)
-: CCharacter(pWorld)
+CBossSlime::CBossSlime(CGameWorld *pWorld, int MapID)
+: CCharacter(pWorld, MapID)
 {
 	m_BotDir = 1;
 	m_BotLastPos = m_Pos;
@@ -103,7 +103,7 @@ void CBossSlime::TickBotAI()
 	    if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->IsBoss())
             continue;
 
-		int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
+		int Collide = GameServer()->Collision(GetMapID())->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
 		if(Collide && pPlayer->AccData.Class != PLAYERCLASS_HEALER)
 			continue;
 
@@ -232,7 +232,7 @@ void CBossSlime::TickBotAI()
     int tx = m_Pos.x+m_BotDir*45.0f;
     if (tx < 0)
         m_BotDir = 1;
-    else if (tx >= GameServer()->Collision()->GetWidth()*32.0f)
+    else if (tx >= GameServer()->Collision(GetMapID())->GetWidth()*32.0f)
     	m_BotDir = -1;
 
     //Delay of actions

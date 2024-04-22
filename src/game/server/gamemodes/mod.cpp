@@ -4,7 +4,6 @@
 
 #include <game/server/player.h>
 #include <engine/shared/config.h>
-#include <engine/server/mapconverter.h>
 #include <engine/shared/network.h>
 #include <game/mapitems.h>
 #include <game/server/entities/items/dropitem.h>
@@ -27,100 +26,100 @@ CGameControllerMOD::~CGameControllerMOD()
 
 }
 
-bool CGameControllerMOD::OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, vec2 P2, vec2 P3, int PosEnv)
+bool CGameControllerMOD::OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, vec2 P2, vec2 P3, int PosEnv, int MapID)
 {
-	bool res = IGameController::OnEntity(pName, Pivot, P0, P1, P2, P3, PosEnv);
+	bool res = IGameController::OnEntity(pName, Pivot, P0, P1, P2, P3, PosEnv, MapID);
 
 	if(str_comp(pName, "armor") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CPickup(&GameServer()->m_World, 1, Pos, 1);
+		new CPickup(&GameServer()->m_World, 1, Pos, 1, MapID);
 	}
 	else if(str_comp(pName, "health") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CPickup(&GameServer()->m_World, 0, Pos, 0);
+		new CPickup(&GameServer()->m_World, 0, Pos, 0, MapID);
 	}
 	else if(str_comp(pName, "Farm") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CPickup(&GameServer()->m_World, 1, Pos, 0);
+		new CPickup(&GameServer()->m_World, 1, Pos, 0, MapID);
 	}
 	else if(str_comp(pName, "Miner") == 0)
 	{
 		// miner
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CPickup(&GameServer()->m_World, 1, Pos, 2);
+		new CPickup(&GameServer()->m_World, 1, Pos, 2, MapID);
 	}
 	else if(str_comp(pName, "blueFlag") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CHeroFlag(&GameServer()->m_World, Pos);
+		new CHeroFlag(&GameServer()->m_World, Pos, MapID);
 	}
 	else if(str_comp(pName, "Wood") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CPickup(&GameServer()->m_World, 0, Pos, 3);
+		new CPickup(&GameServer()->m_World, 0, Pos, 3, MapID);
 	}
 	else if(str_comp(pName, "ExitZone") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CFeya(&GameServer()->m_World, Pos, -1, -1, false);
+		new CFeya(&GameServer()->m_World, Pos, -1, -1, false, MapID);
 	}	
 	else if(str_comp(pName, "InfoCl1") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 0, 0, Pos);
+		new CInfo(&GameServer()->m_World, 0, 0, Pos, MapID);
 	}	
 	else if(str_comp(pName, "InfoCl2") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 0, 1, Pos);
+		new CInfo(&GameServer()->m_World, 0, 1, Pos, MapID);
 	}	
 	else if(str_comp(pName, "InfoCl3") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 0 ,2, Pos);
+		new CInfo(&GameServer()->m_World, 0 ,2, Pos, MapID);
 	}
 	else if(str_comp(pName, "InfoCl4") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 0, 3, Pos);
+		new CInfo(&GameServer()->m_World, 0, 3, Pos, MapID);
 	}
 	else if(str_comp(pName, "InfoCl5") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 0, 4, Pos);
+		new CInfo(&GameServer()->m_World, 0, 4, Pos, MapID);
 	}	
 	else if(str_comp(pName, "IMater1") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 1, 0, Pos);
+		new CInfo(&GameServer()->m_World, 1, 0, Pos, MapID);
 	}
 	else if(str_comp(pName, "IMater2") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 1, 1, Pos);
+		new CInfo(&GameServer()->m_World, 1, 1, Pos, MapID);
 	}
 	else if(str_comp(pName, "IMater3") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CInfo(&GameServer()->m_World, 1, 2, Pos);
+		new CInfo(&GameServer()->m_World, 1, 2, Pos, MapID);
 	}
 	else if(str_comp(pName, "MoneyBag") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CMoneyBag(&GameServer()->m_World, 0, Pos, 5);
+		new CMoneyBag(&GameServer()->m_World, 0, Pos, 5, MapID);
 	}	
 	else if(str_comp(pName, "wMater") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CPickup(&GameServer()->m_World, 0, Pos, 4);
+		new CPickup(&GameServer()->m_World, 0, Pos, 4, MapID);
 	}	
 	else if(str_comp(pName, "MaterFarm") == 0)
 	{
 		vec2 Pos = (P0 + P1 + P2 + P3)/4.0f;
-		new CPickup(&GameServer()->m_World, 0, Pos, 5);
+		new CPickup(&GameServer()->m_World, 0, Pos, 5, MapID);
 	}	
 
 	return res;
@@ -217,7 +216,7 @@ void CGameControllerMOD::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(WEAPON_HAMMER, -1);
 }
 
-bool CGameControllerMOD::IsSpawnable(vec2 Pos, int TeleZoneIndex)
+bool CGameControllerMOD::IsSpawnable(vec2 Pos, int TeleZoneIndex, int MapID)
 {
 	//First check if there is a tee too close
 	CCharacter *aEnts[MAX_CLIENTS];
@@ -230,8 +229,8 @@ bool CGameControllerMOD::IsSpawnable(vec2 Pos, int TeleZoneIndex)
 	}
 	
 	//Check the center
-	int TeleIndex = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Teleport, Pos);
-	if(GameServer()->Collision()->CheckPoint(Pos))
+	int TeleIndex = GameServer()->Collision(MapID)->GetZoneValueAt(GameServer()->m_ZoneHandle_Teleport[MapID], Pos);
+	if(GameServer()->Collision(MapID)->CheckPoint(Pos))
 		return false;
 	if(TeleZoneIndex && TeleIndex == TeleZoneIndex)
 		return false;
@@ -241,8 +240,8 @@ bool CGameControllerMOD::IsSpawnable(vec2 Pos, int TeleZoneIndex)
 	{
 		float Angle = i * (2.0f * pi / 16.0f);
 		vec2 CheckPos = Pos + vec2(cos(Angle), sin(Angle)) * 30.0f;
-		TeleIndex = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Teleport, CheckPos);
-		if(GameServer()->Collision()->CheckPoint(CheckPos))
+		TeleIndex = GameServer()->Collision(MapID)->GetZoneValueAt(GameServer()->m_ZoneHandle_Teleport[MapID], CheckPos);
+		if(GameServer()->Collision(MapID)->CheckPoint(CheckPos))
 			return false;
 		if(TeleZoneIndex && TeleIndex == TeleZoneIndex)
 			return false;
@@ -315,13 +314,13 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 	}
 
 	// get spawn point
-	int RandomShift = random_int(0, m_SpawnPoints[Type].size()-1);
-	for(int i = 0; i < m_SpawnPoints[Type].size(); i++)
+	int RandomShift = random_int(0, m_aaaSpawnPoints[Server()->ClientMapID(pPlayer->GetCID())].m_aSpawnPoints[Type].size()-1);
+	for(int i = 0; i < m_aaaSpawnPoints[Server()->ClientMapID(pPlayer->GetCID())].m_aSpawnPoints[Type].size(); i++)
 	{
-		int I = (i + RandomShift)%m_SpawnPoints[Type].size();
-		if(IsSpawnable(m_SpawnPoints[Type][I], 0))
+		int I = (i + RandomShift)%m_aaaSpawnPoints[Server()->ClientMapID(pPlayer->GetCID())].m_aSpawnPoints[Type].size();
+		if(IsSpawnable(m_aaaSpawnPoints[Server()->ClientMapID(pPlayer->GetCID())].m_aSpawnPoints[Type][i], 0, Server()->ClientMapID(pPlayer->GetCID())))
 		{
-			*pOutPos = m_SpawnPoints[Type][I];
+			*pOutPos = m_aaaSpawnPoints[Server()->ClientMapID(pPlayer->GetCID())].m_aSpawnPoints[Type][I];
 			return true;
 		}
 	}

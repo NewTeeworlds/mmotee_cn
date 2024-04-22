@@ -15,7 +15,7 @@ public:
 	};
 	
 public:
-	CFeya(CGameWorld *pGameWorld, vec2 Pos, int Type, int SubType, bool Proj);
+	CFeya(CGameWorld *pGameWorld, vec2 Pos, int Type, int SubType, bool Proj, int MapID);
 	virtual ~CFeya();
 
 	virtual void Snap(int SnappingClient);

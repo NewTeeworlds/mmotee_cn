@@ -6,6 +6,7 @@
 #include "message.h"
 #include <game/generated/protocol.h>
 #include <engine/shared/protocol.h>
+#include <engine/shared/map.h>
 
 /* INFECTION MODIFICATION START ***************************************/
 enum InfWeapons
@@ -401,6 +402,9 @@ public:
 	virtual int GetClientInfo(int ClientID, CClientInfo *pInfo) = 0;
 	virtual void GetClientAddr(int ClientID, char *pAddrStr, int Size) = 0;
 
+	virtual int ClientMapID(int ClientID) const = 0;
+	virtual IEngineMap* GetMap(int MapID) const = 0;
+
 	virtual int GetOwnHouse(int ClientID) = 0;
 	virtual bool GetSpawnInClanHouse(int ClientID, int HouseID) = 0;
 	virtual int GetTopHouse(int HouseID) = 0;
@@ -521,6 +525,10 @@ public:
 	virtual void SetClientClan(int ClientID, char const *pClan) = 0;
 	virtual void SetClientCountry(int ClientID, int Country) = 0;
 
+	//Multimap
+	virtual void SetClientMap(int ClientID, int MapID) = 0;
+	virtual void SetClientMap(int ClientID, char* MapName) = 0;
+
 	virtual int SnapNewID() = 0;
 	virtual void SnapFreeID(int ID) = 0;
 	virtual void *SnapNewItem(int Type, int ID, int Size) = 0;
@@ -622,6 +630,8 @@ public:
 
 	virtual int* GetIdMap(int ClientID) = 0;
 	virtual void SetCustClt(int ClientID) = 0;
+
+	virtual int LoadMap(const char *pMapName, int MapID) = 0;
 }; 
 
 class IGameServer : public IInterface
@@ -630,6 +640,7 @@ class IGameServer : public IInterface
 protected:
 public:
 	virtual void OnInit() = 0;
+	virtual void OnInitMap(int MapID) = 0;
 	virtual void OnConsoleInit() = 0;
 	virtual void OnShutdown() = 0;
 	virtual void GiveItem(int ClientID, int ItemID, int Count, int Enchant = 0) = 0;
@@ -641,6 +652,7 @@ public:
 	virtual void OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID) = 0;
 
 	virtual void OnClientConnected(int ClientID) = 0;
+	virtual void KillCharacter(int ClientID) = 0;
 	virtual void OnClientEnter(int ClientID) = 0;
 	virtual void OnClientDrop(int ClientID, int Type, const char *pReason) = 0;
 	virtual void OnClientDirectInput(int ClientID, void *pInput) = 0;
@@ -652,8 +664,6 @@ public:
 	virtual const char *GameType() = 0;
 	virtual const char *Version() = 0;
 	virtual const char *NetVersion() = 0;
-	
-	virtual class CLayers *Layers() = 0;
 	
 /* INFECTION MODIFICATION START ***************************************/
 	virtual void ClearBroadcast(int To, int Priority) = 0;
@@ -669,6 +679,8 @@ public:
 	
 	virtual void OnSetAuthed(int ClientID, int Level) = 0;
 /* INFECTION MODIFICATION END *****************************************/
+
+	virtual void PrepareClientChangeMap(int ClientID) = 0;
 };
 
 extern IGameServer *CreateGameServer();

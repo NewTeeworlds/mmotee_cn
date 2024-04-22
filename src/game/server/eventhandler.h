@@ -3,14 +3,6 @@
 #ifndef GAME_SERVER_EVENTHANDLER_H
 #define GAME_SERVER_EVENTHANDLER_H
 
-#ifdef _MSC_VER
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#else
-#include <stdint.h>
-#endif
 //
 class CEventHandler
 {
@@ -20,7 +12,8 @@ class CEventHandler
 	int m_aTypes[MAX_EVENTS]; // TODO: remove some of these arrays
 	int m_aOffsets[MAX_EVENTS];
 	int m_aSizes[MAX_EVENTS];
-	int64_t m_aClientMasks[MAX_EVENTS];
+	int m_aMapID[MAX_EVENTS];
+	int m_aClientMasks[MAX_EVENTS];
 	char m_aData[MAX_DATASIZE];
 
 	class CGameContext *m_pGameServer;
@@ -32,7 +25,7 @@ public:
 	void SetGameServer(CGameContext *pGameServer);
 
 	CEventHandler();
-	void *Create(int Type, int Size, int64_t Mask = -1LL);
+	void *Create(int Type, int Size, int Mask = -1, int MapID=-1);
 	void Clear();
 	void Snap(int SnappingClient);
 };

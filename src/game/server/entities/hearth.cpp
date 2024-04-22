@@ -3,8 +3,8 @@
 #include <game/server/gamecontext.h>
 #include "hearth.h"
 
-CHearth::CHearth(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, vec2 InitialVel)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLYINGPOINT)
+CHearth::CHearth(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, vec2 InitialVel, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLYINGPOINT, MapID)
 {
 	m_Pos = Pos;
 	m_InitialVel = InitialVel;

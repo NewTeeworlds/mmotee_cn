@@ -5,8 +5,8 @@
 
 #include "slug-slime.h"
 
-CSlugSlime::CSlugSlime(CGameWorld *pGameWorld, vec2 Pos, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_SLUG_SLIME)
+CSlugSlime::CSlugSlime(CGameWorld *pGameWorld, vec2 Pos, int Owner, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_SLUG_SLIME, MapID)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
@@ -38,7 +38,7 @@ void CSlugSlime::Tick()
 	// Find other players
 	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 	{
-		if(!GameServer()->Collision()->AreConnected(p->m_Pos, m_Pos, 84.0f))
+		if(!GameServer()->Collision(GetMapID())->AreConnected(p->m_Pos, m_Pos, 84.0f))
 			continue; // not in reach
 		
 		p->Poison(g_Config.m_InfSlimePoisonDuration, m_Owner); 

@@ -6,8 +6,8 @@
 #include "healer-health.h"
 #include "hearth.h"
 
-CHealthHealer::CHealthHealer(CGameWorld *pGameWorld, vec2 Pos, int Owner, int ReloadTick, int LifeSpan)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_HEALTHHEALER)
+CHealthHealer::CHealthHealer(CGameWorld *pGameWorld, vec2 Pos, int Owner, int ReloadTick, int LifeSpan, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_HEALTHHEALER, MapID)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
@@ -59,8 +59,8 @@ void CHealthHealer::Tick()
 		{
 			if(p->GetPlayer() && p)
 			{
-				if(!p->GetPlayer()->IsBot() && distance(p->m_Pos, m_Pos) < 300 && !GameServer()->Collision()->IntersectLine(m_Pos, p->m_Pos, 0x0, &p->m_Pos)) 
-					new CHearth(&GameServer()->m_World, m_Pos, p->GetPlayer()->GetCID(), p->m_Core.m_Vel);
+				if(!p->GetPlayer()->IsBot() && distance(p->m_Pos, m_Pos) < 300 && !GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, p->m_Pos, 0x0, &p->m_Pos)) 
+					new CHearth(&GameServer()->m_World, m_Pos, p->GetPlayer()->GetCID(), p->m_Core.m_Vel, GetMapID());
 			}
 		}
 		m_ReloadTick = m_SaveReloadTick;

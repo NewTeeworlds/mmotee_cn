@@ -14,7 +14,7 @@ private:
 public:
 	static const int ms_PhysSize = 14;
 
-	CHeroFlag(CGameWorld *pGameWorld, vec2 Pos);
+	CHeroFlag(CGameWorld *pGameWorld, vec2 Pos, int MapID);
 
 	inline int GetCoolDown() { return m_CoolDownTick; }
 

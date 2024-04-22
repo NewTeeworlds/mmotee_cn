@@ -8,8 +8,8 @@
 
 #include "pickup.h"
 
-CPickup::CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP)
+CPickup::CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP, MapID)
 {
 	m_Type = Type;
 	m_Pos = Pos;

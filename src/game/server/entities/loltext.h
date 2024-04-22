@@ -9,7 +9,7 @@ class CLolPlasma : public CEntity
 {
 public:
 	//position relative to pParent->m_Pos. if pParent is NULL, Pos is absolute. lifespan in ticks
-	CLolPlasma(CGameWorld *pGameWorld, CEntity *pParent, vec2 Pos, vec2 Vel, int Lifespan);
+	CLolPlasma(CGameWorld *pGameWorld, CEntity *pParent, vec2 Pos, vec2 Vel, int Lifespan, int MapID);
 
 	virtual void Reset();
 	virtual void Tick();
@@ -32,7 +32,7 @@ private:
 	static bool HasRepr(char c);
 public:
 	static vec2 TextSize(const char *pText);
-	static void Create(CGameWorld *pGameWorld, CEntity *pParent, vec2 Pos, vec2 Vel, int Lifespan, const char *pText, bool Center, bool Follow);
+	static void Create(CGameWorld *pGameWorld, CEntity *pParent, vec2 Pos, vec2 Vel, int Lifespan, const char *pText, bool Center, bool Follow, int MapID);
 };
 
 #endif

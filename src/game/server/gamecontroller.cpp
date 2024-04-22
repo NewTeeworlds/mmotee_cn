@@ -33,53 +33,55 @@ bool IGameController::PreSpawn(CPlayer *pPlayer, vec2 *pOutPos)
 	return false;
 }
 
-bool IGameController::OnEntity(const char *pName, vec2 Pivot, vec2 P0, vec2 P1, vec2 P2, vec2 P3, int PosEnv)
+bool IGameController::OnEntity(const char *pName, vec2 Pivot, vec2 P0, vec2 P1, vec2 P2, vec2 P3, int PosEnv, int MapID)
 {
 	vec2 Pos = (P0 + P1 + P2 + P3) / 4.0f;
 
+	aSpawnPoints aSpawnPoints = m_aaaSpawnPoints[MapID];
 	if (str_comp(pName, "NoRegister") == 0)
-		m_SpawnPoints[0].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[0].add(Pos);
 	else if (str_comp(pName, "Register") == 0)
-		m_SpawnPoints[1].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[1].add(Pos);
 	else if (str_comp(pName, "Guard") == 0)
-		m_SpawnPoints[2].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[2].add(Pos);
 	else if (str_comp(pName, "Bot1Type") == 0)
-		m_SpawnPoints[3].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[3].add(Pos);
 	else if (str_comp(pName, "Jail") == 0)
-		m_SpawnPoints[4].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[4].add(Pos);
 	else if (str_comp(pName, "Bot2Type") == 0)
-		m_SpawnPoints[5].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[5].add(Pos);
 	else if (str_comp(pName, "Bot3Type") == 0)
-		m_SpawnPoints[6].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[6].add(Pos);
 	else if (str_comp(pName, "WaitBoss") == 0)
-		m_SpawnPoints[7].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[7].add(Pos);
 	else if (str_comp(pName, "BossSpawn") == 0)
-		m_SpawnPoints[8].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[8].add(Pos);
 	else if (str_comp(pName, "ArenaIns") == 0)
-		m_SpawnPoints[9].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[9].add(Pos);
 	else if (str_comp(pName, "NPCSHOP") == 0)
-		m_SpawnPoints[10].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[10].add(Pos);
 	else if (str_comp(pName, "NPCWQUEST") == 0)
-		m_SpawnPoints[11].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[11].add(Pos);
 	else if (str_comp(pName, "NPCWCRAFT") == 0)
-		m_SpawnPoints[12].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[12].add(Pos);
 	else if (str_comp(pName, "ArenaFng") == 0)
-		m_SpawnPoints[13].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[13].add(Pos);
 	else if (str_comp(pName, "NPCFARMER") == 0)
-		m_SpawnPoints[14].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[14].add(Pos);
 	else if (str_comp(pName, "FRSpawn") == 0)
-		m_SpawnPoints[15].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[15].add(Pos);
 	else if (str_comp(pName, "ClanSp1") == 0)
-		m_SpawnPoints[16].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[16].add(Pos);
 	else if (str_comp(pName, "ClanSp2") == 0)
-		m_SpawnPoints[17].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[17].add(Pos);
 	else if (str_comp(pName, "ClanSp3") == 0)
-		m_SpawnPoints[18].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[18].add(Pos);
 	else if (str_comp(pName, "ClanSp4") == 0)
-		m_SpawnPoints[19].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[19].add(Pos);
 	else if (str_comp(pName, "ClanSp5") == 0)
-		m_SpawnPoints[20].add(Pos);
+		aSpawnPoints.m_aSpawnPoints[20].add(Pos);
 
+	m_aaaSpawnPoints[MapID] = aSpawnPoints;
 	return false;
 }
 

@@ -211,7 +211,7 @@ public:
 	void ResetUpgrade(int ClientID);
 	void ResetSkill(int ClientID);
 
-	int tickstr;
+	int GetMID() { return Server()->ClientMapID(GetCID()); };
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;

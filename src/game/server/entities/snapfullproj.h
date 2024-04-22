@@ -16,7 +16,7 @@ public:
 	};
 	
 public:
-	CSnapFullProject(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, bool Changing);
+	CSnapFullProject(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, bool Changing, int MapID);
 	~CSnapFullProject();
 
 	virtual void Snap(int SnappingClient);

@@ -8,7 +8,7 @@
 class CSlugSlime : public CEntity
 {
 public:
-	CSlugSlime(CGameWorld *pGameWorld, vec2 Pos, int Owner);
+	CSlugSlime(CGameWorld *pGameWorld, vec2 Pos, int Owner, int MapID);
 
 	virtual void Reset();
 	virtual void Tick();

@@ -5,8 +5,8 @@
 
 #include "feya.h"
 
-CFeya::CFeya(CGameWorld *pGameWorld, vec2 Pos, int Type, int SubType, bool Proj)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_FEYA)
+CFeya::CFeya(CGameWorld *pGameWorld, vec2 Pos, int Type, int SubType, bool Proj, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_FEYA, MapID)
 {
 	m_Pos = Pos;
 

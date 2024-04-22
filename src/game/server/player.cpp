@@ -131,7 +131,7 @@ void CPlayer::RandomBoxTick()
 				}
 			}
 			if (m_pCharacter)
-				GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 10, Server()->GetItemName_en(getitem));
+				GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 10, Server()->GetItemName_en(getitem), GetMID());
 
 			if (m_OpenBox == 30)
 			{
@@ -161,7 +161,7 @@ void CPlayer::RandomBoxTick()
 			getitem = random_prob(0.995f) ? MONEYBAG : RAREEVENTHAMMER;
 
 			if (m_pCharacter)
-				GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 10, Server()->GetItemName_en(getitem));
+				GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 10, Server()->GetItemName_en(getitem), GetMID());
 
 			if (m_OpenBox == 30)
 			{
@@ -224,7 +224,7 @@ void CPlayer::RandomBoxTick()
 				Get = m_OpenBoxAmount;
 			}
 			if (m_pCharacter)
-				GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 10, Server()->GetItemName_en(getitem));
+				GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 10, Server()->GetItemName_en(getitem), GetMID());
 
 			if (m_OpenBox == 30)
 			{
@@ -252,7 +252,6 @@ void CPlayer::BasicAuthedTick()
 	{
 		str_format(aBuf, sizeof(aBuf), "%s", Server()->ClientClan(m_ClientID));
 		str_copy(pTitle, aBuf, sizeof(pTitle));
-		tickstr = 200;
 	}
 	else
 	{
@@ -296,7 +295,7 @@ void CPlayer::BasicAuthedTick()
 		GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("[Level UP] 恭喜你你升级了! 你获得了技能点和升级点."), NULL);
 		if (m_pCharacter)
 		{
-			GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 50, "Level ++");
+			GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 50, "Level ++", GetMID());
 			GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
 		}
 		GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE, m_ClientID);
@@ -796,7 +795,7 @@ void CPlayer::Snap(int SnappingClient)
 	else
 		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
 
-	if (Server()->IsClientLogged(m_ClientID) && tickstr)
+	if (Server()->IsClientLogged(m_ClientID))
 		StrToInts(&pClientInfo->m_Clan0, 3, pTitle);
 	else
 		StrToInts(&pClientInfo->m_Clan0, 3, Server()->ClientClan(m_ClientID));
@@ -1030,7 +1029,7 @@ void CPlayer::TryRespawn()
 		switch (m_BotType)
 		{
 		case BOT_L1MONSTER:
-			m_pCharacter = new (m_ClientID) CMonster(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CMonster(&GameServer()->m_World, GetMID());
 
 			if (g_Config.m_SvCityStart == 1)
 			{
@@ -1051,7 +1050,7 @@ void CPlayer::TryRespawn()
 			}
 			break;
 		case BOT_L2MONSTER:
-			m_pCharacter = new (m_ClientID) CKwah(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CKwah(&GameServer()->m_World, GetMID());
 
 			if (g_Config.m_SvCityStart == 1)
 			{
@@ -1067,7 +1066,7 @@ void CPlayer::TryRespawn()
 			}
 			break;
 		case BOT_L3MONSTER:
-			m_pCharacter = new (m_ClientID) CBoomer(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CBoomer(&GameServer()->m_World, GetMID());
 
 			if (g_Config.m_SvCityStart == 1)
 			{
@@ -1083,7 +1082,7 @@ void CPlayer::TryRespawn()
 			}
 			break;
 		case BOT_BOSSSLIME:
-			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World, GetMID());
 			AccData.Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
@@ -1092,7 +1091,7 @@ void CPlayer::TryRespawn()
 			AccUpgrade.Damage = 100;
 			break;
 		case BOT_BOSSVAMPIRE:
-			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World, GetMID());
 			AccData.Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
@@ -1101,41 +1100,41 @@ void CPlayer::TryRespawn()
 			AccUpgrade.Damage = 400;
 			break;
 		case BOT_BOSSPIGKING:
-			m_pCharacter = new (m_ClientID) CBossPig(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CBossPig(&GameServer()->m_World, GetMID());
 			AccData.Level = 100 + random_int(3, 13);
 			m_BigBot = true;
 			AccUpgrade.Health = (int)(AccData.Level / 6);
 			AccUpgrade.Damage = 10;
 			break;
 		case BOT_BOSSGUARD:
-			m_pCharacter = new (m_ClientID) CBossGuard(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CBossGuard(&GameServer()->m_World, GetMID());
 			AccData.Level = 500 + random_int(0, 10);
 			AccUpgrade.Damage = (int)(AccData.Level * 5);
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:
-			m_pCharacter = new (m_ClientID) CNpcSold(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CNpcSold(&GameServer()->m_World, GetMID());
 			AccData.Level = 500 + random_int(0, 10);
 			AccUpgrade.Damage = (int)(AccData.Level * 5);
 			AccUpgrade.Health = (int)(AccData.Level * 50);
 			m_BigBot = true;
 			break;
 		case BOT_NPCW:
-			m_pCharacter = new (m_ClientID) CNpcWSold(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CNpcWSold(&GameServer()->m_World, GetMID());
 			AccData.Level = 3;
 			AccUpgrade.Damage = (int)(AccData.Level * 5);
 			AccUpgrade.Health = (int)(AccData.Level * 2);
 			m_BigBot = true;
 			break;
 		case BOT_FARMER:
-			m_pCharacter = new (m_ClientID) CNpcFarmer(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CNpcFarmer(&GameServer()->m_World, GetMID());
 			AccData.Level = 3;
 			AccUpgrade.Damage = (int)(AccData.Level * 5);
 			AccUpgrade.Health = (int)(AccData.Level * 2);
 			m_BigBot = true;
 			break;
 		case BOT_BOSSCLEANER:
-			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World);
+			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World, GetMID());
 			AccData.Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
@@ -1155,7 +1154,7 @@ void CPlayer::TryRespawn()
 	}
 	else
 	{
-		m_pCharacter = new (m_ClientID) CCharacter(&GameServer()->m_World);
+		m_pCharacter = new (m_ClientID) CCharacter(&GameServer()->m_World, GetMID());
 		if(Server()->GetItemSettings(GetCID(), TITLE_GUARD))
 		{
 			AccUpgrade.Damage = (int)(AccData.Level * 5);

@@ -15,7 +15,7 @@ public:
 	};
 	
 public:
-	CMoneyBag(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType);
+	CMoneyBag(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType, int MapID);
 	virtual ~CMoneyBag();
 
 	virtual void Reset();

@@ -16,6 +16,8 @@ typedef unsigned __int64 uint64_t;
 #include <stdint.h>
 #endif
 
+#include <map>
+
 /*
 	Class: Game Controller
 		Controls the main game logic. Keeping track of team and player score,
@@ -30,13 +32,12 @@ protected:
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const { return m_pServer; }
 
-/* INFECTION MODIFICATION START ***************************************/
-	array<vec2> m_HeroFlagPositions;
-	array<vec2> m_SpawnPoints[21];
+	struct aSpawnPoints
+	{
+		array<vec2> m_aSpawnPoints[21];
+	};
 	
-public:
-	inline const array<vec2>& HeroFlagPositions() const { return m_HeroFlagPositions; }
-/* INFECTION MODIFICATION START ***************************************/
+	std::map<int, aSpawnPoints> m_aaaSpawnPoints;
 
 protected:
 	void ResetGame();
@@ -86,7 +87,7 @@ public:
 		Returns:
 			bool?
 	*/
-	virtual bool OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, vec2 P2, vec2 P3, int PosEnv);
+	virtual bool OnEntity(const char* pName, vec2 Pivot, vec2 P0, vec2 P1, vec2 P2, vec2 P3, int PosEnv, int MapID);
 
 	/*
 		Function: on_CCharacter_spawn

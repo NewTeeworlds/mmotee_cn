@@ -4,8 +4,8 @@
 #include <game/server/gamecontext.h>
 #include "biologist-laser.h"
 
-CBiologistLaser::CBiologistLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg, bool Explode)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER)
+CBiologistLaser::CBiologistLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg, bool Explode, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, MapID)
 {
 	m_Dmg = Dmg;
 	m_Pos = Pos;
@@ -57,7 +57,7 @@ void CBiologistLaser::DoBounce()
 
 	vec2 To = m_Pos + m_Dir * m_Energy;
 
-	if(GameServer()->Collision()->IntersectLine(m_Pos, To, 0x0, &To))
+	if(GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, To, 0x0, &To))
 	{
 		if(!HitCharacter(m_Pos, To))
 		{
@@ -68,7 +68,7 @@ void CBiologistLaser::DoBounce()
 			vec2 TempPos = m_Pos;
 			vec2 TempDir = m_Dir * 4.0f;
 
-			GameServer()->Collision()->MovePoint(&TempPos, &TempDir, 1.0f, 0);
+			GameServer()->Collision(GetMapID())->MovePoint(&TempPos, &TempDir, 1.0f, 0);
 			m_Pos = TempPos;
 			m_Dir = normalize(TempDir);
 

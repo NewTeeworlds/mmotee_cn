@@ -14,7 +14,7 @@ private:
 	int m_GetPlayer;
 	
 public:
-	CFlyingPoint(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, int GetPlayer, vec2 InitialVel);
+	CFlyingPoint(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, int GetPlayer, vec2 InitialVel, int MapID);
 	
 	virtual void Tick();
 	virtual void Snap(int SnappingClient);

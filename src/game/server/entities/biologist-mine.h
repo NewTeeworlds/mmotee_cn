@@ -16,7 +16,7 @@ public:
 	};
 	
 public:
-	CBiologistMine(CGameWorld *pGameWorld, vec2 Pos, vec2 EndPos, int Owner, int Health);
+	CBiologistMine(CGameWorld *pGameWorld, vec2 Pos, vec2 EndPos, int Owner, int Health, int MapID);
 	virtual ~CBiologistMine();
 
 	virtual void Snap(int SnappingClient);

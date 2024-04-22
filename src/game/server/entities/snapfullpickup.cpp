@@ -5,8 +5,8 @@
 #include "snapfullpickup.h"
 #include "biologist-laser.h"
 
-CSnapFullPickup::CSnapFullPickup(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, int SubType, bool Changing)
-	: CEntity(pGameWorld, CGameWorld::ENTTYPE_SNAP_FULLPICKUP)
+CSnapFullPickup::CSnapFullPickup(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, int SubType, bool Changing, int MapID)
+	: CEntity(pGameWorld, CGameWorld::ENTTYPE_SNAP_FULLPICKUP, MapID)
 {
 	m_Pos = Pos;
 	m_LoadingTick = Server()->TickSpeed();
@@ -54,7 +54,7 @@ void CSnapFullPickup::Tick()
 				{
 					if(p->GetPlayer() && p)
 					{
-						if(p->GetPlayer()->IsBot() && distance(p->m_Pos, m_Pos) < 100 && !GameServer()->Collision()->IntersectLine(m_Pos, p->m_Pos, 0x0, &p->m_Pos))
+						if(p->GetPlayer()->IsBot() && distance(p->m_Pos, m_Pos) < 100 && !GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, p->m_Pos, 0x0, &p->m_Pos))
 						{
 							GameServer()->SendEmoticon(p->GetPlayer()->GetCID(), EMOTICON_GHOST);
 							GameServer()->CreateExplosion(vec2(p->m_Pos.x,p->m_Pos.y+0.1f), m_Owner, WEAPON_GRENADE, false);

@@ -7,8 +7,8 @@
 
 #include "bonus.h"
 
-CBonus::CBonus(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int Type, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_BONUS)
+CBonus::CBonus(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int Type, int Owner, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_BONUS, MapID)
 {
 	m_Pos = Pos;
 	m_ActualPos = Pos;
@@ -152,17 +152,17 @@ void CBonus::Tick()
 	}
 
 	vec2 LastPos;
-	int Collide = GameServer()->Collision()->IntersectLine(PrevPos, CurPos, NULL, &LastPos);
+	int Collide = GameServer()->Collision(GetMapID())->IntersectLine(PrevPos, CurPos, NULL, &LastPos);
 	if(Collide)
 	{			
 		//Thanks to TeeBall 0.6
 		vec2 CollisionPos;
 		CollisionPos.x = LastPos.x;
 		CollisionPos.y = CurPos.y;
-		int CollideY = GameServer()->Collision()->IntersectLine(PrevPos, CollisionPos, NULL, NULL);
+		int CollideY = GameServer()->Collision(GetMapID())->IntersectLine(PrevPos, CollisionPos, NULL, NULL);
 		CollisionPos.x = CurPos.x;
 		CollisionPos.y = LastPos.y;
-		int CollideX = GameServer()->Collision()->IntersectLine(PrevPos, CollisionPos, NULL, NULL);
+		int CollideX = GameServer()->Collision(GetMapID())->IntersectLine(PrevPos, CollisionPos, NULL, NULL);
 
 		m_Pos = LastPos;
 		m_ActualPos = m_Pos;

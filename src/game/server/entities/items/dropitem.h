@@ -7,7 +7,7 @@ class CDropItem : public CEntity
 {
 public:
 
-	CDropItem(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int ItemID, int Count, int HowID, int Enchant);
+	CDropItem(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int ItemID, int Count, int HowID, int Enchant, int MapID);
 
 	vec2 GetPos(float Time);
 

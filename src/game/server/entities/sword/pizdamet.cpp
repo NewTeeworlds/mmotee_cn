@@ -3,8 +3,8 @@
 #include <game/server/gamecontext.h>
 #include "pizdamet.h"
 
-CPizdamet::CPizdamet(CGameWorld *pGameWorld, vec2 Pos, int OwnerID)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLYINGPOINT)
+CPizdamet::CPizdamet(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLYINGPOINT, MapID)
 {
 	m_Pos = Pos;
 	m_OwnerID = OwnerID;
@@ -26,7 +26,7 @@ void CPizdamet::Tick()
 	}
 
 	vec2 To = m_Pos + normalize(m_Cursour) * 15.0f;
-	if(GameServer()->Collision()->IntersectLine(m_Pos, To, 0x0, &To))
+	if(GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, To, 0x0, &To))
 	{
 		GameServer()->CreateExplosion(m_Pos, m_OwnerID, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION);
 		GameServer()->m_World.DestroyEntity(this);

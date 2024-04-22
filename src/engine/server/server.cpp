@@ -18,12 +18,12 @@
 #include <engine/shared/datafile.h>
 #include <engine/shared/econ.h>
 #include <engine/shared/filecollection.h>
-#include <engine/shared/mapchecker.h>
 #include <engine/shared/netban.h>
 #include <engine/shared/network.h>
 #include <engine/shared/packer.h>
 #include <engine/shared/protocol.h>
 #include <engine/shared/snapshot.h>
+#include <engine/shared/map.h>
 #include <game/mapitems.h>
 #include <game/gamecore.h>
 
@@ -35,13 +35,15 @@
 #include <cstring>
 #include <thread>
 #include <memory>
-#include <engine/server/mapconverter.h>
 #include <engine/server/sql_job.h>
 #include <engine/server/crypt.h>
 
 #include <teeuniverses/components/localization.h>
 
 #include <engine/server/sql_connector.h>
+
+#include <engine/external/json-parser/json.h>
+
 #if defined(CONF_FAMILY_WINDOWS)
 	#define _WIN32_WINNT 0x0501
 	#define WIN32_LEAN_AND_MEAN
@@ -311,9 +313,6 @@ CServer::CServer()
 	m_CurrentGameTick = 0;
 	m_RunServer = 1;
 
-	m_pCurrentMapData = 0;
-	m_CurrentMapSize = 0;
-
 	m_MapReload = 0;
 
 	m_RconClientID = IServer::RCON_CID_SERV;
@@ -457,6 +456,8 @@ int CServer::Init()
 		m_aClients[i].m_Snapshots.Init();
 		m_aClients[i].m_WaitingTime = 0;
         m_aClients[i].m_Latency = 0;
+		m_aClients[i].m_MapID = MAP_DEFAULT_ID;
+		m_aClients[i].m_NextMapID = MAP_DEFAULT_ID;
 	}
 
 	m_CurrentGameTick = 0;
@@ -735,6 +736,11 @@ void CServer::DoSnapshot()
 int CServer::NewClientCallback(int ClientID, void *pUser)
 {
 	CServer *pThis = (CServer *)pUser;
+
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "New Client '%d'", ClientID);
+	pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBuf);
+
 	pThis->m_aClients[ClientID].m_State = CClient::STATE_AUTH;
 	pThis->m_aClients[ClientID].m_aName[0] = 0;
 	pThis->m_aClients[ClientID].m_aClan[0] = 0;
@@ -743,7 +749,11 @@ int CServer::NewClientCallback(int ClientID, void *pUser)
 	pThis->m_aClients[ClientID].m_AuthTries = 0;
 	pThis->m_aClients[ClientID].m_pRconCmdToSend = 0;
 	pThis->m_aClients[ClientID].m_CustClt = 0;
+	pThis->m_aClients[ClientID].m_MapID = MAP_DEFAULT_ID;
+	pThis->m_aClients[ClientID].m_ChangeMap = false;
 	pThis->m_aClients[ClientID].Reset();
+
+	pThis->SendMap(ClientID, 0);
 	
 	return 0;
 }
@@ -754,10 +764,12 @@ int CServer::ClientRejoinCallback(int ClientID, void *pUser)
 
 	pThis->m_aClients[ClientID].m_Authed = AUTHED_NO;
 	pThis->m_aClients[ClientID].m_pRconCmdToSend = 0;
+	pThis->m_aClients[ClientID].m_MapID = MAP_DEFAULT_ID;
+	pThis->m_aClients[ClientID].m_ChangeMap = false;
 
 	pThis->m_aClients[ClientID].Reset();
 
-	pThis->SendMap(ClientID);
+	// pThis->SendMap(ClientID, pThis->m_aClients[ClientID].m_MapID);
 
 	return 0;
 }
@@ -813,6 +825,8 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 	pThis->m_aClients[ClientID].m_Pasive2 = 0;
 	pThis->m_aClients[ClientID].Upgrade = 0;
 	pThis->m_aClients[ClientID].SkillPoint = 0;
+	pThis->m_aClients[ClientID].m_MapID = MAP_DEFAULT_ID;
+	pThis->m_aClients[ClientID].m_ChangeMap = false;	
 	
 	for(int i = 0; i < 7; i++)
 		pThis->m_aClients[ClientID].m_ItemCount[i] = 0;
@@ -845,48 +859,22 @@ void CServer::Logout(int ClientID)
 	m_aClients[ClientID].m_UserID = -1;
 }
 
-void CServer::SendMap(int ClientID)
+void CServer::SendMap(int ClientID, int MapID)
 {
+	CMapData* data = &(m_vMapData[MapID]);
+
 	CMsgPacker Msg(NETMSG_MAP_CHANGE);
-	Msg.AddString(GetMapName(), 0);
-	Msg.AddInt(m_CurrentMapCrc);
-	Msg.AddInt(m_CurrentMapSize);
+
+	
+	char MapNameBuf[64];
+	const char* MapName = GetMapName(MapID, MapNameBuf);
+	
+	Msg.AddString(MapName, 0);
+	Msg.AddInt(data->m_CurrentMapCrc);
+	Msg.AddInt(data->m_CurrentMapSize);
+	//Msg.AddInt(data->m_MapChunksPerRequest);
 	SendMsgEx(&Msg, MSGFLAG_VITAL|MSGFLAG_FLUSH, ClientID, true);
-
-	m_aClients[ClientID].m_NextMapChunk = 0;
 }
-
-void CServer::SendMapData(int ClientID, int Chunk)
-{
- 	unsigned int ChunkSize = 1024-128;
- 	unsigned int Offset = Chunk * ChunkSize;
- 	int Last = 0;
- 
- 	// drop faulty map data requests
- 	if(Chunk < 0 || Offset > m_CurrentMapSize)
- 		return;
- 
- 	if(Offset+ChunkSize >= m_CurrentMapSize)
- 	{
- 		ChunkSize = m_CurrentMapSize-Offset;
- 		Last = 1;
- 	}
- 
- 	CMsgPacker Msg(NETMSG_MAP_DATA);
- 	Msg.AddInt(Last);
- 	Msg.AddInt(m_CurrentMapCrc);
- 	Msg.AddInt(Chunk);
- 	Msg.AddInt(ChunkSize);
- 	Msg.AddRaw(&m_pCurrentMapData[Offset], ChunkSize);
- 	SendMsgEx(&Msg, MSGFLAG_VITAL|MSGFLAG_FLUSH, ClientID, true);
- 
- 	if(g_Config.m_Debug)
- 	{
- 		char aBuf[256];
- 		str_format(aBuf, sizeof(aBuf), "sending chunk %d with size %d", Chunk, ChunkSize);
- 		Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "server", aBuf);
- 	}
- }
 
 void CServer::SendConnectionReady(int ClientID)
 {
@@ -953,6 +941,7 @@ void CServer::UpdateClientRconCommands()
 void CServer::ProcessClientPacket(CNetChunk *pPacket)
 {
 	int ClientID = pPacket->m_ClientID;
+	int MapID = m_aClients[ClientID].m_MapID;
 	CUnpacker Unpacker;
 	Unpacker.Reset(pPacket->m_pData, pPacket->m_DataSize);
 
@@ -976,20 +965,23 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					return;
 				if(str_comp(pVersion, "0.6 626fce9a778df4d4") != 0 && str_comp(pVersion, GameServer()->NetVersion()) != 0)
 				{
-					m_NetServer.Drop(ClientID, CLIENTDROPTYPE_WRONG_VERSION, "Wrong version.");
+					// wrong version
+					char aReason[256];	
+					str_format(aReason, sizeof(aReason), "Wrong version. Server is running '%s' and client '%s'", GameServer()->NetVersion(), pVersion);
+					m_NetServer.Drop(ClientID, CLIENTDROPTYPE_WRONG_VERSION, aReason);
 					return;
 				}
 
 				const char *pPassword = Unpacker.GetString(CUnpacker::SANITIZE_CC);
-				if(!str_utf8_check(pPassword))
-					return;
 				if(g_Config.m_Password[0] != 0 && str_comp(g_Config.m_Password, pPassword) != 0)
 				{
+					// wrong password
 					m_NetServer.Drop(ClientID, CLIENTDROPTYPE_WRONG_PASSWORD, "Wrong password");
 					return;
 				}
+
 				m_aClients[ClientID].m_State = CClient::STATE_CONNECTING;
-				SendMap(ClientID);
+				SendMap(ClientID, MapID);
 			}
 		}
 		else if(Msg == NETMSG_REQUEST_MAP_DATA)
@@ -998,34 +990,50 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 				return;
 
 			int Chunk = Unpacker.GetInt();
-			if(Chunk != m_aClients[ClientID].m_NextMapChunk || !g_Config.m_InfFastDownload)
-			{
-				SendMapData(ClientID, Chunk);
+			unsigned int ChunkSize = 1024-128;
+			unsigned int Offset = Chunk * ChunkSize;
+			int Last = 0;
+
+			//dddd
+				// drop faulty map data requests
+			if(Chunk < 0 || Offset > m_vMapData[MapID].m_CurrentMapSize)
 				return;
+
+			if(Offset+ChunkSize >= m_vMapData[MapID].m_CurrentMapSize)
+			{
+				ChunkSize = m_vMapData[MapID].m_CurrentMapSize-Offset;
+				if(ChunkSize < 0)
+					ChunkSize = 0;
+				Last = 1;
 			}
 
-			if(Chunk == 0)
+			CMsgPacker Msg(NETMSG_MAP_DATA);
+			Msg.AddInt(Last);
+			Msg.AddInt(m_vMapData[MapID].m_CurrentMapCrc);
+			Msg.AddInt(Chunk);
+			Msg.AddInt(ChunkSize);
+			Msg.AddRaw(&(m_vMapData[MapID].m_pCurrentMapData[Offset]), ChunkSize);
+			SendMsgEx(&Msg, MSGFLAG_VITAL|MSGFLAG_FLUSH, ClientID, true);
+
+			if(g_Config.m_Debug)
 			{
-				for(int i = 0; i < g_Config.m_InfMapWindow; i++)
-				{
-					SendMapData(ClientID, i);
-				}
+				char aBuf[256];
+				str_format(aBuf, sizeof(aBuf), "sending chunk %d with size %d", Chunk, ChunkSize);
+				Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "server", aBuf);
 			}
-			SendMapData(ClientID, g_Config.m_InfMapWindow + m_aClients[ClientID].m_NextMapChunk);
-			m_aClients[ClientID].m_NextMapChunk++;
 		}
 		else if(Msg == NETMSG_READY)
 		{
 			if((pPacket->m_Flags&NET_CHUNKFLAG_VITAL) != 0 && m_aClients[ClientID].m_State == CClient::STATE_CONNECTING)
 			{
-				char aAddrStr[NETADDR_MAXSTRSIZE];
-				net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), true);
-				
+				if(!m_aClients[ClientID].m_ChangeMap)
+				{
+					GameServer()->OnClientConnected(ClientID);
+					GameServer()->PrepareClientChangeMap(ClientID);
+				}
 				m_aClients[ClientID].m_State = CClient::STATE_READY;
-				GameServer()->OnClientConnected(ClientID);
+				SendConnectionReady(ClientID);
 			}
-
-			SendConnectionReady(ClientID);
 		}
 		else if(Msg == NETMSG_ENTERGAME)
 		{
@@ -1277,7 +1285,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 			p.AddString(aBuf, 64);
 		}
 	}
-	p.AddString(GetMapName(), 32);
+	p.AddString("MMOWorld", 32);
 
 	// gametype
 	p.AddString(GameServer()->GameType(), 16);
@@ -1387,100 +1395,84 @@ void CServer::PumpNetwork()
 	m_Econ.Update();
 }
 
-char *CServer::GetMapName()
+char *CServer::GetMapName(int MapID, char* aMapName)
 {
-	// get the name of the map without his path
-	char *pMapShortName = &g_Config.m_SvMap[0];
-	for(int i = 0; i < str_length(g_Config.m_SvMap)-1; i++)
+	if(MapID >= (int)m_vMapData.size())//Ugly af
+		str_copy(aMapName, g_Config.m_SvMap, sizeof(aMapName));
+	else
+		str_copy(aMapName, m_vMapData[MapID].m_aCurrentMap, sizeof(aMapName));
+
+	char *pMapShortName = &(aMapName[0]);
+	for(int i = 0; i < str_length(aMapName)-1; i++)
 	{
-		if(g_Config.m_SvMap[i] == '/' || g_Config.m_SvMap[i] == '\\')
-			pMapShortName = &g_Config.m_SvMap[i+1];
+		if(aMapName[i] == '/' || aMapName[i] == '\\')
+			pMapShortName = &aMapName[i+1];
 	}
+
 	return pMapShortName;
 }
 
-int CServer::LoadMap(const char *pMapName)
+int CServer::LoadMap(const char *pMapName, int MapID)
 {
+	CMapData data;
+	char aBufMultiMap[512];
+	for(int i = 0; i < (int)m_vMapData.size(); ++i)
+	{
+		if(str_comp(m_vMapData[i].m_aCurrentMap, pMapName) == 0)
+		{
+			str_format(aBufMultiMap, sizeof(aBufMultiMap), "Map %s already loaded (MapID=%d)", pMapName, i);
+			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBufMultiMap);
+			return 1;
+		}
+	}
+	m_vMapData.push_back(data);
+	m_vpMap.push_back(new CMap());
+
+	m_vMapData[MapID].m_pCurrentMapData = 0;
+	m_vMapData[MapID].m_CurrentMapSize = 0;
+
+
 	//DATAFILE *df;
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "maps/%s.map", pMapName);
 
-	// check for valid standard map
-	if(!m_MapChecker.ReadAndValidateMap(Storage(), aBuf, IStorage::TYPE_ALL))
-	{
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "mapchecker", "invalid standard map");
-		return 0;
-	}
+	/*df = datafile_load(buf);
+	if(!df)
+		return 0;*/
 
-	if(!m_pMap->Load(aBuf))
+
+	str_format(aBufMultiMap, sizeof(aBufMultiMap), "Loading Map with ID '%d' and name '%s'", MapID, pMapName);
+
+	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBufMultiMap);
+
+
+	if(!m_vpMap[MapID]->Load(aBuf, Kernel(), Storage()))
 		return 0;
 
 	// reinit snapshot ids
 	m_IDPool.TimeoutIDs();
 
-	{
-		CDataFileReader dfServerMap;
-		dfServerMap.Open(Storage(), aBuf, IStorage::TYPE_ALL);
-		unsigned ServerMapCrc = dfServerMap.Crc();
-		dfServerMap.Close();
-		
-		char aClientMapName[256];
-		str_format(aClientMapName, sizeof(aClientMapName), "clientmaps/%s_%08x/tw06-highres.map", pMapName, ServerMapCrc);
-		
-		CMapConverter MapConverter(Storage(), m_pMap, Console());
-		if(!MapConverter.Load())
-			return 0;
-		
-		m_TimeShiftUnit = MapConverter.GetTimeShiftUnit();
+	// get the crc of the map
+	m_vMapData[MapID].m_CurrentMapCrc = m_vpMap[MapID]->Crc();
+	char aBufMsg[256];
+	str_format(aBufMsg, sizeof(aBufMsg), "%s crc is %08x", aBuf, m_vMapData[MapID].m_CurrentMapCrc);
+	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBufMsg);
 
-		CDataFileReader dfClientMap;
-		//The map is already converted
-		if(dfClientMap.Open(Storage(), pMapName, IStorage::TYPE_ALL))
-		{
-			m_CurrentMapCrc = dfClientMap.Crc();
-			dfClientMap.Close();
-		}
-		//The map must be converted
-		else
-		{
-			char aClientMapDir[256];
-			str_format(aClientMapDir, sizeof(aClientMapDir), "clientmaps/%s_%08x", pMapName, ServerMapCrc);
-			
-			char aFullPath[512];
-			Storage()->GetCompletePath(IStorage::TYPE_SAVE, aClientMapDir, aFullPath, sizeof(aFullPath));
-			if(fs_makedir(aFullPath) != 0)
-			{
-				dbg_msg("mmotee", "Can't create the directory '%s'", aClientMapDir);
-			}
-				
-			if(!MapConverter.CreateMap(aClientMapName))
-				return 0;
-			
-			CDataFileReader dfGeneratedMap;
-			dfGeneratedMap.Open(Storage(), aClientMapName, IStorage::TYPE_ALL);
-			m_CurrentMapCrc = dfGeneratedMap.Crc();
-			dfGeneratedMap.Close();
-		}
-	
-		char aBufMsg[128];
-		str_format(aBufMsg, sizeof(aBufMsg), "map crc is %08x, generated map crc is %08x", ServerMapCrc, m_CurrentMapCrc);
-		Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBufMsg);
-		
-		//Download the generated map in memory to send it to clients
-		IOHANDLE File = Storage()->OpenFile(aClientMapName, IOFLAG_READ, IStorage::TYPE_ALL);
-		m_CurrentMapSize = (int)io_length(File);
-		
-		free(m_pCurrentMapData);
-		m_pCurrentMapData = (unsigned char *)malloc(m_CurrentMapSize);
-		io_read(File, m_pCurrentMapData, m_CurrentMapSize);
+	str_copy(m_vMapData[MapID].m_aCurrentMap, pMapName, sizeof(m_vMapData[MapID].m_aCurrentMap));
+	//map_set(df);
+
+	// load complete map into memory for download
+	{
+		IOHANDLE File = Storage()->OpenFile(aBuf, IOFLAG_READ, IStorage::TYPE_ALL);
+		m_vMapData[MapID].m_CurrentMapSize = (int)io_length(File);
+		//if(m_vMapData[MapID].m_pCurrentMapData)
+		//	mem_free(m_vMapData[MapID].m_pCurrentMapData);
+		m_vMapData[MapID].m_pCurrentMapData = (unsigned char *)malloc(m_vMapData[MapID].m_CurrentMapSize);
+		io_read(File, m_vMapData[MapID].m_pCurrentMapData, m_vMapData[MapID].m_CurrentMapSize);
 		io_close(File);
-		Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", "maps/infc_x_current.map loaded in memory");
 	}
 
-	for(int i=0; i<MAX_CLIENTS; i++)
-		m_aPrevStates[i] = m_aClients[i].m_State;
-
-	str_copy(m_aCurrentMap, pMapName, sizeof(m_aCurrentMap));
+	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", "### Map is loaded!!");
 	return 1;
 }
 
@@ -1494,9 +1486,9 @@ int CServer::Run()
 	m_PrintCBIndex = Console()->RegisterPrintCallback(g_Config.m_ConsoleOutputLevel, SendRconLineAuthed, this);
 
 	// load map
-	if(!LoadMap(g_Config.m_SvMap))
+	if(!LoadMap(g_Config.m_SvMap, MAP_DEFAULT_ID))
 	{
-		dbg_msg("server", "failed to load map. mapname='%s'", g_Config.m_SvMap);
+		dbg_msg("server", "failed to load MAIN map. mapname='%s'", g_Config.m_SvMap);
 		return -1;
 	}
 
@@ -1554,37 +1546,12 @@ int CServer::Run()
 			int NewTicks = 0;
 
 			// load new map TODO: don't poll this
-			if(str_comp(g_Config.m_SvMap, m_aCurrentMap) != 0 || m_MapReload)
+			for(int c = 0; c < MAX_CLIENTS; c++)
 			{
-				m_MapReload = 0;
-
-				// load map
-				if(LoadMap(g_Config.m_SvMap))
+				if(m_aClients[c].m_MapID != m_aClients[c].m_NextMapID || m_CurrentGameTick >= 0x6FFFFFFF) //	force reload to make sure the ticks stay within a valid range
 				{
-					// new map loaded
-					GameServer()->OnShutdown();
-				
-					for(int ClientID = 0; ClientID < MAX_CLIENTS; ClientID++)
-					{
-						if(m_aClients[ClientID].m_State <= CClient::STATE_AUTH)
-							continue;
-
-						SendMap(ClientID);
-						m_aClients[ClientID].Reset();
-						m_aClients[ClientID].m_State = CClient::STATE_CONNECTING;
-					}
-
-					m_GameStartTime = time_get();
-					m_CurrentGameTick = 0;
-					Kernel()->ReregisterInterface(GameServer());
-					GameServer()->OnInit();
-					UpdateServerInfo();
-				}
-				else
-				{
-					str_format(aBuf, sizeof(aBuf), "failed to load map. mapname='%s'", g_Config.m_SvMap);
-					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
-					str_copy(g_Config.m_SvMap, m_aCurrentMap, sizeof(g_Config.m_SvMap));
+					ChangeClientMap(c);
+					m_aClients[c].m_MapID = m_aClients[c].m_NextMapID;
 				}
 			}
 
@@ -1670,10 +1637,15 @@ int CServer::Run()
 	}
 
 	GameServer()->OnShutdown();
-	m_pMap->Unload();
+	for(int i = 0; i < (int)m_vpMap.size(); ++i)
+	{
+		m_vpMap[i]->Unload();
 
-	free(m_pCurrentMapData);
-		
+			if(m_vMapData[i].m_pCurrentMapData)
+			free(m_vMapData[i].m_pCurrentMapData);
+	}
+	return 0;
+
 	for (int i = 0; i < MAX_SQLSERVERS; i++)
 	{
 		if (m_apSqlReadServers[i])
@@ -1942,7 +1914,7 @@ void CServer::RegisterCommands()
 {
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_pGameServer = Kernel()->RequestInterface<IGameServer>();
-	m_pMap = Kernel()->RequestInterface<IEngineMap>();
+	// m_pMap = Kernel()->RequestInterface<IEngineMap>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
 
 	// register console commands
@@ -1964,6 +1936,9 @@ void CServer::RegisterCommands()
 	Console()->Register("inf_add_sqlserver", "ssssssi?i", CFGFLAG_SERVER, ConAddSqlServer, this, "add a sqlserver");
 	Console()->Register("inf_list_sqlservers", "s", CFGFLAG_SERVER, ConDumpSqlServers, this, "list all sqlservers readservers = r, writeservers = w");
 
+	Console()->Register("set_map_by_mapid", "i?i", CFGFLAG_SERVER, ConSetMapByID, this, "Set <mapid> [<playerid>]");
+	// Console()->Register("set_map_by_mapname", "s?i", CFGFLAG_SERVER|CFGFLAG_CHAT|CFGFLAG_USER, ConSetMapByName, this, "Set <mapname> [<playerid>]");
+	
 	// register console commands in sub parts
 	m_ServerBan.InitServerBan(Console(), Storage(), this);
 	m_pGameServer->OnConsoleInit();
@@ -2018,7 +1993,7 @@ int main(int argc, const char **argv) // ignore_convention
 
 	// create the components
 	IEngine *pEngine = CreateEngine("Teeworlds");
-	IEngineMap *pEngineMap = CreateEngineMap();
+	// IEngineMap *pEngineMap = CreateEngineMap();
 	IGameServer *pGameServer = CreateGameServer();
 	IConsole *pConsole = CreateConsole(CFGFLAG_SERVER|CFGFLAG_ECON);
 	IEngineMasterServer *pEngineMasterServer = CreateEngineMasterServer();
@@ -2040,8 +2015,8 @@ int main(int argc, const char **argv) // ignore_convention
 
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pServer); // register as both
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pEngine);
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineMap*>(pEngineMap)); // register as both
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IMap*>(pEngineMap));
+		// RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineMap*>(pEngineMap)); // register as both
+		// RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IMap*>(pEngineMap));
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pGameServer);
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pConsole);
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pStorage);
@@ -2082,7 +2057,7 @@ int main(int argc, const char **argv) // ignore_convention
 	// free
 	delete pServer;
 	delete pKernel;
-	delete pEngineMap;
+	// delete pEngineMap;
 	delete pGameServer;
 	delete pConsole;
 	delete pEngineMasterServer;
@@ -5675,4 +5650,127 @@ void CServer::LogWarning(const char Warning[256])
 {
 	CSqlJob* pJob = new CSqlJob_Server_LogWarning(this, Warning);
 	pJob->Start();
+}
+
+void CServer::ChangeClientMap(int ClientID)
+{
+	//Invalid
+	if(m_aClients[ClientID].m_NextMapID < 0 || m_aClients[ClientID].m_NextMapID >= (int)m_vMapData.size())
+		return;
+
+		/*
+			// new map loaded
+		bool aSpecs[MAX_CLIENTS];
+		for(int c = 0; c < MAX_CLIENTS; c++)
+			aSpecs[c] = GameServer()->IsClientReady(c);
+		*/
+		if(m_aClients[ClientID].m_State <= CClient::STATE_AUTH)
+			return;
+
+		GameServer()->PrepareClientChangeMap(ClientID);
+
+		GameServer()->KillCharacter(ClientID);
+		SendMap(ClientID, m_aClients[ClientID].m_NextMapID);
+		m_aClients[ClientID].Reset();
+		m_aClients[ClientID].m_ChangeMap = true;
+		m_aClients[ClientID].m_State = CClient::STATE_CONNECTING;
+
+	
+
+	GameServer()->OnInitMap(m_aClients[ClientID].m_NextMapID);
+}
+
+void CServer::SetClientMap(int ClientID, int MapID)
+{
+	if(ClientID < 0 || ClientID >= MAX_CLIENTS || MapID < 0 || MapID >= (int)m_vpMap.size())
+		return;
+	m_aClients[ClientID].m_NextMapID = MapID;//Server Run does the rest
+}
+
+void CServer::SetClientMap(int ClientID, char* MapName)
+{
+	for(int i = 0; i < (int)m_vMapData.size(); ++i)
+	{
+		if(str_comp(m_vMapData[i].m_aCurrentMap, MapName) == 0)
+		{
+			SetClientMap(ClientID, i);
+			return;
+		}
+	}
+
+	//Must be the last loaded map
+	m_aClients[ClientID].m_NextMapID = (int)m_vMapData.size()-1;
+}
+
+int CServer::ClientMapID(int ClientID) const
+{
+	return m_aClients[ClientID].m_MapID;
+}
+
+bool CServer::ConSetMapByID(IConsole::IResult *pResult, void *pUser)
+{
+	CServer* pServer = (CServer *)pUser;
+
+	if(pResult->NumArguments() > 1)
+	{
+		int MapID = pResult->GetInteger(0);
+		int ClientID = pResult->GetInteger(1);
+
+		pServer->SetClientMap(ClientID, MapID);
+
+		char aBuf[64];
+		str_format(aBuf, sizeof(aBuf), "Reloaded Map with ID %d for client %d", MapID, ClientID);
+		pServer->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBuf);
+		return true;
+	}
+	else if(pResult->NumArguments() > 0)
+	{
+		int MapID = pResult->GetInteger(0);
+
+		for(int i = 0; i < MAX_NOBOT; ++i)
+		{
+			if(pServer->m_aClients[i].m_State > CClient::STATE_AUTH)
+				pServer->SetClientMap(i, MapID);
+		}
+		char aBuf[64];
+		str_format(aBuf, sizeof(aBuf), "Reloaded Map with ID %d for all clients", MapID);
+		pServer->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBuf);
+		return true;
+	}
+	return false;
+}
+
+bool CServer::ConSetMapByName(IConsole::IResult *pResult, void *pUser)
+{
+	return true;
+/*	CServer* pServer = (CServer *)pUser;
+	char aMapBuf[64];
+	if(pResult->NumArguments() > 1)
+	{
+		str_copy(aMapBuf, pResult->GetString(0), sizeof(aMapBuf));
+		int ClientID = pResult->GetInteger(1);
+
+		pServer->SetClientMap(ClientID, aMapBuf);
+
+		char aBuf[64];
+		str_format(aBuf, sizeof(aBuf), "Reloaded Map with name %s for client %d", aMapBuf, ClientID);
+		pServer->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBuf);
+		return true;
+	}
+	else if(pResult->NumArguments() > 0)
+	{
+		str_copy(aMapBuf, pResult->GetString(0), sizeof(aMapBuf));
+
+		for(int i = 0; i < MAX_CLIENTS; ++i)
+		{
+			if(pServer->m_aClients[i].m_State > CClient::STATE_AUTH)
+				pServer->SetClientMap(i, aMapBuf);
+		}
+		char aBuf[64];
+		str_format(aBuf, sizeof(aBuf), "Reloaded Map with name %s for all clients", aMapBuf);
+		pServer->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "multimap", aBuf);
+		return true;
+	}
+	return false;
+*/
 }

@@ -3,8 +3,8 @@
 #include <game/server/gamecontext.h>
 #include "hero-flag.h"
 
-CHeroFlag::CHeroFlag(CGameWorld *pGameWorld, vec2 Pos)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_HERO_FLAG)
+CHeroFlag::CHeroFlag(CGameWorld *pGameWorld, vec2 Pos, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_HERO_FLAG, MapID)
 {
 	m_ProximityRadius = ms_PhysSize;
 	m_Pos = Pos;

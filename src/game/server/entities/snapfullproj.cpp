@@ -4,8 +4,8 @@
 #include <engine/shared/config.h>
 #include "snapfullproj.h"
 
-CSnapFullProject::CSnapFullProject(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, bool Changing)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_SNAP_FULLPROJECT)
+CSnapFullProject::CSnapFullProject(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, bool Changing, int MapID)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_SNAP_FULLPROJECT, MapID)
 {
 	m_Pos = Pos;
 	m_LoadingTick = Server()->TickSpeed();

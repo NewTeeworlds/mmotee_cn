@@ -7,7 +7,7 @@ class CProjectile : public CEntity
 {
 public:
 	CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
-		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon, int TakeDamageMode = TAKEDAMAGEMODE_NOINFECTION);
+		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon, int TakeDamageMode, int MapID);
 
 	vec2 GetPos(float Time);
 	void FillInfo(CNetObj_Projectile *pProj);

@@ -10,8 +10,8 @@
 
 MACRO_ALLOC_POOL_ID_IMPL(CKwah, MAX_CLIENTS)
 
-CKwah::CKwah(CGameWorld *pWorld)
-: CCharacter(pWorld)
+CKwah::CKwah(CGameWorld *pWorld, int MapID)
+: CCharacter(pWorld, MapID)
 {
 	m_BotDir = 1;
 	m_BotLastPos = m_Pos;
@@ -158,7 +158,7 @@ void CKwah::TickBotAI()
 
 			if (Dist < 400.0f && Dists < 400.0f)
 			{
-				int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
+				int Collide = GameServer()->Collision(GetMapID())->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
 				if(Collide)
 					continue;
 				
@@ -241,7 +241,7 @@ void CKwah::TickBotAI()
     int tx = m_Pos.x+m_BotDir*45.0f;
     if (tx < 0)
         m_BotDir = 1;
-    else if (tx >= GameServer()->Collision()->GetWidth()*32.0f)
+    else if (tx >= GameServer()->Collision(GetMapID())->GetWidth()*32.0f)
     	m_BotDir = -1;
 
     //Delay of actions

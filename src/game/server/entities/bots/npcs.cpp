@@ -11,8 +11,8 @@
 
 MACRO_ALLOC_POOL_ID_IMPL(CNpcSold, MAX_CLIENTS)
 
-CNpcSold::CNpcSold(CGameWorld *pWorld)
-: CCharacter(pWorld)
+CNpcSold::CNpcSold(CGameWorld *pWorld, int MapID)
+: CCharacter(pWorld, MapID)
 {
 	m_BotDir = 1;
 	m_BotLastPos = m_Pos;
@@ -283,7 +283,7 @@ void CNpcSold::TickBotAI()
     int tx = m_Pos.x+m_BotDir*45.0f;
     if (tx < 0)
         m_BotDir = 1;
-    else if (tx >= GameServer()->Collision()->GetWidth()*32.0f)
+    else if (tx >= GameServer()->Collision(GetMapID())->GetWidth()*32.0f)
     	m_BotDir = -1;
 
     //Delay of actions

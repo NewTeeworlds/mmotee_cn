@@ -9,7 +9,7 @@ public:
 	int m_Owner;
 	
 public:
-	CBonus(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int Type, int Owner);
+	CBonus(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int Type, int Owner, int MapID);
 
 	vec2 GetPos(float Time);
 
