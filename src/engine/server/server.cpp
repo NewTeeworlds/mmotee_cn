@@ -2180,12 +2180,13 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 	}
 }
 
-void CServer::InitClientBot(int ClientID)
+void CServer::InitClientBot(int ClientID, int MapID)
 {
 	if (ClientID < MAX_NOBOT || ClientID > MAX_CLIENTS)
 		return;
-		
+	
 	m_aClients[ClientID].m_State = CServer::CClient::STATE_INGAME;
+	m_aClients[ClientID].m_MapID = MapID;
 }
 
 int CServer::GetClientAntiPing(int ClientID)

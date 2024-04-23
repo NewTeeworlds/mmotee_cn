@@ -220,7 +220,7 @@ bool CGameControllerMOD::IsSpawnable(vec2 Pos, int TeleZoneIndex, int MapID)
 {
 	//First check if there is a tee too close
 	CCharacter *aEnts[MAX_CLIENTS];
-	int Num = GameServer()->m_World.FindEntities(Pos, 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+	int Num = GameServer()->m_World.FindEntities(Pos, 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, MapID);
 	
 	for(int c = 0; c < Num; ++c)
 	{

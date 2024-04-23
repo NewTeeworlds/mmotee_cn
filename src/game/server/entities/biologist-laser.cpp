@@ -24,7 +24,7 @@ bool CBiologistLaser::HitCharacter(vec2 From, vec2 To)
 {
 	vec2 At;
 	CCharacter *pOwnerChar = GameServer()->GetPlayerChar(m_Owner);	
-	CCharacter *pHit = GameServer()->m_World.IntersectCharacter(m_Pos, To, 0.f, At, pOwnerChar);
+	CCharacter *pHit = GameServer()->m_World.IntersectCharacter(m_Pos, To, 0.f, At, GetMapID(), pOwnerChar);
 	if(!pHit)
 		return false;
 
@@ -34,7 +34,7 @@ bool CBiologistLaser::HitCharacter(vec2 From, vec2 To)
 	else
 	{
 		if(m_Explode)
-			GameServer()->CreateExplosion(pHit->m_Pos, m_Owner, WEAPON_RIFLE, false, true);
+			GameServer()->CreateExplosion(pHit->m_Pos, m_Owner, WEAPON_RIFLE, false, true, GetMapID());
 		else
 			pHit->TakeDamage(vec2(0.f, 0.f), m_Dmg, m_Owner, WEAPON_RIFLE, 0);
 	}
@@ -78,7 +78,7 @@ void CBiologistLaser::DoBounce()
 			if(m_Bounces > GameServer()->Tuning()->m_LaserBounceNum)
 				m_Energy = -1;
 
-			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE);
+			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_BOUNCE, GetMapID());
 		}
 	}
 	else

@@ -80,7 +80,7 @@ void CBonus::Tick()
 			m_SpawnTick = -1;
 	}
 	
-	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 5.0f, CurPos);
+	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 5.0f, CurPos, GetMapID());
 	if(TargetChr && TargetChr->GetPlayer() && !TargetChr->GetPlayer()->IsBot())
 	{
 		bool Delete = true;
@@ -90,13 +90,13 @@ void CBonus::Tick()
 			case 0:
 			{
 				TargetChr->GetPlayer()->MoneyAdd((int)m_GetLevel, true, true);
-				GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
+				GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, GetMapID());
 			} break; 
 			case 1:
 			{
 				int Get = (m_GetLevel/100)/2;
 				TargetChr->GetPlayer()->ExpAdd(Get);
-				GameServer()->CreateSound(m_Pos, SOUND_PICKUP_ARMOR);
+				GameServer()->CreateSound(m_Pos, SOUND_PICKUP_ARMOR, GetMapID());
 			} break; 
 			case 2:
 			{
@@ -108,7 +108,7 @@ void CBonus::Tick()
 				else
 				{
 					TargetChr->GiveWeapon(WEAPON_SHOTGUN, random_int(0, 8)+1, true);
-					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN);
+					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN, GetMapID());
 				}
 			} break; 
 			case 3:
@@ -121,7 +121,7 @@ void CBonus::Tick()
 				else
 				{
 					TargetChr->GiveWeapon(WEAPON_GRENADE, random_int(0, 8)+1, true);
-					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_GRENADE);
+					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_GRENADE, GetMapID());
 				}
 			} break; 
 			case 4:
@@ -134,13 +134,13 @@ void CBonus::Tick()
 				else
 				{				
 					TargetChr->GiveWeapon(WEAPON_RIFLE, random_int(0, 8)+1, true);
-					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN);
+					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN, GetMapID());
 				}
 			} break; 
 			case 5:
 			{
 				TargetChr->GetPlayer()->ExpAdd(m_GetLevel/2);
-				GameServer()->CreateSound(m_Pos, SOUND_PICKUP_ARMOR);
+				GameServer()->CreateSound(m_Pos, SOUND_PICKUP_ARMOR, GetMapID());
 			} break;
 		}
 		

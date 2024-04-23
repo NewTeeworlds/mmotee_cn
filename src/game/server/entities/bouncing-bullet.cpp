@@ -78,7 +78,7 @@ void CBouncingBullet::Tick()
 	if(!GameServer()->m_apPlayers[m_Owner] || !OwnerChar || GameLayerClipped(CurPos) || m_LifeSpan < 0 || m_BounceLeft < 0 || m_DistanceLeft < 0.0f)
 	{
 		if(GameServer()->m_apPlayers[m_Owner] && OwnerChar && Server()->GetItemSettings(m_Owner, ENDEXPLOSION))
-			GameServer()->CreateExplosion(CurPos, m_Owner, WEAPON_SHOTGUN, false, 0);
+			GameServer()->CreateExplosion(CurPos, m_Owner, WEAPON_SHOTGUN, false, 0, GetMapID());
 
 		GameServer()->m_World.DestroyEntity(this);
 		return;
@@ -90,7 +90,7 @@ void CBouncingBullet::Tick()
 		if(distance(CurPos, IntersectPos) < 30)
 		{
 			if(m_Explosive)
-				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false, 0);
+				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false, 0, GetMapID());
 
 			pMine->m_Health -= 10;			
 			GameServer()->m_World.DestroyEntity(this);
@@ -98,13 +98,13 @@ void CBouncingBullet::Tick()
 		}
 	}
 
-	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
+	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, GetMapID(), OwnerChar);
 	if(TargetChr)
 	{
 		if(OwnerChar)
 		{
 			if(m_Explosive)
-				GameServer()->CreateExplosion(CurPos, m_Owner, WEAPON_SHOTGUN, false, 0);
+				GameServer()->CreateExplosion(CurPos, m_Owner, WEAPON_SHOTGUN, false, 0, GetMapID());
 			else
 				TargetChr->TakeDamage(m_Direction * max(0.001f, 2.0f), (random_prob(0.3333333333f) ? 2 : 1), m_Owner, WEAPON_SHOTGUN, TAKEDAMAGEMODE_NOINFECTION);
 		}

@@ -81,8 +81,8 @@ void CBiologistMine::Tick()
 	
 	if(m_Health <= 0)
 	{
-		GameServer()->CreateExplosionDisk(m_Pos, 100.0f, 157.5f, 300, 22.0f, m_Owner, WEAPON_GRENADE, TAKEDAMAGEMODE_INFECTION);
-		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+		GameServer()->CreateExplosionDisk(m_Pos, 100.0f, 157.5f, 300, 22.0f, m_Owner, WEAPON_GRENADE, TAKEDAMAGEMODE_INFECTION, GetMapID());
+		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE, GetMapID());
 		GameServer()->m_World.DestroyEntity(this);
 		return;
 	}
@@ -96,8 +96,8 @@ void CBiologistMine::Tick()
 			float Len = distance(p->m_Pos, IntersectPos);
 			if(Len < 20)
 			{
-				GameServer()->CreateExplosionDisk(IntersectPos, 200.0f, 267.5f, 500, 42.0f, m_Owner, WEAPON_GRENADE, 0);
-				GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+				GameServer()->CreateExplosionDisk(IntersectPos, 200.0f, 267.5f, 500, 42.0f, m_Owner, WEAPON_GRENADE, TAKEDAMAGEMODE_NOINFECTION, GetMapID());
+				GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE, GetMapID());
 				GameServer()->m_World.DestroyEntity(this);
 				return;
 			}

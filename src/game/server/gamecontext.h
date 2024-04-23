@@ -122,8 +122,8 @@ class CGameContext : public IGameServer
 	IServer *m_pServer;
 	IStorage *m_pStorage;
 	class IConsole *m_pConsole;
-	std::vector<CLayers> m_vLayers;
-	std::vector<CCollision> m_vCollision;
+	std::vector<CLayers *> m_vLayers;
+	std::vector<CCollision *> m_vCollision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
 	// int m_TargetToKill;
@@ -147,7 +147,7 @@ public:
 	IServer *Server() const { return m_pServer; }
 	IStorage *Storage() const { return m_pStorage; }
 	class IConsole *Console() { return m_pConsole; }
-	CCollision *Collision(int MapID) { return &(m_vCollision[MapID]); }
+	CCollision *Collision(int MapID) { return m_vCollision[MapID]; }
 	CTuningParams *Tuning() { return &m_Tuning; }
 
 	CGameContext();
@@ -183,14 +183,14 @@ public:
 
 	// Визуальные функции
 	// 视觉功能
-	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount);
-	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int TakeDamageMode = TAKEDAMAGEMODE_NOINFECTION);
-	void CreateExplosionDisk(vec2 Pos, float InnerRadius, float DamageRadius, int Damage, float Force, int Owner, int Weapon, int TakeDamageMode = TAKEDAMAGEMODE_NOINFECTION);
-	void CreateHammerHit(vec2 Pos);
-	void CreatePlayerSpawn(vec2 Pos);
-	void CreateDeath(vec2 Pos, int Who);
-	void CreateSound(vec2 Pos, int Sound, int64_t Mask = -1);
-	void CreateSoundGlobal(int Sound, int Target = -1);
+	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount, int MapID);
+	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int TakeDamageMode, int MapID);
+	void CreateExplosionDisk(vec2 Pos, float InnerRadius, float DamageRadius, int Damage, float Force, int Owner, int Weapon, int TakeDamageMode, int MapID);
+	void CreateHammerHit(vec2 Pos, int MapID);
+	void CreatePlayerSpawn(vec2 Pos, int MapID);
+	void CreateDeath(vec2 Pos, int Who, int MapID);
+	void CreateSound(vec2 Pos, int Sound, int MapID, int64_t Mask = -1);
+	void CreateSoundGlobal(int Sound, int Target, int MapID);
 
 	// Голосования
 	// 投票
@@ -254,7 +254,7 @@ public:
 	// Помощь, прочие
 	// 帮助别人(?)
 	void UpdateBotInfo(int ClientID);
-	void CreateBot(int ClientID, int BotType, int BotSubType = 0);
+	void CreateBot(int ClientID, int BotType, int MapID, int BotSubType = 0);
 	void CreateLolText(CEntity *pParent, bool Follow, vec2 Pos, vec2 Vel, int Lifespan, const char *pText, int MapID);
 	const char *LevelString(int max, int value, int step, char ch1, char ch2);
 	void SendMail(int ClientID, int MailType, int ItemID, int ItemNum);

@@ -30,7 +30,7 @@ void CBuff::Tick()
 
 	m_LoadingTick--;
 	if(!m_LoadingTick)
-		GameServer()->CreateDeath(m_Pos, m_Owner);
+		GameServer()->CreateDeath(m_Pos, m_Owner, GetMapID());
 
 	m_Pos.y -= 3;
 }

@@ -305,7 +305,7 @@ public:
 	virtual int GetMailRewardDell(int ClientID, int ID);
 
 	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType);
-	virtual void InitClientBot(int ClientID);
+	virtual void InitClientBot(int ClientID, int MapID);
 
 	CClient m_aClients[MAX_CLIENTS];
 	int IdMap[MAX_CLIENTS * VANILLA_MAX_CLIENTS];
@@ -327,11 +327,6 @@ public:
 	int m_PrintCBIndex;
 
 	int64 m_Lastheartbeat;
-	
-	enum
-	{
-		MAP_DEFAULT_ID=0,
-	};
 
 	struct CMapData
 	{

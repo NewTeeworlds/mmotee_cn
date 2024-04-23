@@ -41,7 +41,7 @@ CEntity *CGameWorld::FindFirst(int Type)
 	return Type < 0 || Type >= NUM_ENTTYPES ? 0 : m_apFirstEntityTypes[Type];
 }
 
-int CGameWorld::FindEntities(vec2 Pos, float Radius, CEntity **ppEnts, int Max, int Type)
+int CGameWorld::FindEntities(vec2 Pos, float Radius, CEntity **ppEnts, int Max, int Type, int MapID)
 {
 	if (Type < 0 || Type >= NUM_ENTTYPES)
 		return 0;
@@ -49,6 +49,9 @@ int CGameWorld::FindEntities(vec2 Pos, float Radius, CEntity **ppEnts, int Max, 
 	int Num = 0;
 	for (CEntity *pEnt = m_apFirstEntityTypes[Type]; pEnt; pEnt = pEnt->m_pNextTypeEntity)
 	{
+		if(pEnt->GetMapID() != MapID)
+			continue;
+
 		if (distance(pEnt->m_Pos, Pos) < Radius + pEnt->m_ProximityRadius)
 		{
 			if (ppEnts)
@@ -267,7 +270,7 @@ void CGameWorld::Tick()
 }
 
 // TODO: should be more general
-CCharacter *CGameWorld::IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, vec2 &NewPos, CEntity *pNotThis)
+CCharacter *CGameWorld::IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, vec2 &NewPos, int MapID, CEntity *pNotThis)
 {
 	// Find other players
 	float ClosestLen = distance(Pos0, Pos1) * 100.0f;
@@ -277,6 +280,8 @@ CCharacter *CGameWorld::IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, v
 	for (; p; p = (CCharacter *)p->TypeNext())
 	{
 		if (p == pNotThis)
+			continue;
+		if(p->GetMapID() != MapID)
 			continue;
 
 		vec2 IntersectPos = closest_point_on_line(Pos0, Pos1, p->m_Pos);
@@ -296,7 +301,7 @@ CCharacter *CGameWorld::IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, v
 	return pClosest;
 }
 
-CCharacter *CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity *pNotThis)
+CCharacter *CGameWorld::ClosestCharacter(vec2 Pos, float Radius, int MapID, CEntity *pNotThis)
 {
 	// Find other players
 	float ClosestRange = Radius * 2;
@@ -305,6 +310,8 @@ CCharacter *CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity *pNotTh
 	CCharacter *p = (CCharacter *)GameServer()->m_World.FindFirst(ENTTYPE_CHARACTER);
 	for (; p; p = (CCharacter *)p->TypeNext())
 	{
+		if (p->GetMapID() != MapID)
+			continue;
 		if (p == pNotThis)
 			continue;
 

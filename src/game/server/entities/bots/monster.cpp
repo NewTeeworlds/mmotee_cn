@@ -96,7 +96,7 @@ void CMonster::TickBotAI()
 	for (int i=0; i<g_Config.m_SvMaxClients; i++)
 	{
 	    CPlayer *pPlayer = GameServer()->m_apPlayers[i];
-	    if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->GetBotType() == BOT_L1MONSTER)
+	    if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->GetMID() == GetMapID())
             continue;
 
         int Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);

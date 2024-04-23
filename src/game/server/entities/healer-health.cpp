@@ -34,8 +34,8 @@ void CHealthHealer::Reset()
 	CPlayer *pOwner = GameServer()->m_apPlayers[m_Owner];
 	if(pOwner && pOwner->GetCharacter())
 	{
-		GameServer()->CreateExplosionDisk(m_Pos, 60.0f, 87.5f, 200, 10.0f, m_Owner, WEAPON_GRENADE, TAKEDAMAGEMODE_INFECTION);
-		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+		GameServer()->CreateExplosionDisk(m_Pos, 60.0f, 87.5f, 200, 10.0f, m_Owner, WEAPON_GRENADE, TAKEDAMAGEMODE_INFECTION, GetMapID());
+		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE, GetMapID());
 	}
 	GameServer()->m_World.DestroyEntity(this);
 	return;

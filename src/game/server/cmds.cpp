@@ -343,7 +343,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 		int soundid = clamp(size, 0, 40);
 		if (GameServer()->GetPlayerChar(ClientID))
-			GameServer()->CreateSound(m_pPlayer->GetCharacter()->m_Pos, soundid);
+			GameServer()->CreateSound(m_pPlayer->GetCharacter()->m_Pos, soundid, GameServer()->GetPlayerChar(ClientID)->GetMapID());
 		return;
 	}
 	else if (!strncmp(Msg->m_pMessage, "/jail", 5) && GameServer()->Server()->IsAuthed(ClientID))

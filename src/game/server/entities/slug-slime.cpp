@@ -46,7 +46,7 @@ void CSlugSlime::Tick()
 	
 	if(random_prob(0.2f))
 	{
-		GameServer()->CreateDeath(m_Pos, m_Owner);
+		GameServer()->CreateDeath(m_Pos, m_Owner, GetMapID());
 	}
 	
 	m_LifeSpan--;

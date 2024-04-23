@@ -215,7 +215,7 @@ void CCharacter::SetWeapon(int W)
 	m_LastWeapon = m_ActiveWeapon;
 	m_QueuedWeapon = -1;
 	m_ActiveWeapon = W;
-	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SWITCH);
+	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SWITCH, GetMapID());
 
 	if(m_ActiveWeapon < 0 || m_ActiveWeapon >= NUM_WEAPONS)
 		m_ActiveWeapon = 0;
@@ -261,7 +261,7 @@ void CCharacter::HandleNinja()
 			vec2 Dir = m_Pos - OldPos;
 			float Radius = m_ProximityRadius * 2.0f;
 			vec2 Center = OldPos + Dir * 0.5f;
-			int Num = GameServer()->m_World.FindEntities(Center, Radius, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+			int Num = GameServer()->m_World.FindEntities(Center, Radius, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, GetMapID());
 
 			for (int i = 0; i < Num; ++i)
 			{
@@ -283,7 +283,7 @@ void CCharacter::HandleNinja()
 					continue;
 
 				// Hit a player, give him damage and stuffs...
-				GameServer()->CreateSound(aEnts[i]->m_Pos, SOUND_NINJA_HIT);
+				GameServer()->CreateSound(aEnts[i]->m_Pos, SOUND_NINJA_HIT, GetMapID());
 				// set his velocity to fast upward (for now)
 				if(m_NumObjectsHit < 10)
 					m_apHitObjects[m_NumObjectsHit++] = aEnts[i];
@@ -462,7 +462,7 @@ void CCharacter::FireWeapon()
 		m_ReloadTimer = 125 * Server()->TickSpeed() / 1000;
 		if(m_LastNoAmmoSound+Server()->TickSpeed() <= Server()->Tick())
 		{
-			GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO);
+			GameServer()->CreateSound(m_Pos, SOUND_WEAPON_NOAMMO, GetMapID());
 			m_LastNoAmmoSound = Server()->Tick();
 		}
 		return;
@@ -491,14 +491,14 @@ void CCharacter::FireWeapon()
 		
 			// reset objects Hit
 			m_NumObjectsHit = 0;
-			GameServer()->CreateSound(m_Pos, SOUND_HAMMER_FIRE);
+			GameServer()->CreateSound(m_Pos, SOUND_HAMMER_FIRE, GetMapID());
 			
 			CCharacter *apEnts[MAX_CLIENTS];
 			int Hits = 0;
 			
 			if(Server()->GetItemSettings(m_pPlayer->GetCID(), LAMPHAMMER))
 			{
-				int Num = GameServer()->m_World.FindEntities(ProjStartPos, m_ProximityRadius*10.0f+Range, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+				int Num = GameServer()->m_World.FindEntities(ProjStartPos, m_ProximityRadius*10.0f+Range, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, GetMapID());
 				for (int i = 0; i < Num; ++i)
 				{
 					CCharacter *pTarget = apEnts[i];
@@ -509,7 +509,7 @@ void CCharacter::FireWeapon()
 				}
 			}
 
-			int Num = GameServer()->m_World.FindEntities(ProjStartPos, m_ProximityRadius*2.0f+Range, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+			int Num = GameServer()->m_World.FindEntities(ProjStartPos, m_ProximityRadius*2.0f+Range, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, GetMapID());
 			for (int i = 0; i < Num; ++i)
 			{
 				CCharacter *pTarget = apEnts[i];
@@ -519,9 +519,9 @@ void CCharacter::FireWeapon()
 
 				// set his velocity to fast upward (for now)
 				if(length(pTarget->m_Pos-ProjStartPos) > 0.0f)
-					GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*m_ProximityRadius*0.5f);
+					GameServer()->CreateHammerHit(pTarget->m_Pos-normalize(pTarget->m_Pos-ProjStartPos)*m_ProximityRadius*0.5f, GetMapID());
 				else
-					GameServer()->CreateHammerHit(ProjStartPos);
+					GameServer()->CreateHammerHit(ProjStartPos, GetMapID());
 
 				vec2 Dir;
 				if (length(pTarget->m_Pos - m_Pos) > 0.0f)
@@ -556,7 +556,7 @@ void CCharacter::FireWeapon()
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime),
 					g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, Explode, 10, -1, WEAPON_GUN, TAKEDAMAGEMODE_NOINFECTION, GetMapID());
 
-			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
+			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE, GetMapID());
 		} break;
 
 		case WEAPON_SHOTGUN: 
@@ -600,7 +600,7 @@ void CCharacter::FireWeapon()
 				}
 			}
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
-			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE, GetMapID());
 		} break;
 
 		case WEAPON_GRENADE:
@@ -649,7 +649,7 @@ void CCharacter::FireWeapon()
 				}
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 			}
-			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
+			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE, GetMapID());
 		} break;
 
 		case WEAPON_RIFLE:
@@ -673,13 +673,13 @@ void CCharacter::FireWeapon()
 				
 				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode, GetMapID());
 			}
-			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
+			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE, GetMapID());
 		} break;
 
 		case WEAPON_NINJA:
 		{
 			m_NumObjectsHit = 0;
-			GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE);
+			GameServer()->CreateSound(m_Pos, SOUND_NINJA_FIRE, GetMapID());
 		} break;
 
 	}
@@ -918,7 +918,7 @@ void CCharacter::Tick()
 		}
 
 		if((m_pPlayer->m_AngryWroth > 120 || Server()->GetItemCount(m_pPlayer->GetCID(), SPECSNAPDRAW)) && Server()->Tick() % (1 * Server()->TickSpeed()) == 0)
-			GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+			GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 
 		m_pPlayer->m_Health = m_Health;
 		
@@ -1253,15 +1253,15 @@ void CCharacter::Tick()
 
 			if (PlayerPos == ZONE_WATER && !m_InWater)
 			{
-				GameServer()->CreateSound(m_Pos, 11);
-				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+				GameServer()->CreateSound(m_Pos, 11, GetMapID());
+				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 				m_InWater = true;
 				break;
 			}
 			else if (PlayerPos != ZONE_WATER && m_InWater)
 			{
-				GameServer()->CreateSound(m_Pos, 11);
-				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+				GameServer()->CreateSound(m_Pos, 11, GetMapID());
+				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 				m_InWater = false;
 				break;
 			}
@@ -1320,7 +1320,7 @@ void CCharacter::Tick()
 		else
 		{
 			if (m_FrozenTime % Server()->TickSpeed() == Server()->TickSpeed() - 1)
-				GameServer()->CreateDamageInd(m_Pos, 0, (m_FrozenTime + 1) / Server()->TickSpeed());		
+				GameServer()->CreateDamageInd(m_Pos, 0, (m_FrozenTime + 1) / Server()->TickSpeed(), GetMapID());		
 		}
 	}
 	
@@ -1334,7 +1334,7 @@ void CCharacter::Tick()
 			m_Poison--;
 			if(GameServer()->m_apPlayers[m_PoisonFrom] && GameServer()->m_apPlayers[m_PoisonFrom]->GetCharacter())
 			{
-				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 				TakeDamage(vec2(0.0f, 0.0f), 1, m_PoisonFrom, WEAPON_HAMMER, TAKEDAMAGEMODE_NOINFECTION);
 				GameServer()->SendEmoticon(m_pPlayer->GetCID(), EMOTICON_SORRY);
 			}
@@ -1402,7 +1402,7 @@ void CCharacter::Tick()
 			{
 				m_HookDmgTick = Server()->Tick();
 				if(Server()->GetItemSettings(m_pPlayer->GetCID(), MODULEHOOKEXPLODE))
-					GameServer()->CreateExplosion(GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->GetCharacter()->m_Pos, m_pPlayer->GetCID(), WEAPON_WORLD, false, 0);
+					GameServer()->CreateExplosion(GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->GetCharacter()->m_Pos, m_pPlayer->GetCID(), WEAPON_WORLD, false, 0, GetMapID());
 				else
 					GameServer()->m_apPlayers[m_Core.m_HookedPlayer]->GetCharacter()->TakeDamage(vec2(0,0), 2, m_pPlayer->GetCID(), WEAPON_WORLD, false);
 			}
@@ -1642,7 +1642,7 @@ void CCharacter::Die(int Killer, int Weapon)
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	}
 	// a nice sound
-	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
+	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, GetMapID());
 
 	// 因为boss/玩家的死亡导致的boss战结束
 	// вся хуйня когда мрут боссы и игроки
@@ -1681,7 +1681,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	m_Alive = false;
 	GameServer()->m_World.RemoveEntity(this);
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 	
 	if(Killer >=0 && Killer < MAX_CLIENTS)
 	{
@@ -1735,7 +1735,7 @@ void CCharacter::Die_Bot() //机器人(如 Pig)因为进入 non-PvP 区域而判
 	m_pPlayer->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 
 	// a nice sound
-	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
+	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, GetMapID());
 
 	
 
@@ -1745,7 +1745,7 @@ void CCharacter::Die_Bot() //机器人(如 Pig)因为进入 non-PvP 区域而判
 	m_Alive = false;
 	GameServer()->m_World.RemoveEntity(this);
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 	
 
 }
@@ -1768,7 +1768,7 @@ int CCharacter::SendToJail(int PlayerID, int JailLength) //手动送某人进监
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	
 	// a nice sound
-	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
+	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, GetMapID());
 
 	// this is for auto respawn after 3 secs
 	m_pPlayer->m_DieTick = Server()->Tick();
@@ -1776,7 +1776,7 @@ int CCharacter::SendToJail(int PlayerID, int JailLength) //手动送某人进监
 	m_Alive = false;
 	GameServer()->m_World.RemoveEntity(this);
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 	
 	CPlayer* pKillerPlayer = GameServer()->m_apPlayers[PlayerID];
 	pKillerPlayer->AccData.Kill++;
@@ -1810,7 +1810,7 @@ int CCharacter::Unjail(int PlayerID) //手动救某人出监狱
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	
 	// a nice sound
-	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
+	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, GetMapID());
 	
 	// this is for auto respawn after 3 secs
 	m_pPlayer->m_DieTick = Server()->Tick();
@@ -1818,7 +1818,7 @@ int CCharacter::Unjail(int PlayerID) //手动救某人出监狱
 	m_Alive = false;
 	GameServer()->m_World.RemoveEntity(this);
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
-	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID(), GetMapID());
 	
 	m_pPlayer->m_Search = false;
 	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 出监狱了!"), "name", Server()->ClientName(m_pPlayer->GetCID()), NULL);
@@ -1998,12 +1998,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 	if(Server()->Tick() < m_DamageTakenTick+25)
 	{
-		GameServer()->CreateDamageInd(m_Pos, m_DamageTaken*0.25f, Dmg/10);
+		GameServer()->CreateDamageInd(m_Pos, m_DamageTaken*0.25f, Dmg/10, GetMapID());
 	}
 	else
 	{
 		m_DamageTaken = 0;
-		GameServer()->CreateDamageInd(m_Pos, 0, Dmg/10);
+		GameServer()->CreateDamageInd(m_Pos, 0, Dmg/10, GetMapID());
 	}
 
 	if(Dmg)
@@ -2194,9 +2194,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	}
 
 	if (Dmg > 2)
-		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_LONG);
+		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_LONG, GetMapID());
 	else
-		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_SHORT);
+		GameServer()->CreateSound(m_Pos, SOUND_PLAYER_PAIN_SHORT, GetMapID());
 
 	m_EmoteType = EMOTE_PAIN;
 	m_EmoteStop = Server()->Tick() + 500 * Server()->TickSpeed() / 1000;
@@ -2651,7 +2651,7 @@ void CCharacter::SetClass(int ClassChoosed)
 	DestroyChildEntities();
 	
 	m_QueuedWeapon = -1;
-	GameServer()->CreatePlayerSpawn(m_Pos);
+	GameServer()->CreatePlayerSpawn(m_Pos, GetMapID());
 }
 
 void CCharacter::SlipperyEffect()
@@ -2673,7 +2673,7 @@ void CCharacter::Unfreeze()
 {
 	m_IsFrozen = false;
 	m_FrozenTime = -1;
-	GameServer()->CreatePlayerSpawn(m_Pos);
+	GameServer()->CreatePlayerSpawn(m_Pos, GetMapID());
 }
 
 void CCharacter::Poison(int Count, int From)
@@ -2845,7 +2845,7 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 					if(p->GetPlayer()->m_Health < p->GetPlayer()->m_HealthStart)
 						p->m_Health += 1000;
 						
-					GameServer()->CreateDeath(p->m_Pos, p->GetPlayer()->GetCID());
+					GameServer()->CreateDeath(p->m_Pos, p->GetPlayer()->GetCID(), GetMapID());
 				}
 			}
 		}

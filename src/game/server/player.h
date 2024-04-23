@@ -223,8 +223,7 @@ private:
 	int m_ClientID;
 	int m_Team;
 
-	char pTitle[64];
-	bool m_ShowClan;
+	char m_pTitle[64];
 
 	// Пользовальские переменные
 	// 自定义变量

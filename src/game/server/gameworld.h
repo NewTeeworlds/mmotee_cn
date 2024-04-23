@@ -83,11 +83,12 @@ public:
 				to the entities.
 			max - Number of entities that fits into the ents array.
 			type - Type of the entities to find.
+			MapID - Map of the entities in's ID.
 
 		Returns:
 			Number of entities found and added to the ents array.
 	*/
-	int FindEntities(vec2 Pos, float Radius, CEntity **ppEnts, int Max, int Type);
+	int FindEntities(vec2 Pos, float Radius, CEntity **ppEnts, int Max, int Type, int MapID);
 
 	/*
 		Function: interserct_CCharacter
@@ -99,11 +100,12 @@ public:
 			radius - How for from the line the CCharacter is allowed to be.
 			new_pos - Intersection position
 			notthis - Entity to ignore intersecting with
+			MapID
 
 		Returns:
 			Returns a pointer to the closest hit or NULL of there is no intersection.
 	*/
-	class CCharacter *IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, vec2 &NewPos, class CEntity *pNotThis = 0);
+	class CCharacter *IntersectCharacter(vec2 Pos0, vec2 Pos1, float Radius, vec2 &NewPos, int MapID, class CEntity *pNotThis = 0);
 
 	/*
 		Function: closest_CCharacter
@@ -117,7 +119,7 @@ public:
 		Returns:
 			Returns a pointer to the closest CCharacter or NULL if no CCharacter is close enough.
 	*/
-	class CCharacter *ClosestCharacter(vec2 Pos, float Radius, CEntity *ppNotThis);
+	class CCharacter *ClosestCharacter(vec2 Pos, float Radius, int MapID, CEntity *ppNotThis);
 
 	/*
 		Function: insert_entity

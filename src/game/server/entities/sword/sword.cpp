@@ -19,8 +19,8 @@ void CSword::Reset()
 {	
 	if(GameServer()->m_apPlayers[m_Owner] && GameServer()->m_apPlayers[m_Owner]->GetCharacter())
 	{
-		GameServer()->CreateDeath(m_Pos2, m_Owner);
-		GameServer()->CreateDeath(m_Pos, m_Owner);
+		GameServer()->CreateDeath(m_Pos2, m_Owner, GetMapID());
+		GameServer()->CreateDeath(m_Pos, m_Owner, GetMapID());
 	}
 	GameServer()->m_World.DestroyEntity(this);
 }
@@ -50,7 +50,7 @@ void CSword::Tick()
 		{
 			PosLine = closest_point_on_line(m_Pos2, m_Pos, p->PosLine);
 			if(distance(p->PosLine, PosLine) < 20) 
-				GameServer()->CreateExplosion(PosLine, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION);
+				GameServer()->CreateExplosion(PosLine, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION, GetMapID());
 		}
 	}
 
@@ -62,8 +62,8 @@ void CSword::Tick()
 			vec2 InsertPos = closest_point_on_line(m_Pos2, m_Pos, p->m_Pos);
 			if(p->GetPlayer()->GetCID() != m_Owner && distance(p->m_Pos, InsertPos) < 10) 
 			{
-				GameServer()->CreateDeath(InsertPos, p->GetPlayer()->GetCID());
-				GameServer()->CreateExplosion(InsertPos, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION);
+				GameServer()->CreateDeath(InsertPos, p->GetPlayer()->GetCID(), GetMapID());
+				GameServer()->CreateExplosion(InsertPos, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION, GetMapID());
 			}
 		}
 	}

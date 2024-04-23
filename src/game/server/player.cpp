@@ -139,7 +139,7 @@ void CPlayer::RandomBoxTick()
 				m_OpenBoxType = 0;
 
 				if (m_pCharacter)
-					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
+					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID, GetMID());
 
 				GameServer()->GiveItem(m_ClientID, getitem, m_OpenBoxAmount);
 				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
@@ -169,7 +169,7 @@ void CPlayer::RandomBoxTick()
 				m_OpenBoxType = 0;
 
 				if (m_pCharacter)
-					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
+					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID, GetMID());
 
 				GameServer()->GiveItem(m_ClientID, getitem, m_OpenBoxAmount);
 				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
@@ -232,7 +232,7 @@ void CPlayer::RandomBoxTick()
 				m_OpenBoxType = 0;
 
 				if (m_pCharacter)
-					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
+					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID, GetMID());
 
 				GameServer()->GiveItem(m_ClientID, getitem, Get);
 				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
@@ -251,12 +251,12 @@ void CPlayer::BasicAuthedTick()
 	if (Server()->GetItemSettings(GetCID(), SSHOWCLAN))
 	{
 		str_format(aBuf, sizeof(aBuf), "%s", Server()->ClientClan(m_ClientID));
-		str_copy(pTitle, aBuf, sizeof(pTitle));
+		str_copy(m_pTitle, aBuf, sizeof(m_pTitle));
 	}
 	else
 	{
 		str_format(aBuf, sizeof(aBuf), ":%s", TitleGot());
-		str_copy(pTitle, aBuf, sizeof(pTitle));
+		str_copy(m_pTitle, aBuf, sizeof(m_pTitle));
 	}
 
 	if (Server()->GetItemCount(m_ClientID, PIGPORNO) > 1000 && !Server()->GetItemCount(m_ClientID, PIGPIG))
@@ -296,9 +296,9 @@ void CPlayer::BasicAuthedTick()
 		if (m_pCharacter)
 		{
 			GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 50, "Level ++", GetMID());
-			GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
+			GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID, GetMID());
 		}
-		GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE, m_ClientID);
+		GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE, m_ClientID, GetMID());
 
 		GameServer()->UpdateUpgrades(m_ClientID);
 		GameServer()->UpdateStats(m_ClientID);
@@ -796,7 +796,7 @@ void CPlayer::Snap(int SnappingClient)
 		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
 
 	if (Server()->IsClientLogged(m_ClientID))
-		StrToInts(&pClientInfo->m_Clan0, 3, pTitle);
+		StrToInts(&pClientInfo->m_Clan0, 3, m_pTitle);
 	else
 		StrToInts(&pClientInfo->m_Clan0, 3, Server()->ClientClan(m_ClientID));
 
@@ -1164,7 +1164,7 @@ void CPlayer::TryRespawn()
 
 	m_pCharacter->Spawn(this, SpawnPos);
 	if (GetClass() != PLAYERCLASS_NONE)
-		GameServer()->CreatePlayerSpawn(SpawnPos);
+		GameServer()->CreatePlayerSpawn(SpawnPos, GetMID());
 }
 
 int CPlayer::GetClass()

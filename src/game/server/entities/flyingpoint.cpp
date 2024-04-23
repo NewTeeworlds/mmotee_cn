@@ -28,7 +28,7 @@ void CFlyingPoint::Tick()
 	if(Dist < 24.0f)
 	{
 		if(pOwner->IsBot())
-			GameServer()->CreateExplosion(pOwner->GetCharacter()->m_Pos, m_GetPlayer, WEAPON_HAMMER, false, 10);
+			GameServer()->CreateExplosion(pOwner->GetCharacter()->m_Pos, m_GetPlayer, WEAPON_HAMMER, false, 10, GetMapID());
 		else if(pOwner->m_AngryWroth < 250)
 			pOwner->m_AngryWroth++;	
 

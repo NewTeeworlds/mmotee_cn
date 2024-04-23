@@ -77,7 +77,7 @@ void CDropItem::Tick()
 			m_SpawnTick = -1;
 	}
 
-	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 20.0f, CurPos);
+	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 20.0f, CurPos, GetMapID());
 	if(TargetChr && TargetChr->GetPlayer() && !TargetChr->GetPlayer()->IsBot())
 	{
 		int ClientID = TargetChr->GetPlayer()->GetCID();

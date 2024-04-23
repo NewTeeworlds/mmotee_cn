@@ -62,7 +62,7 @@ void CMoneyBag::Tick()
 					{
 						int Count = 4+random_int(0, 4);
 						GameServer()->SendChatTarget_Localization(-1, -1, _("{str:name} 捡到钱袋了! 拿到了 {int:got} + {int:bonus} 个钱袋!"), "name", Server()->ClientName(p->GetPlayer()->GetCID()), "got", &Count, "bonus", &m_TimeActive, NULL);
-						GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
+						GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, GetMapID());
 						GameServer()->GiveItem(p->GetPlayer()->GetCID(), MONEYBAG, Count+m_TimeActive);
 						Picking(300+random_int(0, 2000));
 					}

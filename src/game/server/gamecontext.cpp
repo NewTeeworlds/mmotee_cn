@@ -103,7 +103,7 @@ class CCharacter *CGameContext::GetPlayerChar(int ClientID)
 	return m_apPlayers[ClientID]->GetCharacter();
 }
 
-void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount)
+void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount, int MapID)
 {
 	float a = 3 * pi / 2 + Angle;
 	float s = a - pi / 3;
@@ -121,7 +121,7 @@ void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount)
 	}
 }
 
-void CGameContext::CreateHammerHit(vec2 Pos)
+void CGameContext::CreateHammerHit(vec2 Pos, int MapID)
 {
 	// create the event
 	CNetEvent_HammerHit *pEvent = (CNetEvent_HammerHit *)m_Events.Create(NETEVENTTYPE_HAMMERHIT, sizeof(CNetEvent_HammerHit));
@@ -132,7 +132,7 @@ void CGameContext::CreateHammerHit(vec2 Pos)
 	}
 }
 
-void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int TakeDamageMode)
+void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int TakeDamageMode, int MapID)
 {
 	// create the event
 	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
@@ -148,7 +148,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 		CCharacter *apEnts[MAX_CLIENTS];
 		float Radius = 135.0f;
 		float InnerRadius = 48.0f;
-		int Num = m_World.FindEntities(Pos, Radius, (CEntity **)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+		int Num = m_World.FindEntities(Pos, Radius, (CEntity **)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, MapID);
 		for (int i = 0; i < Num; i++)
 		{
 			if (apEnts[i])
@@ -173,7 +173,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 }
 
 // Thanks to Stitch for the idea
-void CGameContext::CreateExplosionDisk(vec2 Pos, float InnerRadius, float DamageRadius, int Damage, float Force, int Owner, int Weapon, int TakeDamageMode)
+void CGameContext::CreateExplosionDisk(vec2 Pos, float InnerRadius, float DamageRadius, int Damage, float Force, int Owner, int Weapon, int TakeDamageMode, int MapID)
 {
 	// create the event
 	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
@@ -186,7 +186,7 @@ void CGameContext::CreateExplosionDisk(vec2 Pos, float InnerRadius, float Damage
 	{
 		// deal damage
 		CCharacter *apEnts[MAX_CLIENTS];
-		int Num = m_World.FindEntities(Pos, DamageRadius, (CEntity **)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+		int Num = m_World.FindEntities(Pos, DamageRadius, (CEntity **)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER, MapID);
 		for (int i = 0; i < Num; i++)
 		{
 			vec2 Diff = apEnts[i]->m_Pos - Pos;
@@ -217,7 +217,7 @@ void CGameContext::CreateExplosionDisk(vec2 Pos, float InnerRadius, float Damage
 	}
 }
 
-void CGameContext::CreatePlayerSpawn(vec2 Pos)
+void CGameContext::CreatePlayerSpawn(vec2 Pos, int MapID)
 {
 	// create the event
 	CNetEvent_Spawn *ev = (CNetEvent_Spawn *)m_Events.Create(NETEVENTTYPE_SPAWN, sizeof(CNetEvent_Spawn));
@@ -228,7 +228,7 @@ void CGameContext::CreatePlayerSpawn(vec2 Pos)
 	}
 }
 
-void CGameContext::CreateDeath(vec2 Pos, int ClientID)
+void CGameContext::CreateDeath(vec2 Pos, int ClientID, int MapID)
 {
 	// create the event
 	CNetEvent_Death *pEvent = (CNetEvent_Death *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(CNetEvent_Death));
@@ -240,7 +240,7 @@ void CGameContext::CreateDeath(vec2 Pos, int ClientID)
 	}
 }
 
-void CGameContext::CreateSound(vec2 Pos, int Sound, int64_t Mask)
+void CGameContext::CreateSound(vec2 Pos, int Sound, int MapID, int64_t Mask)
 {
 	if (Sound < 0)
 		return;
@@ -255,7 +255,7 @@ void CGameContext::CreateSound(vec2 Pos, int Sound, int64_t Mask)
 	}
 }
 
-void CGameContext::CreateSoundGlobal(int Sound, int Target)
+void CGameContext::CreateSoundGlobal(int Sound, int Target, int MapID)
 {
 	if (Sound < 0)
 		return;
@@ -844,7 +844,7 @@ void CGameContext::BossTick()
 				if (m_apPlayers[i])
 				{
 					if (m_apPlayers[i]->m_InBossed && m_apPlayers[i]->GetCharacter())
-						m_apPlayers[i]->GetCharacter()->Die(i, WEAPON_WORLD);
+						Server()->SetClientMap(i, BOSS_MAP_ID);
 				}
 			}
 			int CountBoss = GetBossCount();
@@ -3490,7 +3490,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		return;
 
 	if (m_apPlayers[ClientID]->GetCharacter() && Type > AUTH)
-		CreateSound(m_apPlayers[ClientID]->GetCharacter()->m_Pos, 25);
+		CreateSound(m_apPlayers[ClientID]->GetCharacter()->m_Pos, 25, m_apPlayers[ClientID]->GetMID());
 
 	// TODO
 	//  ############################### Основное не авторизированных
@@ -4861,9 +4861,8 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	{
 		for(unsigned i = 0; i < rStart.u.array.length; ++i)
 		{
-			int MapID = rStart[i]["id"];
-			Server()->LoadMap(rStart[i]["map"], MapID);
-			OnInitMap(MapID);
+			Server()->LoadMap(rStart[i]["map"], rStart[i]["id"].u.integer);
+			OnInitMap(rStart[i]["id"].u.integer);
 		}
 	}
 
@@ -4920,32 +4919,31 @@ void CGameContext::OnInitMap(int MapID)
 
 	IEngineMap* pMap = Server()->GetMap(MapID);
 
-	m_vLayers.push_back(CLayers());
-	m_vCollision.push_back(CCollision());
+	m_vLayers.push_back(new CLayers());
+	m_vCollision.push_back(new CCollision());
 
-	m_vLayers[MapID].Init(Kernel(), pMap);//Default map id
-	m_vCollision[MapID].Init(&(m_vLayers[MapID]));
+	m_vLayers[MapID]->Init(Kernel(), pMap);//Default map id
+	m_vCollision[MapID]->Init(m_vLayers[MapID]);
 
 	// Get zones
-	dbg_msg("test", "%d", MapID);
-	m_ZoneHandle_Damage[MapID] = m_vCollision[MapID].GetZoneHandle("icDamage");
-	m_ZoneHandle_Teleport[MapID] = m_vCollision[MapID].GetZoneHandle("icTele");
-	m_ZoneHandle_Bonus[MapID] = m_vCollision[MapID].GetZoneHandle("icBonus");
+	m_ZoneHandle_Damage[MapID] = m_vCollision[MapID]->GetZoneHandle("icDamage");
+	m_ZoneHandle_Teleport[MapID] = m_vCollision[MapID]->GetZoneHandle("icTele");
+	m_ZoneHandle_Bonus[MapID] = m_vCollision[MapID]->GetZoneHandle("icBonus");
 
 	// create all entities from entity layers
-	if (m_vLayers[MapID].EntityGroup())
+	if (m_vLayers[MapID]->EntityGroup())
 	{
 		char aLayerName[12];
 
-		const CMapItemGroup *pGroup = m_vLayers[MapID].EntityGroup();
+		const CMapItemGroup *pGroup = m_vLayers[MapID]->EntityGroup();
 		for (int l = 0; l < pGroup->m_NumLayers; l++)
 		{
-			CMapItemLayer *pLayer = m_vLayers[MapID].GetLayer(pGroup->m_StartLayer + l);
+			CMapItemLayer *pLayer = m_vLayers[MapID]->GetLayer(pGroup->m_StartLayer + l);
 			if (pLayer->m_Type == LAYERTYPE_QUADS)
 			{
 				CMapItemLayerQuads *pQLayer = (CMapItemLayerQuads *)pLayer;
 				IntsToStr(pQLayer->m_aName, sizeof(aLayerName) / sizeof(int), aLayerName);
-				const CQuad *pQuads = (const CQuad *)m_vLayers[MapID].Map()->GetDataSwapped(pQLayer->m_Data);
+				const CQuad *pQuads = (const CQuad *)m_vLayers[MapID]->Map()->GetDataSwapped(pQLayer->m_Data);
 
 				for (int q = 0; q < pQLayer->m_NumQuads; q++)
 				{
@@ -5172,7 +5170,7 @@ void CGameContext::UpdateBotInfo(int ClientID)
 	m_pController->OnPlayerInfoChange(m_apPlayers[ClientID]);
 }
 
-void CGameContext::CreateBot(int ClientID, int BotType, int BotSubType)
+void CGameContext::CreateBot(int ClientID, int BotType, int MapID, int BotSubType)
 {
 	int BotClientID = g_Config.m_SvMaxClients - MAX_BOTS + ClientID;
 	if (m_apPlayers[BotClientID])
@@ -5182,7 +5180,7 @@ void CGameContext::CreateBot(int ClientID, int BotType, int BotSubType)
 	m_apPlayers[BotClientID]->SetBotType(BotType);
 	m_apPlayers[BotClientID]->SetBotSubType(BotSubType);
 
-	Server()->InitClientBot(BotClientID);
+	Server()->InitClientBot(BotClientID, MapID);
 }
 
 void CGameContext::DeleteBotBoss() { Server()->Kick(BOSSID, "pizdyi"); }
@@ -5467,7 +5465,7 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 		m_apPlayers[BOSSID]->SetBotType(BossType);
 		m_apPlayers[BOSSID]->SetBotSubType(g_Config.m_SvCityStart);
 
-		Server()->InitClientBot(BOSSID);
+		Server()->InitClientBot(BOSSID, BOSS_MAP_ID);
 	}
 	else
 	{

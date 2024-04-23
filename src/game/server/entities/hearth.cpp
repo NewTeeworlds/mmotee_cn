@@ -25,10 +25,10 @@ void CHearth::Tick()
 	float Dist = distance(m_Pos, pOwner->GetCharacter()->m_Pos);
 	if(Dist < 24.0f)
 	{
-		GameServer()->CreateSound(m_Pos, 15);
+		GameServer()->CreateSound(m_Pos, 15, GetMapID());
 		if(pOwner->m_Health <= pOwner->m_HealthStart)
 			pOwner->GetCharacter()->m_Health += 100;		
-		else GameServer()->CreateDeath(pOwner->GetCharacter()->m_Pos, m_OwnerID);
+		else GameServer()->CreateDeath(pOwner->GetCharacter()->m_Pos, m_OwnerID, GetMapID());
 
 		GameServer()->m_World.DestroyEntity(this);
 		return;

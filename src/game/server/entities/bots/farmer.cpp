@@ -48,7 +48,7 @@ bool CNpcFarmer::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 void CNpcFarmer::PlaySound()
 {
 	GameServer()->SendEmoticon(m_pPlayer->GetCID(), 4);			
-	GameServer()->CreateSound(m_Pos, SOUND_TEE_CRY);
+	GameServer()->CreateSound(m_Pos, SOUND_TEE_CRY, GetMapID());
 }
 
 void CNpcFarmer::RunAction()
@@ -106,7 +106,7 @@ void CNpcFarmer::TickBotAI()
 	for (int i=0; i<g_Config.m_SvMaxClients-MAX_BOTS; i++)
 	{
 		CPlayer *pPlayer = GameServer()->m_apPlayers[i];
-		if (!pPlayer || !pPlayer->GetCharacter() || (pPlayer->IsBot() && pPlayer->GetBotType() == BOT_GUARD))
+		if (!pPlayer || !pPlayer->GetCharacter() || (pPlayer->IsBot() && pPlayer->GetBotType() == BOT_GUARD) || pPlayer->GetMID() == GetMapID())
 			continue;
 
 		int Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);

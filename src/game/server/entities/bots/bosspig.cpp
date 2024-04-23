@@ -100,7 +100,7 @@ void CBossPig::TickBotAI()
     for (int i = 0; i < g_Config.m_SvMaxClients; i++)
     {
         CPlayer *pPlayer = GameServer()->m_apPlayers[i];
-        if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->IsBoss())
+        if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->IsBoss() || pPlayer->GetMID() == GetMapID())
             continue;
 
         int Collide = GameServer()->Collision(GetMapID())->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);

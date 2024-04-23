@@ -28,14 +28,14 @@ void CPizdamet::Tick()
 	vec2 To = m_Pos + normalize(m_Cursour) * 15.0f;
 	if(GameServer()->Collision(GetMapID())->IntersectLine(m_Pos, To, 0x0, &To))
 	{
-		GameServer()->CreateExplosion(m_Pos, m_OwnerID, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION);
+		GameServer()->CreateExplosion(m_Pos, m_OwnerID, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION, GetMapID());
 		GameServer()->m_World.DestroyEntity(this);
 		return;
 	}
 
 	if(Server()->Tick() % (1 * Server()->TickSpeed()) == 0)
 	{
-		GameServer()->CreatePlayerSpawn(m_Pos);
+		GameServer()->CreatePlayerSpawn(m_Pos, GetMapID());
 	}
 
 	// Find other players
@@ -43,8 +43,8 @@ void CPizdamet::Tick()
 	{
 		if(p->GetPlayer() && p && p->GetPlayer()->GetCID() != m_OwnerID && distance(p->m_Pos, m_Pos) < 30) 
 		{
-			GameServer()->CreateDeath(m_Pos, p->GetPlayer()->GetCID());
-			GameServer()->CreateExplosion(m_Pos, m_OwnerID, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION);
+			GameServer()->CreateDeath(m_Pos, p->GetPlayer()->GetCID(), GetMapID());
+			GameServer()->CreateExplosion(m_Pos, m_OwnerID, WEAPON_GRENADE, false, TAKEDAMAGEMODE_INFECTION, GetMapID());
 			GameServer()->m_World.DestroyEntity(this);
 			return;
 		}

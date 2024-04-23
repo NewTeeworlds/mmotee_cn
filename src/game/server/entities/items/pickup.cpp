@@ -40,7 +40,7 @@ void CPickup::Tick()
 			m_SpawnTick = -1;
 
 			if(m_Type == WEAPON_GRENADE || m_Type == WEAPON_SHOTGUN || m_Type == WEAPON_RIFLE)
-				GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN);
+				GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN, GetMapID());
 		}
 		else
 			return;
@@ -56,7 +56,7 @@ void CPickup::Tick()
 				case 0:
 					if(m_SubType != 3 && m_SubType != 4 && m_SubType != 5)
 					{
-						GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH);
+						GameServer()->CreateSound(m_Pos, SOUND_PICKUP_HEALTH, GetMapID());
 						Picking(0);
 					}
 					break;
@@ -124,7 +124,7 @@ void CPickup::StartFarm(int ClientID)
 			m_Drop += 5;	
 		}
 		
-		GameServer()->CreateSound(m_Pos, 20); 
+		GameServer()->CreateSound(m_Pos, 20, GetMapID()); 
 
 		int LevelItem = 1+Server()->GetItemCount(ClientID, FARMLEVEL)/g_Config.m_SvFarmExp;
 		int NeedExp = LevelItem*g_Config.m_SvFarmExp;
@@ -224,7 +224,7 @@ void CPickup::StartFarm(int ClientID)
 		{
 			m_Drop += 5;
 		}
-		GameServer()->CreateSound(m_Pos, 20); 
+		GameServer()->CreateSound(m_Pos, 20, GetMapID()); 
 
 		int LevelItem = 1+Server()->GetItemCount(ClientID, MINEREXP)/g_Config.m_SvMinerExp;
 		int ExpNeed = LevelItem*g_Config.m_SvMinerExp;
@@ -291,7 +291,7 @@ void CPickup::StartFarm(int ClientID)
 			m_Drop += 10+random_int(0, 25);
 		}
 
-		GameServer()->CreateSound(m_Pos, 20); 
+		GameServer()->CreateSound(m_Pos, 20, GetMapID()); 
 
 		float getlv = (m_Drop*100.0)/100;
 		GameServer()->SendBroadcast_Localization(ClientID, 1000, 100, _("专长 - 伐木工: (光头强不会升级)\n工具: {str:name}x{int:count} ({int:brok}/{int:brok2})\n砍伐进度: {str:got} / {int:gotp}%"), 
@@ -321,7 +321,7 @@ void CPickup::StartFarm(int ClientID)
 	if(m_Drop >= 100)
 	{
 		m_Drop = 0;
-		GameServer()->CreateSoundGlobal(7, ClientID);
+		GameServer()->CreateSoundGlobal(7, ClientID, GetMapID());
 		if(m_SubType != 4)
 			Picking(30);
 	}
@@ -336,7 +336,7 @@ void CPickup::MaterFarm(int ClientID, int MaterialID)
 		return	GameServer()->SendBroadcast_Localization(ClientID, 1000, 100, _("物品栏内最多塞50000个附魔材料(material). 在物品栏对装备附魔吧!"), NULL); 
 
 	m_Drop += 25;
-	GameServer()->CreateSound(m_Pos, 20); 
+	GameServer()->CreateSound(m_Pos, 20, GetMapID()); 
 
 	int LevelItem = 1+Server()->GetItemCount(ClientID, LOADEREXP)/g_Config.m_SvMaterExp;
 	int NeedExp = LevelItem*g_Config.m_SvMaterExp;

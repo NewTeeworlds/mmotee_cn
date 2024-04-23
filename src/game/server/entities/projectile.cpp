@@ -72,7 +72,7 @@ void CProjectile::Tick()
 	vec2 CurPos = GetPos(Ct);
 	int Collide = GameServer()->Collision(GetMapID())->IntersectLine(PrevPos, CurPos, &CurPos, 0);
 	CCharacter *OwnerChar = GameServer()->GetPlayerChar(m_Owner);
-	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
+	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, GetMapID(), OwnerChar);
 
 	m_LifeSpan--;
 
@@ -90,7 +90,7 @@ void CProjectile::Tick()
 		Auto = true;
 		
 		if(Server()->Tick() % (1 * Server()->TickSpeed()) == 0)
-			GameServer()->CreateDamageInd(CurPos, 0, 1);
+			GameServer()->CreateDamageInd(CurPos, 0, 1, GetMapID());
 	}
 
 	for(CBiologistMine* pMine = (CBiologistMine*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_BIOLOGIST_MINE); pMine; pMine = (CBiologistMine*) pMine->TypeNext())
@@ -99,7 +99,7 @@ void CProjectile::Tick()
 		if(distance(CurPos, IntersectPos) < 30)
 		{
 			if(m_Explosive)
-				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false, m_TakeDamageMode);
+				GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false, m_TakeDamageMode, GetMapID());
 
 			pMine->m_Health -= 10;			
 			GameServer()->m_World.DestroyEntity(this);
@@ -117,11 +117,11 @@ void CProjectile::Tick()
 		}
 		
 		if((m_Weapon == WEAPON_GRENADE && !Auto))
-			GameServer()->CreateSound(CurPos, m_SoundImpact);
+			GameServer()->CreateSound(CurPos, m_SoundImpact, GetMapID());
 
 		if(m_Explosive && !Auto)
 		{
-			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false, m_TakeDamageMode);
+			GameServer()->CreateExplosion(CurPos, m_Owner, m_Weapon, false, m_TakeDamageMode, GetMapID());
 		}
 		else if(TargetChr)
 		{
