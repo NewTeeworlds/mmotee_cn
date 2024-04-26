@@ -363,7 +363,8 @@ INSERT INTO `tw_uItemList` VALUES
 (137,10,'称号-守卫','- 生命+25000'),
 (138,10,'显示设置','- TAB显示'),
 (139,5,'守卫锤子碎片','- 用于合成守卫的锤子'),
-(140,1,'神器-守卫锤子','- 守卫的锤子,秒杀一切罪孽!');
+(140,1,'神器-守卫锤子','- 守卫的锤子,秒杀一切罪孽!'),
+(141,1,'水果榨汁儿机','- 以5%损耗一键食用蔬菜');
 -- (131,10,'中秋节称号','- 射速+10'),
 -- (132,5,'活动用品','用于合成');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
@@ -533,7 +534,8 @@ INSERT INTO `tw_uItemList_en` VALUES
 (137,10,'Title Guard','- 生命+25000'),
 (138,10,'Show Clan','- TAB显示'),
 (139,10,'Guard Hammer Shard','- 用于合成守卫锤子'),
-(140,1,'Guard Hammer','- 守卫的锤子,强者愈弱,弱者愈强');
+(140,1,'Guard Hammer','- 守卫的锤子,强者愈弱,弱者愈强'),
+(141,1,'Juicer','- Eat all vegetables in 1 press(exp -5%)');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;

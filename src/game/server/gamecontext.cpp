@@ -2401,6 +2401,24 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					ResetVotes(ClientID, MAILMENU);
 				}
 
+				else if (str_comp(aCmd, "juicer") == 0)
+				{
+					int carrot = Server()->GetItemCount(ClientID, CARROT);
+					int tomato = Server()->GetItemCount(ClientID, TOMATE);
+					int potato = Server()->GetItemCount(ClientID, POTATO);
+					int cabbage = Server()->GetItemCount(ClientID, CABBAGE);
+					long int Get = (long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35) * 0.95f;
+
+					Server()->RemItem(ClientID, CARROT, carrot, -1);
+					Server()->RemItem(ClientID, TOMATE, tomato, -1);
+					Server()->RemItem(ClientID, POTATO, potato, -1);
+					Server()->RemItem(ClientID, CABBAGE, cabbage, -1);
+
+					SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 进行榨汁，获得了 {int:pvars} 经验"),
+						"name", Server()->ClientName(ClientID), "pvars", &Get, NULL);
+					m_apPlayers[ClientID]->ExpAdd(Get, false);
+				}
+
 				for (int i = 0; i < 20; i++)
 				{
 					char aBuf[16];
@@ -3544,6 +3562,12 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 		if (Server()->GetClanID(ClientID) > 0)
 			AddVoteMenu_Localization(ClientID, CLAN, MENUONLY, "☞ 公会菜单 {str:clan}", "clan", Server()->ClientClan(ClientID));
+		
+		if (Server()->GetItemCount(ClientID, JUICER))
+		{
+			AddVote("······················· ", "null", ClientID);
+			AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机（5%损耗）");
+		}
 
 		if (m_apPlayers[ClientID]->GetShop())
 		{
