@@ -190,7 +190,7 @@ public:
 	void CreatePlayerSpawn(vec2 Pos, int MapID);
 	void CreateDeath(vec2 Pos, int Who, int MapID);
 	void CreateSound(vec2 Pos, int Sound, int MapID, int64_t Mask = -1);
-	void CreateSoundGlobal(int Sound, int Target, int MapID);
+	void CreateSoundGlobal(int Sound, int Target);
 
 	// Голосования
 	// 投票
@@ -348,8 +348,10 @@ public:
 	int m_InviteClanID[MAX_NOBOT];
 	int m_InviteTick[MAX_NOBOT];
 
-	void PrepareClientChangeMap(int ClientID) override;
+	void PrepareClientChangeMap(int ClientID, bool ForceLogin = false) override;
 	virtual void KillCharacter(int ClientID);
+
+	int CurID;
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState

@@ -298,7 +298,7 @@ void CPlayer::BasicAuthedTick()
 			GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 50, "Level ++", GetMID());
 			GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID, GetMID());
 		}
-		GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE, m_ClientID, GetMID());
+		GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE, m_ClientID);
 
 		GameServer()->UpdateUpgrades(m_ClientID);
 		GameServer()->UpdateStats(m_ClientID);
@@ -826,10 +826,7 @@ void CPlayer::Snap(int SnappingClient)
 	else
 		pPlayerInfo->m_Score = 0;
 
-	if (!IsBot())
 		pPlayerInfo->m_Team = m_Team;
-	else
-		pPlayerInfo->m_Team = 10;
 
 	if (m_ClientID == SnappingClient)
 		pPlayerInfo->m_Local = 1;
@@ -882,7 +879,7 @@ void CPlayer::OnDisconnect(int Type, const char *pReason)
 													  "Reason", pReason,
 													  NULL);
 		}
-		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(m_ClientID)) != 0)
+		else if (Type == CLIENTDROPTYPE_KICK && !IsBoss())
 		{
 			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 被踢出了 ({str:Reason})"),
 													  "PlayerName", Server()->ClientName(m_ClientID),
@@ -896,7 +893,7 @@ void CPlayer::OnDisconnect(int Type, const char *pReason)
 													  "Reason", pReason,
 													  NULL);
 		}
-		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(m_ClientID)) == 0)
+		else if (Type == CLIENTDROPTYPE_KICK && IsBoss())
 		{
 			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 安心地去了"),
 													  "PlayerName", Server()->ClientName(m_ClientID),

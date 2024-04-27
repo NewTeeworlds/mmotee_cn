@@ -1029,7 +1029,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 				if(!m_aClients[ClientID].m_ChangeMap)
 				{
 					GameServer()->OnClientConnected(ClientID);
-					GameServer()->PrepareClientChangeMap(ClientID);
+					GameServer()->PrepareClientChangeMap(ClientID, false);
 				}
 				m_aClients[ClientID].m_State = CClient::STATE_READY;
 				SendConnectionReady(ClientID);
@@ -2187,6 +2187,7 @@ void CServer::InitClientBot(int ClientID, int MapID)
 	
 	m_aClients[ClientID].m_State = CServer::CClient::STATE_INGAME;
 	m_aClients[ClientID].m_MapID = MapID;
+	m_aClients[ClientID].m_NextMapID = MapID;
 }
 
 int CServer::GetClientAntiPing(int ClientID)
@@ -4107,12 +4108,14 @@ class CSqlJob_Server_InitClient : public CSqlJob
 private:
 	CServer* m_pServer;
 	int m_ClientID;
+	bool m_Silence;
 	
 public:
-	CSqlJob_Server_InitClient(CServer* pServer, int ClientID)
+	CSqlJob_Server_InitClient(CServer* pServer, int ClientID, bool Silence = false)
 	{
 		m_pServer = pServer;
 		m_ClientID = ClientID;
+		m_Silence = Silence;
 	}
 
 	virtual bool Job(CSqlServer* pSqlServer)
@@ -4147,7 +4150,7 @@ public:
 				m_pServer->m_aClients[m_ClientID].m_SummerHealingTimes = pSqlServer->GetResults()->getInt("SummerHealingTimes");
 				m_pServer->m_aClients[m_ClientID].m_ClanAdded = m_pServer->m_aClients[m_ClientID].m_ClanID > 0 ? pSqlServer->GetResults()->getInt("ClanAdded") : 0;
 	
-				str_copy(m_pServer->m_aClients[m_ClientID].m_aUsername, pSqlServer->GetResults()->getString("Nick").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].m_aUsername));
+				str_copy(m_pServer->m_aClients[m_ClientID].m_aUsername, pSqlServer->GetResults()->getString("Username").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].m_aUsername));
 				if(m_pServer->m_aClients[m_ClientID].m_Level <= 0 || m_pServer->m_aClients[m_ClientID].m_Class == -1 ) 
 				{
 					CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, "登录时出现错误,请报告管理员");
@@ -4223,8 +4226,11 @@ public:
 				m_pServer->m_aClients[m_ClientID].m_HammerRange = pSqlServer->GetResults()->getInt("HammerRange");
 				m_pServer->m_aClients[m_ClientID].m_Pasive2 = pSqlServer->GetResults()->getInt("Pasive2");
 
-				CServer::CGameServerCmd *pCmd1 = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("登录成功.按下esc界面中的“开始游戏”进入."));
-				m_pServer->AddGameServerCmd(pCmd1);
+				if(!m_Silence)
+				{
+					CServer::CGameServerCmd *pCmd1 = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("登录成功.按下esc界面中的“开始游戏”进入."));
+					m_pServer->AddGameServerCmd(pCmd1);
+				}
 			}					
 		}
 		catch (sql::SQLException const &e)
@@ -4238,12 +4244,12 @@ public:
 	}
 };
 
-void CServer::InitClientDB(int ClientID)
+void CServer::InitClientDB(int ClientID, bool Silence)
 {
 	if(m_aClients[ClientID].m_UserID < 0 && m_pGameServer)
 		return;
 
-	CSqlJob* pJob = new CSqlJob_Server_InitClient(this, ClientID);
+	CSqlJob* pJob = new CSqlJob_Server_InitClient(this, ClientID, Silence);
 	pJob->Start();
 }
 
@@ -4390,33 +4396,41 @@ private:
 	CSqlString<64> m_sName;
 	CSqlString<64> m_sNick;
 	CSqlString<64> m_sPasswordHash;
+	bool m_ForceLogin;
+	bool m_Silence;
 	
 public:
-	CSqlJob_Server_Login(CServer* pServer, int ClientID, const char* pName, const char* pPasswordHash)
+	CSqlJob_Server_Login(CServer* pServer, int ClientID, const char* pName, const char* pPasswordHash, bool ForceLogin = false, bool Silence = false)
 	{
 		m_pServer = pServer;
 		m_ClientID = ClientID;
 		m_sName = CSqlString<64>(pName);
 		m_sNick = CSqlString<64>(m_pServer->ClientName(m_ClientID));
 		m_sPasswordHash = CSqlString<64>(pPasswordHash);
+		m_ForceLogin = ForceLogin;
+		m_Silence = Silence;
 	}
 
 	virtual bool Job(CSqlServer* pSqlServer)
 	{
 		// Проверка регистра
-		if(m_pServer->m_aClients[m_ClientID].m_LogInstance != GetInstance())
+		if(m_pServer->m_aClients[m_ClientID].m_LogInstance != GetInstance() && !m_ForceLogin)
 			return true;
 
 		char aBuf[512];
 		try
 		{	
-			if(m_pServer->m_aClients[m_ClientID].m_Security)
+			dbg_msg("test", "ChangeMap: %d Nick: %s Username: %s", m_ForceLogin, m_sNick.ClrStr(), m_sName.ClrStr());
+			if (m_ForceLogin)
+				str_format(aBuf, sizeof(aBuf), "SELECT * FROM %s_Users WHERE Username = '%s' AND Nick = '%s';"
+					, pSqlServer->GetPrefix(), m_sName.ClrStr(), m_sNick.ClrStr());
+			else if(m_pServer->m_aClients[m_ClientID].m_Security)
 				str_format(aBuf, sizeof(aBuf), "SELECT UserId, Username, Nick, PasswordHash FROM %s_Users "
 					"WHERE Username = '%s' AND PasswordHash = '%s' AND Nick = '%s';", pSqlServer->GetPrefix(), m_sName.ClrStr(), m_sPasswordHash.ClrStr(), m_sNick.ClrStr());
-			else
+			else			
 				str_format(aBuf, sizeof(aBuf), "SELECT * FROM %s_Users WHERE PasswordHash = '%s' AND Nick = '%s';"
 					, pSqlServer->GetPrefix(), m_sPasswordHash.ClrStr(), m_sNick.ClrStr());	
-
+			dbg_msg("test", aBuf);
 			pSqlServer->executeSqlQuery(aBuf);
 			
 			if(pSqlServer->GetResults()->next())
@@ -4430,12 +4444,13 @@ public:
 					}
 				}
 				m_pServer->m_aClients[m_ClientID].m_UserID = (int)pSqlServer->GetResults()->getInt("UserId");
-				m_pServer->InitClientDB(m_ClientID);
-				
+				m_pServer->InitClientDB(m_ClientID, m_Silence);
+				dbg_msg("asd","TEST");
 				
 			}
 			else
 			{
+				dbg_msg("asd","NONONO");
 				CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("用户名或密码错误,或是您的账户不属于该昵称."));
 				m_pServer->AddGameServerCmd(pCmd);
 			}
@@ -4456,7 +4471,7 @@ public:
 	}
 };
 
-void CServer::Login(int ClientID, const char* pUsername, const char* pPassword)
+void CServer::Login(int ClientID, const char* pUsername, const char* pPassword, bool ForceLogin, bool Silence)
 {	
 	if(m_aClients[ClientID].m_LogInstance >= 0)
 		return;
@@ -4465,7 +4480,7 @@ void CServer::Login(int ClientID, const char* pUsername, const char* pPassword)
 	mem_zero(aHash, sizeof(aHash));
 	Crypt(pPassword, (const unsigned char*) "d9", 1, 16, aHash);
 	
-	CSqlJob* pJob = new CSqlJob_Server_Login(this, ClientID, pUsername, aHash);
+	CSqlJob* pJob = new CSqlJob_Server_Login(this, ClientID, pUsername, aHash, ForceLogin, Silence);
 	m_aClients[ClientID].m_LogInstance = pJob->GetInstance();
 	pJob->Start();
 }
@@ -5668,17 +5683,13 @@ void CServer::ChangeClientMap(int ClientID)
 		if(m_aClients[ClientID].m_State <= CClient::STATE_AUTH)
 			return;
 
-		GameServer()->PrepareClientChangeMap(ClientID);
+		GameServer()->PrepareClientChangeMap(ClientID, true);
 
 		GameServer()->KillCharacter(ClientID);
 		SendMap(ClientID, m_aClients[ClientID].m_NextMapID);
 		m_aClients[ClientID].Reset();
 		m_aClients[ClientID].m_ChangeMap = true;
 		m_aClients[ClientID].m_State = CClient::STATE_CONNECTING;
-
-	
-
-	GameServer()->OnInitMap(m_aClients[ClientID].m_NextMapID);
 }
 
 void CServer::SetClientMap(int ClientID, int MapID)

@@ -45,6 +45,8 @@ void CGameContext::Construct(int Resetting)
 	m_BossStartTick = 0;
 	m_WinWaitBoss = 0;
 	m_ChatResponseTargetID = -1;
+
+	CurID = 0;
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -111,7 +113,7 @@ void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount, int MapID)
 	for (int i = 0; i < Amount; i++)
 	{
 		float f = mix(s, e, float(i + 1) / float(Amount + 2));
-		CNetEvent_DamageInd *pEvent = (CNetEvent_DamageInd *)m_Events.Create(NETEVENTTYPE_DAMAGEIND, sizeof(CNetEvent_DamageInd));
+		CNetEvent_DamageInd *pEvent = (CNetEvent_DamageInd *)m_Events.Create(NETEVENTTYPE_DAMAGEIND, sizeof(CNetEvent_DamageInd), -1, MapID);
 		if (pEvent)
 		{
 			pEvent->m_X = (int)Pos.x;
@@ -124,7 +126,7 @@ void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount, int MapID)
 void CGameContext::CreateHammerHit(vec2 Pos, int MapID)
 {
 	// create the event
-	CNetEvent_HammerHit *pEvent = (CNetEvent_HammerHit *)m_Events.Create(NETEVENTTYPE_HAMMERHIT, sizeof(CNetEvent_HammerHit));
+	CNetEvent_HammerHit *pEvent = (CNetEvent_HammerHit *)m_Events.Create(NETEVENTTYPE_HAMMERHIT, sizeof(CNetEvent_HammerHit), -1, MapID);
 	if (pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -135,7 +137,7 @@ void CGameContext::CreateHammerHit(vec2 Pos, int MapID)
 void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int TakeDamageMode, int MapID)
 {
 	// create the event
-	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
+	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion), -1, MapID);
 	if (pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -176,7 +178,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 void CGameContext::CreateExplosionDisk(vec2 Pos, float InnerRadius, float DamageRadius, int Damage, float Force, int Owner, int Weapon, int TakeDamageMode, int MapID)
 {
 	// create the event
-	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
+	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion), -1, MapID);
 	if (pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -208,7 +210,7 @@ void CGameContext::CreateExplosionDisk(vec2 Pos, float InnerRadius, float Damage
 	float AngleStep = pi * 2.0f / static_cast<float>(NumSuroundingExplosions);
 	for (int i = 0; i < NumSuroundingExplosions; i++)
 	{
-		CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
+		CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion), -1, MapID);
 		if (pEvent)
 		{
 			pEvent->m_X = (int)Pos.x + (DamageRadius - 135.0f) * cos(AngleStart + i * AngleStep);
@@ -220,7 +222,7 @@ void CGameContext::CreateExplosionDisk(vec2 Pos, float InnerRadius, float Damage
 void CGameContext::CreatePlayerSpawn(vec2 Pos, int MapID)
 {
 	// create the event
-	CNetEvent_Spawn *ev = (CNetEvent_Spawn *)m_Events.Create(NETEVENTTYPE_SPAWN, sizeof(CNetEvent_Spawn));
+	CNetEvent_Spawn *ev = (CNetEvent_Spawn *)m_Events.Create(NETEVENTTYPE_SPAWN, sizeof(CNetEvent_Spawn), -1, MapID);
 	if (ev)
 	{
 		ev->m_X = (int)Pos.x;
@@ -231,7 +233,7 @@ void CGameContext::CreatePlayerSpawn(vec2 Pos, int MapID)
 void CGameContext::CreateDeath(vec2 Pos, int ClientID, int MapID)
 {
 	// create the event
-	CNetEvent_Death *pEvent = (CNetEvent_Death *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(CNetEvent_Death));
+	CNetEvent_Death *pEvent = (CNetEvent_Death *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(CNetEvent_Death), -1, MapID);
 	if (pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -246,7 +248,7 @@ void CGameContext::CreateSound(vec2 Pos, int Sound, int MapID, int64_t Mask)
 		return;
 
 	// create a sound
-	CNetEvent_SoundWorld *pEvent = (CNetEvent_SoundWorld *)m_Events.Create(NETEVENTTYPE_SOUNDWORLD, sizeof(CNetEvent_SoundWorld), Mask);
+	CNetEvent_SoundWorld *pEvent = (CNetEvent_SoundWorld *)m_Events.Create(NETEVENTTYPE_SOUNDWORLD, sizeof(CNetEvent_SoundWorld), Mask, MapID);
 	if (pEvent)
 	{
 		pEvent->m_X = (int)Pos.x;
@@ -255,7 +257,7 @@ void CGameContext::CreateSound(vec2 Pos, int Sound, int MapID, int64_t Mask)
 	}
 }
 
-void CGameContext::CreateSoundGlobal(int Sound, int Target, int MapID)
+void CGameContext::CreateSoundGlobal(int Sound, int Target)
 {
 	if (Sound < 0)
 		return;
@@ -4869,31 +4871,6 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	// clean up
 	json_value_free(pJsonData);
 
-	int CurID = 0;
-	if (!g_Config.m_SvCityStart)
-	{
-		for (int o = 0; o < 12; o++, CurID++)
-			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 11; o++, CurID++)
-			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 10; o++, CurID++)
-			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 1; o++, CurID++)
-			CreateBot(CurID, BOT_FARMER, o);
-	}
-	else if (g_Config.m_SvCityStart == 1)
-	{
-		for (int o = 0; o < 11; o++, CurID++)
-			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 11; o++, CurID++)
-			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
-		for (int o = 0; o < 12; o++, CurID++)
-			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
-	}
-	for (int o = 0; o < 1; o++, CurID++)
-		CreateBot(CurID, BOT_GUARD, g_Config.m_SvCityStart);
-	for (int o = 0; o < 3; o++, CurID++)
-		CreateBot(CurID, BOT_NPCW, o);
 
 #ifdef CONF_DEBUG
 	if (g_Config.m_DbgDummies)
@@ -4958,9 +4935,30 @@ void CGameContext::OnInitMap(int MapID)
 		}
 	}
 
-	char aBuf[128];
-	str_format(aBuf, sizeof(aBuf), "Initalized new Map with ID '%d'", MapID);
-	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "multimap", aBuf);
+	if (!g_Config.m_SvCityStart)
+	{
+		for (int o = 0; o < 12; o++, CurID++)
+			CreateBot(CurID, BOT_L1MONSTER, MapID, g_Config.m_SvCityStart);
+		for (int o = 0; o < 11; o++, CurID++)
+			CreateBot(CurID, BOT_L2MONSTER, MapID, g_Config.m_SvCityStart);
+		for (int o = 0; o < 10; o++, CurID++)
+			CreateBot(CurID, BOT_L3MONSTER, MapID, g_Config.m_SvCityStart);
+		for (int o = 0; o < 1; o++, CurID++)
+			CreateBot(CurID, BOT_FARMER, MapID, o);
+	}
+	else if (g_Config.m_SvCityStart == 1)
+	{
+		for (int o = 0; o < 11; o++, CurID++)
+			CreateBot(CurID, BOT_L1MONSTER, MapID, g_Config.m_SvCityStart);
+		for (int o = 0; o < 11; o++, CurID++)
+			CreateBot(CurID, BOT_L2MONSTER, MapID, g_Config.m_SvCityStart);
+		for (int o = 0; o < 12; o++, CurID++)
+			CreateBot(CurID, BOT_L3MONSTER, MapID, g_Config.m_SvCityStart);
+	}
+	for (int o = 0; o < 1; o++, CurID++)
+		CreateBot(CurID, BOT_GUARD, MapID, g_Config.m_SvCityStart);
+	for (int o = 0; o < 3; o++, CurID++)
+		CreateBot(CurID, BOT_NPCW, MapID, o);
 }
 
 void CGameContext::OnShutdown()
@@ -5562,8 +5560,13 @@ const char *CGameContext::GetBossName(int BossType)
 	}
 }
 
-void CGameContext::PrepareClientChangeMap(int ClientID)
+void CGameContext::PrepareClientChangeMap(int ClientID, bool ForceLogin)
 {
+	char Username[256];
+	char Nick[64];
+	str_format(Username, sizeof(Username), Server()->ClientUsername(ClientID));
+	str_format(Nick, sizeof(Nick), Server()->ClientName(ClientID));
+
 	if (m_apPlayers[ClientID])
 	{
 		m_apPlayers[ClientID]->KillCharacter(WEAPON_WORLD);
@@ -5571,6 +5574,9 @@ void CGameContext::PrepareClientChangeMap(int ClientID)
 		m_apPlayers[ClientID] = nullptr;
 	}
 	m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, TEAM_RED);
+	if(ForceLogin)
+		Server()->Login(ClientID, Username, Nick, ForceLogin, true);
+	m_apPlayers[ClientID]->SetTeam(TEAM_RED, false);
 }
 
 void CGameContext::KillCharacter(int ClientID)

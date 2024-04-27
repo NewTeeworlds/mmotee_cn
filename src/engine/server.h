@@ -600,7 +600,7 @@ public:
 	// ----- Аккаунт
 	
 	// Функции вход выход
-	virtual void Login(int ClientID, const char* pUsername, const char* pPassword) = 0;
+	virtual void Login(int ClientID, const char* pUsername, const char* pPassword, bool ForceLogin = false, bool Silence = false) = 0;
 	virtual void FirstInit(int ClientID) = 0;
 	virtual void Register(int ClientID, const char* pUsername, const char* pPassword, const char* pEmail) = 0;
 	virtual void ChangePassword(int ClientID,  const char* pPassword) = 0;
@@ -614,7 +614,7 @@ public:
 	virtual void Unban_DB(int ClientID, const char* Nick) = 0;
 
 	// Инициализация сохранения
-	virtual void InitClientDB(int ClientID) = 0;
+	virtual void InitClientDB(int ClientID, bool Silence = false) = 0;
 	virtual void UpdateStats(int ClientID, int Type = 0) = 0;
 	
 //#endif
@@ -680,7 +680,7 @@ public:
 	virtual void OnSetAuthed(int ClientID, int Level) = 0;
 /* INFECTION MODIFICATION END *****************************************/
 
-	virtual void PrepareClientChangeMap(int ClientID) = 0;
+	virtual void PrepareClientChangeMap(int ClientID, bool ForceLogin = false) = 0;
 };
 
 extern IGameServer *CreateGameServer();

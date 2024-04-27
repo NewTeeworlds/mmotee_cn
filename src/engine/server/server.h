@@ -459,7 +459,7 @@ public:
 	// ----- Аккаунт
 	
 	// Функции вход выход
-	virtual void Login(int ClientID, const char* pUsername, const char* pPassword);
+	virtual void Login(int ClientID, const char* pUsername, const char* pPassword, bool ForceLogin = false, bool Silence = false);
 	virtual void FirstInit(int ClientID);
 
 	virtual void Register(int ClientID, const char* pUsername, const char* pPassword, const char* pEmail);
@@ -474,7 +474,7 @@ public:
 	virtual void Unban_DB(int ClientID, const char* Nick);
 	// Инициализация сохранение загрузка
 	virtual void UpdateStats(int ClientID, int Type = 0);
-	virtual void InitClientDB(int ClientID);
+	virtual void InitClientDB(int ClientID, bool Silence = false);
 	
 	// ----- Инвентарь
 	virtual void InitInvID(int ClientID = -1, int ItemID = -1);

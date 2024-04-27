@@ -321,7 +321,7 @@ void CPickup::StartFarm(int ClientID)
 	if(m_Drop >= 100)
 	{
 		m_Drop = 0;
-		GameServer()->CreateSoundGlobal(7, ClientID, GetMapID());
+		GameServer()->CreateSoundGlobal(7, ClientID);
 		if(m_SubType != 4)
 			Picking(30);
 	}
