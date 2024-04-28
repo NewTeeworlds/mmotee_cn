@@ -99,7 +99,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			if (sscanf(Msg->m_pMessage, "/newclan %s", Reformat) != 1)
 				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "使用方法: /newclan <公会名称>");
 
-			remove_spaces(Reformat);
 			if (str_length(Reformat) > MAX_CLAN_LENGTH || str_length(Reformat) < 1)
 				return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("公会名称长度必须在 1~12 个字符之间"), NULL);
 			GameServer()->Server()->NewClan(ClientID, Reformat);

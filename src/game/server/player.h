@@ -16,7 +16,7 @@ class CPlayer
 public:
 	// Основное
 	// 主要的
-	CPlayer(CGameContext *pGameServer, int ClientID, int Team);
+	CPlayer(CGameContext *pGameServer, int ClientID);
 	~CPlayer();
 
 	void Init(int CID);
@@ -36,7 +36,7 @@ public:
 
 	void OnDirectInput(CNetObj_PlayerInput *NewInput);
 	void OnPredictedInput(CNetObj_PlayerInput *NewInput);
-	void OnDisconnect(int Type, const char *pReason);
+	void OnDisconnect();
 
 	void KillCharacter(int Weapon = WEAPON_GAME);
 	CCharacter *GetCharacter();
@@ -212,6 +212,9 @@ public:
 	void ResetSkill(int ClientID);
 
 	int tickstr;
+
+	void ChangeWorld(int MapID);
+	int GetPlayerWorldID();
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;

@@ -26,6 +26,8 @@ public:
 	virtual bool IsEnabledClass(int PlayerClass);
 	virtual bool IsChoosableClass(int PlayerClass);
 
+	virtual void OnClientDrop(CPlayer *pPlayer);
+
 private:
 	bool IsSpawnable(vec2 Pos, int TeleZoneIndex);
 	void GetPlayerCounter(int ClientException, int& NumHumans, int& NumInfected, int& NumFirstInfected);

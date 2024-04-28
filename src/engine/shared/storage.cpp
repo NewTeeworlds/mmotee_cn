@@ -62,10 +62,6 @@ public:
 				fs_makedir(GetPath(TYPE_SAVE, "maps", aPath, sizeof(aPath)));
 				fs_makedir(GetPath(TYPE_SAVE, "downloadedmaps", aPath, sizeof(aPath)));
 			}
-			if(StorageType == STORAGETYPE_SERVER)
-			{
-				fs_makedir(GetPath(TYPE_SAVE, "clientmaps", aPath, sizeof(aPath)));
-			}
 			fs_makedir(GetPath(TYPE_SAVE, "dumps", aPath, sizeof(aPath)));
 			fs_makedir(GetPath(TYPE_SAVE, "demos", aPath, sizeof(aPath)));
 			fs_makedir(GetPath(TYPE_SAVE, "demos/auto", aPath, sizeof(aPath)));
@@ -162,7 +158,7 @@ public:
 	void FindDatadir(const char *pArgv0)
 	{
 		// 1) use data-dir in PWD if present
-		if(fs_is_dir("data/maps"))
+		if(fs_is_dir("data/mapres"))
 		{
 			str_copy(m_aDatadir, "data", sizeof(m_aDatadir));
 			return;

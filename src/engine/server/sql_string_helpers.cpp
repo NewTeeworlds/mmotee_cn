@@ -141,5 +141,5 @@ void sqlstr::getTimeStamp(char* dest, unsigned int size)
 	std::time_t rawtime;
 	std::time(&rawtime);
 
-	str_timestamp_ex(rawtime, dest, size, "%Y-%m-%d %H:%M:%S");
+	str_timestamp(dest, size);
 }

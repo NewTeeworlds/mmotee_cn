@@ -292,6 +292,7 @@ if(NOT CMAKE_CROSSCOMPILING)
 endif()
 find_package(ZLIB)
 find_package(OpenSSL)
+find_package(Curl)
 find_package(ICU)
 find_package(MySQL)
 find_package(PythonInterp 3)
@@ -318,13 +319,16 @@ function(show_dependency_status OUTPUT_NAME NAME)
   endif()
 endfunction()
 
-#show_dependency_status("Curl" CURL)
+show_dependency_status("Curl" CURL)
 show_dependency_status("MySQL" MYSQL)
 show_dependency_status("OpenSSL" OPENSSL)
 show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Zlib" ZLIB)
 show_dependency_status("ICU" ICU)
 
+if(NOT(CURL_FOUND))
+  message(SEND_ERROR "You must install Curl to compile ${CMAKE_PROJECT_NAME}")
+endif()
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile the ${PROJECT_NAME}")
 endif()
@@ -367,6 +371,7 @@ set(DEP_MD5 $<TARGET_OBJECTS:md5>)
 ########################################################################
 
 set(COPY_FILES
+  ${CURL_COPY_FILES}
   ${ICU_COPY_FILES}
   ${MYSQL_COPY_FILES}
   ${OPENSSL_COPY_FILES}
@@ -487,7 +492,7 @@ set(GAME_GENERATED_SHARED
 set(DEPS ${DEP_JSON} ${DEP_MD5} ${ZLIB_DEP})
 
 # Libraries
-set(LIBS ${OPENSSL_CRYPTO_LIBRARY} ${ZLIB_LIBRARIES} ${PLATFORM_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+set(LIBS ${OPENSSL_CRYPTO_LIBRARY} ${ZLIB_LIBRARIES} ${PLATFORM_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${CURL_LIBRARIES})
 
 # Targets  
 add_library(engine-shared EXCLUDE_FROM_ALL OBJECT ${ENGINE_INTERFACE} ${ENGINE_GENERATED_SHARED} ${ENGINE_SHARED} ${BASE})
@@ -845,7 +850,7 @@ endforeach()
 
 foreach(target ${TARGETS_OWN})
   if(CMAKE_VERSION VERSION_GREATER 3.1 OR CMAKE_VERSION VERSION_EQUAL 3.1)
-    set_property(TARGET ${target} PROPERTY CXX_STANDARD 11)
+    set_property(TARGET ${target} PROPERTY CXX_STANDARD 14)
     set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
   endif()
 
@@ -860,7 +865,7 @@ foreach(target ${TARGETS_OWN})
   target_include_directories(${target} PRIVATE ${PROJECT_BINARY_DIR}/src)
   target_include_directories(${target} PRIVATE src)
   target_compile_definitions(${target} PRIVATE $<$<CONFIG:Debug>:CONF_DEBUG>)
-  target_include_directories(${target} PRIVATE ${ZLIB_INCLUDE_DIRS})
+  target_include_directories(${target} PRIVATE ${CURL_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
   if(OPENSSL_FOUND)
     target_compile_definitions(${target} PRIVATE CONF_OPENSSL)
 	target_include_directories(${target} PRIVATE ${OPENSSL_INCLUDE_DIRS})

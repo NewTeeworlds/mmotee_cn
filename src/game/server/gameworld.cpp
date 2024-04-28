@@ -4,9 +4,12 @@
 #include "gameworld.h"
 #include "entity.h"
 #include "gamecontext.h"
+
 #include <algorithm>
 #include <utility>
 #include <engine/shared/config.h>
+
+#include <cstring>
 
 //////////////////////////////////////////////////
 // game world
@@ -160,68 +163,62 @@ void CGameWorld::UpdatePlayerMaps()
 	if (Server()->Tick() % g_Config.m_SvMapUpdateRate != 0)
 		return;
 
-	std::pair<float, int> dist[MAX_CLIENTS];
-	for (int i = 0; i < MAX_CLIENTS; i++)
+	std::pair<float, int> Dist[MAX_CLIENTS];
+	for (int ClientID = 0; ClientID < MAX_NOBOT; ClientID++)
 	{
-		if (!Server()->ClientIngame(i))
-			continue;
-		int *map = Server()->GetIdMap(i);
-
-		// compute distances
-		for (int j = 0; j < MAX_CLIENTS; j++)
-		{
-			dist[j].second = j;
-			dist[j].first = 1e10;
-			if (!Server()->ClientIngame(j))
+		CPlayer *pPlayer = GameServer()->m_apPlayers[ClientID];
+		int ClientWorldID = Server()->GetClientWorldID(ClientID);
+		if (!Server()->ClientIngame(ClientID) || ClientWorldID != GameServer()->GetWorldID() || !pPlayer)
 				continue;
-			CCharacter *ch = GameServer()->m_apPlayers[j]->GetCharacter();
-			if (!ch)
-				continue;
-			dist[j].first = distance(GameServer()->m_apPlayers[i]->m_ViewPos, GameServer()->m_apPlayers[j]->m_ViewPos);
-		}
 
-		// always send the player himself
-		dist[i].first = 0;
+		int *pMap = Server()->GetIdMap(ClientID);
+
+		// always send the player themselves
+		Dist[ClientID].first = 0;
 
 		// compute reverse map
-		int rMap[MAX_CLIENTS];
-		for (int j = 0; j < MAX_CLIENTS; j++)
+		int aReverseMap[MAX_CLIENTS];
+		std::memset(aReverseMap, -1, sizeof(int) * MAX_CLIENTS);
+		for (int j = MAX_NOBOT; j < VANILLA_MAX_CLIENTS; j++)
 		{
-			rMap[j] = -1;
-		}
-		for (int j = 0; j < VANILLA_MAX_CLIENTS; j++)
-		{
-			if (map[j] == -1)
+			if (pMap[j] == -1)
 				continue;
-			if (dist[map[j]].first > 1e9)
-				map[j] = -1;
+
+			if (Dist[pMap[j]].first > 5e9f)
+				pMap[j] = -1;
 			else
-				rMap[map[j]] = j;
+				aReverseMap[pMap[j]] = j;
 		}
 
-		std::nth_element(&dist[0], &dist[VANILLA_MAX_CLIENTS - 1], &dist[MAX_CLIENTS], distCompare);
+		std::nth_element(&Dist[MAX_NOBOT], &Dist[VANILLA_MAX_CLIENTS - 1], &Dist[MAX_CLIENTS], distCompare);
 
-		int mapc = 0;
-		int demand = 0;
-		for (int j = 0; j < VANILLA_MAX_CLIENTS - 1; j++)
+		int Mapc = MAX_NOBOT;
+		int Demand = 0;
+		for (int j = MAX_NOBOT; j < VANILLA_MAX_CLIENTS - 1; j++)
 		{
-			int k = dist[j].second;
-			if (rMap[k] != -1 || dist[j].first > 1e9)
+			int k = Dist[j].second;
+
+			if (aReverseMap[k] != -1 || Dist[j].first > 5e9f)
 				continue;
-			while (mapc < VANILLA_MAX_CLIENTS && map[mapc] != -1)
-				mapc++;
-			if (mapc < VANILLA_MAX_CLIENTS - 1)
-				map[mapc] = k;
-			else if (dist[j].first < 1300) // dont bother freeing up space for players which are too far to be displayed anyway
-				demand++;
+
+			while (Mapc < VANILLA_MAX_CLIENTS && pMap[Mapc] != -1)
+				Mapc++;
+
+			if (Mapc < VANILLA_MAX_CLIENTS - 1)
+				pMap[Mapc] = k;
+			else
+				Demand++;
 		}
+
 		for (int j = MAX_CLIENTS - 1; j > VANILLA_MAX_CLIENTS - 2; j--)
 		{
-			int k = dist[j].second;
-			if (rMap[k] != -1 && demand-- > 0)
-				map[rMap[k]] = -1;
+			int k = Dist[j].second;
+
+			if (aReverseMap[k] != -1 && Demand-- > 0)
+				pMap[aReverseMap[k]] = -1;
 		}
-		map[VANILLA_MAX_CLIENTS - 1] = -1; // player with empty name to say chat msgs
+
+		pMap[VANILLA_MAX_CLIENTS - 1] = -1; // player with empty name to say chat msgs
 	}
 }
 

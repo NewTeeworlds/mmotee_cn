@@ -189,7 +189,9 @@ void CDemoRecorder::Write(int Type, const void *pData, int Size)
 	mem_copy(aBuffer2, pData, Size);
 	while(Size&3)
 		aBuffer2[Size++] = 0;
-	Size = CVariableInt::Compress(aBuffer2, Size, aBuffer); // buffer2 -> buffer
+	Size = CVariableInt::Compress(aBuffer2, Size, aBuffer, sizeof(aBuffer)); // buffer2 -> buffer
+	if(Size < 0)
+		return;
 	Size = CNetBase::Compress(aBuffer, Size, aBuffer2, sizeof(aBuffer2)); // buffer -> buffer2
 
 
@@ -437,7 +439,7 @@ void CDemoPlayer::ScanFile()
 	}
 
 	// copy all the frames to an array instead for fast access
-	m_pKeyFrames = (CKeyFrame *)calloc(m_Info.m_SeekablePoints, sizeof(CKeyFrame));
+	m_pKeyFrames = (CKeyFrame*)mem_alloc(m_Info.m_SeekablePoints*sizeof(CKeyFrame), 1);
 	for(pCurrentKey = pFirstKey, i = 0; pCurrentKey; pCurrentKey = pCurrentKey->m_pNext, i++)
 		m_pKeyFrames[i] = pCurrentKey->m_Frame;
 
@@ -495,7 +497,7 @@ void CDemoPlayer::DoTick()
 				break;
 			}
 
-			DataSize = CVariableInt::Decompress(aDecompressed, DataSize, aData);
+			DataSize = CVariableInt::Decompress(aCompresseddata, DataSize, aDecompressed, sizeof(aDecompressed));
 
 			if(DataSize < 0)
 			{
@@ -654,7 +656,7 @@ int CDemoPlayer::Load(class IStorage *pStorage, class IConsole *pConsole, const 
 	else if(MapSize > 0)
 	{
 		// get map data
-		unsigned char *pMapData = (unsigned char *)malloc(MapSize);
+		unsigned char *pMapData = (unsigned char *)mem_alloc(MapSize, 1);
 		io_read(m_File, pMapData, MapSize);
 
 		// save map
@@ -663,7 +665,7 @@ int CDemoPlayer::Load(class IStorage *pStorage, class IConsole *pConsole, const 
 		io_close(MapFile);
 
 		// free data
-		free(pMapData);
+		mem_free(pMapData);
 	}
 
 	if(m_Info.m_Header.m_Version > gs_OldVersion)
@@ -814,7 +816,7 @@ int CDemoPlayer::Stop()
 	m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "demo_player", "Stopped playback");
 	io_close(m_File);
 	m_File = 0;
-	free(m_pKeyFrames);
+	mem_free(m_pKeyFrames);
 	m_pKeyFrames = 0;
 	str_copy(m_aFilename, "", sizeof(m_aFilename));
 	return 0;

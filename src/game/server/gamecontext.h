@@ -118,10 +118,11 @@ enum
 
 class CGameContext : public IGameServer
 {
+	class IConsole *m_pConsole;
+	class CLayers* m_pLayers;
+
 	IServer *m_pServer;
 	IStorage *m_pStorage;
-	class IConsole *m_pConsole;
-	CLayers m_Layers;
 	CCollision m_Collision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
@@ -137,9 +138,6 @@ class CGameContext : public IGameServer
 	static bool ConSay(IConsole::IResult *pResult, void *pUserData);
 	static bool ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 
-	CGameContext(int Resetting);
-	void Construct(int Resetting);
-
 	bool m_Resetting;
 
 public:
@@ -148,12 +146,10 @@ public:
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
-	virtual class CLayers *Layers() { return &m_Layers; }
+	virtual class CLayers *Layers() { return m_pLayers; }
 
 	CGameContext();
 	~CGameContext();
-
-	void Clear();
 
 	CEventHandler m_Events;
 	CPlayer *m_apPlayers[MAX_CLIENTS];
@@ -314,7 +310,7 @@ public:
 	void CheckPureTuning();
 	void SendTuningParams(int ClientID);
 
-	virtual void OnInit();
+	virtual void OnInit(int WorldID);
 	virtual void OnConsoleInit();
 	virtual void OnShutdown();
 
@@ -327,7 +323,7 @@ public:
 
 	virtual void OnClientConnected(int ClientID);
 	virtual void OnClientEnter(int ClientID);
-	virtual void OnClientDrop(int ClientID, int Type, const char *pReason);
+	virtual void OnClientDrop(int ClientID, const char *pReason);
 	virtual void OnClientDirectInput(int ClientID, void *pInput);
 	virtual void OnClientPredictedInput(int ClientID, void *pInput);
 
@@ -338,6 +334,8 @@ public:
 	virtual const char *Version();
 	virtual const char *NetVersion();
 
+	int m_WorldID;
+	int m_RespawnWorldID;
 public:
 	int m_ChatResponseTargetID;
 	int m_ChatPrintCBIndex;
@@ -363,6 +361,15 @@ private:
 		char m_TimedMessage[1024];
 	};
 	CBroadcastState m_BroadcastStates[MAX_NOBOT];
+//
+public:
+	bool PlayerExists(int ClientID) const override { return m_apPlayers[ClientID]; }
+	void PrepareClientChangeWorld(int ClientID) override;
+	int GetWorldID() const { return m_WorldID; }
+
+	bool IsPlayerEqualWorld(int ClientID, int WorldID = -1) const;
+	bool IsPlayersNearby(vec2 Pos, float Distance) const;
+	int GetRespawnWorld() const { return m_RespawnWorldID; }
 };
 
 inline int64_t CmaskAll() { return -1LL; }

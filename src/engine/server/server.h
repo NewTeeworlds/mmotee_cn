@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 
+#include <base/hash.h>
+
 /* DDNET MODIFICATION START *******************************************/
 #include "engine/server/sql_connector.h"
 #include "engine/server/sql_server.h"
@@ -71,14 +73,20 @@ class CServer : public IServer
 	class IStorage *m_pStorage;
 	CSqlServer* m_apSqlReadServers[MAX_SQLSERVERS];
 	CSqlServer* m_apSqlWriteServers[MAX_SQLSERVERS];
+	class IRegister *m_pRegister;
+	class CMultiWorlds* m_pMultiWorlds;
+
+public:
+	class IGameServer* GameServer(int WorldID = 0) override;
+	class IGameServer* GameServerPlayer(int ClientID) override;
+	class IConsole *Console() { return m_pConsole; }
+	class IStorage *Storage() { return m_pStorage; }
+	class CMultiWorlds* MultiWorlds() const { return m_pMultiWorlds; }
 
 private:
 	int m_TimeShiftUnit;
-public:
-	class IGameServer *GameServer() { return m_pGameServer; }
-	class IConsole *Console() { return m_pConsole; }
-	class IStorage *Storage() { return m_pStorage; }
 
+public:
 	enum
 	{
 		MAX_RCONCMD_SEND=16,
@@ -126,8 +134,14 @@ public:
 		int m_Country;
 		int m_Authed;
 		int m_AuthTries;
-		int m_NextMapChunk;
+		
+		int m_WorldID;
+		int m_OldWorldID;
+		bool m_IsChangesWorld;
 
+		int m_NextMapChunk;
+		bool m_Quitting;
+		
 		const IConsole::CCommandInfo *m_pRconCmdToSend;
 		
 		void Reset(bool ResetScore=true);
@@ -323,14 +337,15 @@ public:
 	int m_PrintCBIndex;
 
 	int64 m_Lastheartbeat;
+	bool m_ServerInfoHighLoad;
+	int64 m_ServerInfoFirstRequest;
+	int m_ServerInfoNumRequests;
+
 	char m_aCurrentMap[64];
 	
 	unsigned m_CurrentMapCrc;
 	unsigned char *m_pCurrentMapData;
 	unsigned int m_CurrentMapSize;
-
-	CRegister m_Register;
-	CMapChecker m_MapChecker;
 
 	CServer();
 	virtual ~CServer();
@@ -355,18 +370,17 @@ public:
 	const char *ClientClan(int ClientID);
 	const char *GetSelectName(int ClientID, int SelID);
 	int ClientCountry(int ClientID);
-	bool ClientIngame(int ClientID);
+	bool ClientIngame(int ClientID) const;
 	int MaxClients() const;
 
-	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
-	int SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System);
+	int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID, int64 MskID = -1, int WorldID = MAIN_WORLD_ID) override;
 
-	void DoSnapshot();
-
-	static int NewClientCallback(int ClientID, void *pUser);
-	static int DelClientCallback(int ClientID, int Type, const char *pReason, void *pUser);
+	void DoSnapshot(int WorldID);
 
 	static int ClientRejoinCallback(int ClientID, void *pUser);
+	static int NewClientCallback(int ClientID, void *pUser, bool Sixup);
+	static int NewClientNoAuthCallback(int ClientID, void *pUser);
+	static int DelClientCallback(int ClientID, const char *pReason, void *pUser);
 
 	void SendMap(int ClientID);
 	void SendMapData(int ClientID, int Chunk);
@@ -374,6 +388,7 @@ public:
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
 	static void SendRconLineAuthed(const char *pLine, void *pUser);
+	void SendCapabilities(int ClientID);
 
 	void SendRconCmdAdd(const IConsole::CCommandInfo *pCommandInfo, int ClientID);
 	void SendRconCmdRem(const IConsole::CCommandInfo *pCommandInfo, int ClientID);
@@ -381,15 +396,43 @@ public:
 
 	void ProcessClientPacket(CNetChunk *pPacket);
 
-	void SendServerInfo(const NETADDR *pAddr, int Token, bool Extended=false, int Offset=0);
-	void UpdateServerInfo();
+	class CCache
+	{
+	public:
+		class CCacheChunk
+		{
+		public:
+			CCacheChunk(const void *pData, int Size);
+			CCacheChunk(const CCacheChunk &) = delete;
 
-	void PumpNetwork();
+			std::vector<uint8_t> m_vData;
+		};
+
+		std::list<CCacheChunk> m_Cache;
+
+		CCache();
+		~CCache();
+
+		void AddChunk(const void *pData, int Size);
+		void Clear();
+	};
+	CCache m_aServerInfoCache[3 * 2];
+	CCache m_aSixupServerInfoCache[2];
+	bool m_ServerInfoNeedsUpdate;
+
+	void ExpireServerInfo() override;
+	void CacheServerInfo(CCache *pCache, int Type, bool SendClients);
+	void SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool SendClients);
+	bool RateLimitServerInfoConnless();
+	void SendServerInfoConnless(const NETADDR *pAddr, int Token, int Type);
+	void UpdateRegisterServerInfo();
+	void UpdateServerInfo(bool Resend = false);
+
+	void PumpNetwork(bool PacketWaiting);
 
 	char *GetMapName();
-	int LoadMap(const char *pMapName);
+	bool LoadMap(int ID);
 
-	void InitRegister(CNetServer *pNetServer, IEngineMasterServer *pMasterServer, IConsole *pConsole);
 	int Run();
 
 	static bool ConKick(IConsole::IResult *pResult, void *pUser);
@@ -402,7 +445,8 @@ public:
 	static bool ConchainMaxclientsperipUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static bool ConchainModCommandUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static bool ConchainConsoleOutputLevelUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
-	
+	static bool ConSetMapByID(IConsole::IResult *pResult, void *pUser);
+
 	static bool ConAddSqlServer(IConsole::IResult *pResult, void *pUserData);
 	static bool ConDumpSqlServers(IConsole::IResult *pResult, void *pUserData);
 	void RegisterCommands();
@@ -519,6 +563,33 @@ public:
 	virtual int GetTimeShiftUnit() const { return m_TimeShiftUnit; } //In ms
 
 	virtual void LogWarning(const char Warning[256]);
+
+public:
+	bool IsClientChangesWorld(int ClientID) override;
+	void ChangeWorld(int ClientID, int NewWorldID) override;
+	int GetClientWorldID(int ClientID) override;
+
+	const char* GetWorldName(int WorldID) override;
+	int GetWorldsSize() const override;
+};
+
+class _StoreMultiworldIdentifiableStaticData
+{
+	inline static class IServer* m_pServer {};
+
+public:
+	class IServer* Server() const { return m_pServer; }
+	static void Init(IServer* pServer) { m_pServer = pServer; }
+};
+
+template < typename T >
+class MultiworldIdentifiableStaticData : public _StoreMultiworldIdentifiableStaticData
+{
+protected:
+	inline static T m_pData {};
+
+public:
+	static T& Data() { return m_pData; }
 };
 
 #endif

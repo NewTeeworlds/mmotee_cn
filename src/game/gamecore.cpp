@@ -217,7 +217,7 @@ void CCharacterCore::Tick(bool UseInput, CParams* pParams)
 			for(int i = 0; i < MAX_CLIENTS; i++)
 			{
 				CCharacterCore *pCharCore = m_pWorld->m_apCharacters[i];
-				if(!pCharCore || pCharCore == this || (pCharCore->m_HookProtected && (m_Infected == pCharCore->m_Infected)))
+				if(!pCharCore || pCharCore == this || m_WorldID != pCharCore->m_WorldID)
 					continue;
 
 				vec2 ClosestPoint = closest_point_on_line(m_HookPos, NewPos, pCharCore->m_Pos);
@@ -319,7 +319,7 @@ void CCharacterCore::Tick(bool UseInput, CParams* pParams)
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
 			CCharacterCore *pCharCore = m_pWorld->m_apCharacters[i];
-			if(!pCharCore)
+			if(!pCharCore || m_WorldID != pCharCore->m_WorldID)
 				continue;
 
 			//player *p = (player*)ent;
@@ -394,7 +394,7 @@ void CCharacterCore::Move(CParams* pParams)
 			for(int p = 0; p < MAX_CLIENTS; p++)
 			{
 				CCharacterCore *pCharCore = m_pWorld->m_apCharacters[p];
-				if(!pCharCore || pCharCore == this)
+				if(!pCharCore || m_WorldID != pCharCore->m_WorldID || pCharCore == this)
 					continue;
 				float D = distance(Pos, pCharCore->m_Pos);
 				if(D < 28.0f && D > 0.0f)

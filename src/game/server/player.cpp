@@ -16,20 +16,18 @@
 #include <game/server/entities/bots/bossguard.h>
 #include <game/server/entities/bots/farmer.h>
 
-MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
+MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS * ENGINE_MAX_WORLDS + MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 
-CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
+CPlayer::CPlayer(CGameContext *pGameServer, int ClientID) : m_pGameServer(pGameServer), m_ClientID(ClientID)
 {
-	m_pGameServer = pGameServer;
 	m_RespawnTick = Server()->Tick();
 	m_DieTick = Server()->Tick();
 	m_ScoreStartTick = Server()->Tick();
 
 	m_pCharacter = 0;
-	m_ClientID = ClientID;
-	m_Team = GameServer()->m_pController->ClampTeam(Team);
+	m_Team = TEAM_RED;
 	m_SpectatorID = SPEC_FREEVIEW;
 	m_LastActionTick = Server()->Tick();
 	m_SpecTick = Server()->Tick();
@@ -663,18 +661,18 @@ void CPlayer::PostTick()
 
 void CPlayer::HandleTuningParams()
 {
-	if (!(m_PrevTuningParams == m_NextTuningParams))
+	if(!(m_PrevTuningParams == m_NextTuningParams))
 	{
-		if (m_IsReady)
+		CMsgPacker Msg(NETMSGTYPE_SV_TUNEPARAMS);
+		const int *pParams = reinterpret_cast<int*>(&m_NextTuningParams);
+		for(unsigned i = 0; i < sizeof(m_NextTuningParams) / sizeof(int); i++)
 		{
-			CMsgPacker Msg(NETMSGTYPE_SV_TUNEPARAMS);
-			int *pParams = (int *)&m_NextTuningParams;
-			for (unsigned i = 0; i < sizeof(m_NextTuningParams) / sizeof(int); i++)
-				Msg.AddInt(pParams[i]);
-			Server()->SendMsg(&Msg, MSGFLAG_VITAL, GetCID());
+			Msg.AddInt(pParams[i]);
 		}
+		Server()->SendMsg(&Msg, MSGFLAG_VITAL, m_ClientID);
 		m_PrevTuningParams = m_NextTuningParams;
 	}
+
 	m_NextTuningParams = *GameServer()->Tuning();
 }
 
@@ -866,50 +864,10 @@ void CPlayer::FakeSnap(int SnappingClient)
 	StrToInts(&pClientInfo->m_Skin0, 6, m_TeeInfos.m_SkinName);
 }
 
-void CPlayer::OnDisconnect(int Type, const char *pReason)
+void CPlayer::OnDisconnect()
 {
 	GameServer()->ClearVotes(m_ClientID);
 	KillCharacter();
-	// Server()->SyncOffline(m_ClientID);
-	// if(Server()->ClientIngame(m_ClientID))
-	//	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏"), "PlayerName", Server()->ClientName(m_ClientID), NULL);
-
-	if (Server()->ClientIngame(m_ClientID))
-	{
-		if (Type == CLIENTDROPTYPE_BAN)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 被封禁了 ({str:Reason})"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  "Reason", pReason,
-													  NULL);
-		}
-		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(m_ClientID)) != 0)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 被踢出了 ({str:Reason})"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  "Reason", pReason,
-													  NULL);
-		}
-		else if (pReason && *pReason)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏 ({str:Reason})"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  "Reason", pReason,
-													  NULL);
-		}
-		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(m_ClientID)) == 0)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 安心地去了"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  NULL);
-		}
-		else
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  NULL);
-		}
-	}
 }
 
 void CPlayer::OnPredictedInput(CNetObj_PlayerInput *NewInput)
@@ -968,8 +926,7 @@ void CPlayer::KillCharacter(int Weapon)
 {
 	if (m_pCharacter)
 	{
-		if (m_ClientID != 63)
-			m_pCharacter->Die(m_ClientID, Weapon);
+		m_pCharacter->Die(m_ClientID, Weapon);
 
 		delete m_pCharacter;
 		m_pCharacter = 0;
@@ -1332,4 +1289,14 @@ bool CPlayer::IsBoss()
 	default:
 		return false;
 	}
+}
+
+void CPlayer::ChangeWorld(int MapID)
+{
+	Server()->ChangeWorld(m_ClientID, MapID);
+}
+
+int CPlayer::GetPlayerWorldID()
+{
+	return Server()->GetClientWorldID(m_ClientID);
 }

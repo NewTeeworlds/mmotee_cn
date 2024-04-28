@@ -119,7 +119,7 @@ public:
 	virtual bool IsChoosableClass(int PlayerClass);
 	virtual bool IsSpawnable(vec2 Position, int TeleZoneIndex); */
 
-	virtual void OnClientDrop(int ClientID, int Type) {};
+	virtual void OnClientDrop(CPlayer *pPlayer) {};
 
 	virtual const char *GetTeamName(int Team);
 	virtual int GetAutoTeam(int NotThisID);

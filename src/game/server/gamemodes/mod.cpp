@@ -355,3 +355,8 @@ bool CGameControllerMOD::IsChoosableClass(int PlayerClass)
 
 	return true;
 }
+
+void CGameControllerMOD::OnClientDrop(CPlayer *pPlayer)
+{
+	pPlayer->OnDisconnect();
+}
