@@ -7,7 +7,7 @@
 #include "hearth.h"
 
 CHealthHealer::CHealthHealer(CGameWorld *pGameWorld, vec2 Pos, int Owner, int ReloadTick, int LifeSpan)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_HEALTHHEALER)
+: CEntity(pGameWorld, ENTTYPE_HEALTHHEALER)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
@@ -55,7 +55,7 @@ void CHealthHealer::Tick()
 	if(!m_ReloadTick)
 	{
 		// Find other players
-		for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+		for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 		{
 			if(p->GetPlayer() && p)
 			{

@@ -5,7 +5,7 @@
 #include "buff.h"
 
 CBuff::CBuff(CGameWorld *pGameWorld, vec2 Pos, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_BUFFS)
+: CEntity(pGameWorld, ENTTYPE_BUFFS)
 {
 	m_Pos = Pos;
 	GameWorld()->InsertEntity(this);

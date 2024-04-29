@@ -9,7 +9,7 @@
 #include "pickup.h"
 
 CPickup::CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP)
+: CEntity(pGameWorld, ENTTYPE_PICKUP)
 {
 	m_Type = Type;
 	m_Pos = Pos;
@@ -47,7 +47,7 @@ void CPickup::Tick()
 	}
 
 	// Find other players
-	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 	{
 		if(!p->GetPlayer()->IsBot() && distance(p->m_Pos, m_Pos) < 20) 
 		{
@@ -261,7 +261,7 @@ void CPickup::StartFarm(int ClientID)
 			
 
 			// 加经验
-			GameServer()->m_apPlayers[ClientID]->AccData.Exp += 10+LevelItem;
+			GameServer()->m_apPlayers[ClientID]->AccData.m_Exp += 10+LevelItem;
 			GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+10 +{int:bonus}点专长经验"), "bonus", &LevelItem, NULL);
 		}
 	}
@@ -303,7 +303,7 @@ void CPickup::StartFarm(int ClientID)
 			GameServer()->GiveItem(ClientID, WOOD, 1);
 		
 			// 加经验
-			GameServer()->m_apPlayers[ClientID]->AccData.Exp += 10;
+			GameServer()->m_apPlayers[ClientID]->AccData.m_Exp += 10;
 			GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+10 +并不存在的专长经验"), NULL);
 		}
 	}
@@ -356,7 +356,7 @@ void CPickup::MaterFarm(int ClientID, int MaterialID)
 		GameServer()->GiveItem(ClientID, LOADEREXP, 10);
 
 		// 加经验
-		GameServer()->m_apPlayers[ClientID]->AccData.Exp += 20+LevelItem;
+		GameServer()->m_apPlayers[ClientID]->AccData.m_Exp += 20+LevelItem;
 		GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+20 +{int:bonus}点专长经验"), "bonus", &LevelItem, NULL);
 
 		Picking(5);

@@ -6,7 +6,7 @@
 #include "feya.h"
 
 CFeya::CFeya(CGameWorld *pGameWorld, vec2 Pos, int Type, int SubType, bool Proj)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_FEYA)
+: CEntity(pGameWorld, ENTTYPE_FEYA)
 {
 	m_Pos = Pos;
 

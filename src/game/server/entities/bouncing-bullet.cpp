@@ -9,7 +9,7 @@
 #include "biologist-mine.h"
 
 CBouncingBullet::CBouncingBullet(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 Dir, bool Explosive, int Weapon, int LifeSpan)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_BOUNCING_BULLET)
+: CEntity(pGameWorld, ENTTYPE_BOUNCING_BULLET)
 {
 	m_Pos = Pos;
 	m_ActualPos = Pos;
@@ -84,7 +84,7 @@ void CBouncingBullet::Tick()
 		return;
 	}
 	
-	for(CBiologistMine* pMine = (CBiologistMine*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_BIOLOGIST_MINE); pMine; pMine = (CBiologistMine*) pMine->TypeNext())
+	for(CBiologistMine* pMine = (CBiologistMine*) GameWorld()->FindFirst(ENTTYPE_BIOLOGIST_MINE); pMine; pMine = (CBiologistMine*) pMine->TypeNext())
 	{
 		vec2 IntersectPos = closest_point_on_line(pMine->m_Pos, pMine->m_EndPos, CurPos);
 		if(distance(CurPos, IntersectPos) < 30)

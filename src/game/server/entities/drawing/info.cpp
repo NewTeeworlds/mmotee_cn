@@ -7,7 +7,7 @@
 #include "info.h"
 
 CInfo::CInfo(CGameWorld *pGameWorld, int Type, int ID, vec2 Pos)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_DRAW)
+: CEntity(pGameWorld, ENTTYPE_DRAW)
 {
 	m_Type = Type; // 0 = Clan info, 1 = Material info
 	m_Pos = Pos;

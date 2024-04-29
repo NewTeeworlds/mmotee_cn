@@ -9,6 +9,8 @@
 #include <game/server/classes.h>
 #include "cmds.h"
 
+#include "playerdata.h"
+
 class CPlayer
 {
 	MACRO_ALLOC_POOL_ID()
@@ -44,7 +46,7 @@ public:
 
 	vec2 m_ViewPos;
 	int m_PlayerFlags;
-	int m_aActLatency[MAX_NOBOT];
+	int m_aActLatency[MAX_PLAYERS];
 	int m_SpectatorID;
 
 	bool m_IsReady;
@@ -72,7 +74,7 @@ public:
 	int m_OpenBoxType;
 	int m_OpenBoxAmount;
 	bool m_BigBot;
-	int m_InviteClanID;
+	int m_aInviteClanID;
 	bool m_ActiveChair;
 	bool m_AntiPvpSmall;
 	bool m_InBossed;
@@ -85,41 +87,7 @@ public:
 	bool m_Search;
 	int m_JailTick;
 	
-	struct
-	{
-		int Level;
-		unsigned long int Exp;
-		int Class = PLAYERCLASS_NONE;
-		int Money;
-		unsigned long int Gold;
-		int Donate;
-		unsigned long int ClanAdded;
-		int Quest;
-		int Kill;
-		int WinArea;
-		int Rel;
-		bool Jail;
-		bool IsJailed; // 是否被送进监狱
-		int JailLength; // 手动设置监禁时长
-		int SummerHealingTimes; // Skill Summer Healing 合成保底
-	} AccData;
-	struct
-	{
-		int HammerRange;
-		int Pasive2;
-		int Speed;
-		int Health;
-		int Damage;
-		int HPRegen;
-		int AmmoRegen;
-		int Ammo;
-		int Spray;
-		int Mana;
-		int SkillPoint;
-		int Upgrade;
-	} AccUpgrade;
-
-	char m_SelectPlayer[MAX_CLIENTS];
+	char m_aSelectPlayer[64];
 	int m_SelectItem;
 	int m_SelectItemType;
 	int m_SelectArmor;
@@ -144,8 +112,7 @@ public:
 	// TODO: clean this up
 	struct
 	{
-		char m_SkinName[MAX_CLIENTS];
-		char m_CustomSkinName[MAX_CLIENTS];
+		char m_aSkinName[64];
 		int m_UseCustomColor;
 		int m_ColorBody;
 		int m_ColorFeet;
@@ -176,7 +143,7 @@ public:
 	} m_Latency;
 
 	int m_Authed;
-	bool m_knownClass[NB_PLAYERCLASS];
+	bool m_aKnownClass[NB_PLAYERCLASS];
 	
 	int GetClass(); 
 	void SetClassSkin(int newClass, int State = 0);
@@ -189,7 +156,7 @@ public:
 	const char* GetClassName();
 	void SetLanguage(const char* pLanguage);
 	
-	int GetNeedMana() {	return 100+(AccUpgrade.Mana*5); };
+	int GetNeedMana() {	return 100+(AccUpgrade.m_Mana*5); };
 	int GetNeedForUp();
 	int GetNeedForUpgClan(Clan Type);
 	int m_MapMenuItem;
@@ -211,7 +178,15 @@ public:
 	void ResetUpgrade(int ClientID);
 	void ResetSkill(int ClientID);
 
-	int tickstr;
+	void InitSnap();
+	void UpdateSnap();
+
+	bool GetSnap(int EntityID);
+	void SetSnap(int EntityID, bool Snap);
+
+	SAccData AccData;
+	SAccUpgrade AccUpgrade;
+
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;
@@ -223,7 +198,7 @@ private:
 	int m_ClientID;
 	int m_Team;
 
-	char pTitle[64];
+	char m_aTitle[64];
 	bool m_ShowClan;
 
 	// Пользовальские переменные
@@ -236,6 +211,8 @@ private:
 	bool m_Bot;
 	int m_BotType;
 	int m_BotSubType;
+
+	bool m_aShouldSnap[NUM_ENTTYPES];
 };
 
 #endif

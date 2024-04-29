@@ -8,7 +8,7 @@
 #include "bonus.h"
 
 CBonus::CBonus(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int Type, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_BONUS)
+: CEntity(pGameWorld, ENTTYPE_BONUS)
 {
 	m_Pos = Pos;
 	m_ActualPos = Pos;
@@ -19,10 +19,10 @@ CBonus::CBonus(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int Type, int Owner)
 	m_Type = Type;
 	m_GetLevel = 1;
 	
-	if(Owner > -1 && Owner < MAX_NOBOT)
+	if(Owner > -1 && Owner < MAX_PLAYERS)
 	{
 		if(GameServer()->m_apPlayers[Owner])
-			m_GetLevel = GameServer()->m_apPlayers[Owner]->AccData.Level*100;
+			m_GetLevel = GameServer()->m_apPlayers[Owner]->AccData.m_Level*100;
 	}
 	
 	m_Flashing = false;

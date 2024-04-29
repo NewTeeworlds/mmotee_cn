@@ -21,8 +21,8 @@ struct CVoteOptionServer
 {
 	CVoteOptionServer *m_pNext = { 0 };
 	CVoteOptionServer *m_pPrev = { 0 };
-	char m_aDescription[MAX_NOBOT][VOTE_DESC_LENGTH];
-	char m_aCommand[MAX_NOBOT][1];
+	char m_aDescription[MAX_PLAYERS][VOTE_DESC_LENGTH];
+	char m_aCommand[MAX_PLAYERS][1];
 };
 
 #endif

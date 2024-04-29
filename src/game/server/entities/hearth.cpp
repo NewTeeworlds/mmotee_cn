@@ -4,7 +4,7 @@
 #include "hearth.h"
 
 CHearth::CHearth(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, vec2 InitialVel)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLYINGPOINT)
+: CEntity(pGameWorld, ENTTYPE_FLYINGPOINT)
 {
 	m_Pos = Pos;
 	m_InitialVel = InitialVel;

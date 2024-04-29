@@ -3,7 +3,7 @@
 #include "photoid.h"
 
 CPhotoid::CPhotoid(CGameWorld *pGameWorld, vec2 Pos, int OwnerID, int GetPlayer, vec2 InitialVel)
-    : CEntity(pGameWorld, CGameWorld::ENTTYPE_PHOTOID)
+    : CEntity(pGameWorld, ENTTYPE_PHOTOID)
 {
     m_Pos = Pos;
     m_InitialVel = InitialVel;
