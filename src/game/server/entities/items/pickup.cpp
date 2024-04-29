@@ -163,7 +163,7 @@ void CPickup::StartFarm(int ClientID)
 		int Dropable = 0;
 		int Broke = 0;
 		int Count = 0;
-		const char* ItemName = "Nope";
+		const char* ItemName = "啥都没有";
 		if(Server()->GetItemCount(ClientID, DIAMONDPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, DIAMONDPIX);
