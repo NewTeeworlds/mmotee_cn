@@ -4,7 +4,7 @@
 #include "loltext.h"
 
 CLolPlasma::CLolPlasma(CGameWorld *pGameWorld, CEntity *pParent, vec2 Pos, vec2 Vel, int Lifespan)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER)
+: CEntity(pGameWorld, ENTTYPE_DRAW)
 {
 	m_LocalPos = vec2(0.0f, 0.0f);
 	m_StartOff = Pos;

@@ -246,6 +246,8 @@ enum Items
 	GUARD_HAMMER_FRAG,
 	GUARD_HAMMER,
 	JUICER,
+	SANTIPING,
+	CUSTOMPACKAGE,
 	MAX_ITEM,
 	// 1 - Weapon Upgradins, 2 - Rare Artifacts, 3 - Quest Item's, 4 - Useds Items, 5 - Crafted Item
 	// Sufix S - SettingsItem
@@ -432,7 +434,7 @@ public:
 		T tmp;
 		if (ClientID == -1)
 		{
-			for(int i = 0; i < MAX_NOBOT; i++)
+			for(int i = 0; i < MAX_PLAYERS; i++)
 				if(ClientIngame(i))
 				{
 					mem_copy(&tmp, pMsg, sizeof(T));

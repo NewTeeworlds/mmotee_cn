@@ -5,7 +5,7 @@
 #include "snapfullproj.h"
 
 CSnapFullProject::CSnapFullProject(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, bool Changing)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_SNAP_FULLPROJECT)
+: CEntity(pGameWorld, ENTTYPE_SNAP_FULLPROJECT)
 {
 	m_Pos = Pos;
 	m_LoadingTick = Server()->TickSpeed();

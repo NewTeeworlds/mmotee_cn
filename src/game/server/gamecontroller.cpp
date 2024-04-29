@@ -317,7 +317,7 @@ void IGameController::Tick()
 	// check for inactive players
 	if (g_Config.m_SvInactiveKickTime > 0)
 	{
-		for (int i = 0; i < MAX_NOBOT; ++i)
+		for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 #ifdef CONF_DEBUG
 			if (g_Config.m_DbgDummies)
@@ -342,7 +342,7 @@ void IGameController::Tick()
 					{
 						// move player to spectator if the reserved slots aren't filled yet, kick him otherwise
 						int Spectators = 0;
-						for (int j = 0; j < MAX_NOBOT; ++j)
+						for (int j = 0; j < MAX_PLAYERS; ++j)
 							if (GameServer()->m_apPlayers[j] && GameServer()->m_apPlayers[j]->GetTeam() == TEAM_SPECTATORS)
 								++Spectators;
 						if (Spectators >= g_Config.m_SvSpectatorSlots)
@@ -363,7 +363,7 @@ void IGameController::Tick()
 	}
 	if (g_Config.m_SvSpecKickTime > 0)
 	{
-		for (int i = 0; i < MAX_NOBOT; ++i)
+		for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 			if (GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS && !Server()->IsAuthed(i))
 			{

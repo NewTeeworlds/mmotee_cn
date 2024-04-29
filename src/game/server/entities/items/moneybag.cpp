@@ -7,7 +7,7 @@
 #include "moneybag.h"
 
 CMoneyBag::CMoneyBag(CGameWorld *pGameWorld, int Type, vec2 Pos, int SubType)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_MONEYBAG)
+: CEntity(pGameWorld, ENTTYPE_MONEYBAG)
 {
 	m_Type = Type;
 	m_Pos = Pos;
@@ -51,7 +51,7 @@ void CMoneyBag::Tick()
 		m_TimeActive++;
 
 	// Find other players
-	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 	{
 		if(!p->GetPlayer()->IsBot() && distance(p->m_Pos, m_Pos) < 20) 
 		{

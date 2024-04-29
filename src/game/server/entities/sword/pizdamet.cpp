@@ -4,7 +4,7 @@
 #include "pizdamet.h"
 
 CPizdamet::CPizdamet(CGameWorld *pGameWorld, vec2 Pos, int OwnerID)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLYINGPOINT)
+: CEntity(pGameWorld, ENTTYPE_FLYINGPOINT)
 {
 	m_Pos = Pos;
 	m_OwnerID = OwnerID;
@@ -39,7 +39,7 @@ void CPizdamet::Tick()
 	}
 
 	// Find other players
-	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 	{
 		if(p->GetPlayer() && p && p->GetPlayer()->GetCID() != m_OwnerID && distance(p->m_Pos, m_Pos) < 30) 
 		{

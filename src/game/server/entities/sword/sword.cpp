@@ -8,7 +8,7 @@
 
 
 CSword::CSword(CGameWorld *pGameWorld, vec2 Pos, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_SWORD)
+: CEntity(pGameWorld, ENTTYPE_SWORD)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
@@ -44,7 +44,7 @@ void CSword::Tick()
 	GameServer()->Collision()->IntersectLine(m_Pos, m_Pos2, 0x0, &m_Pos2);
 
 	// Find other sword
-	for(CSword *p = (CSword*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_SWORD); p; p = (CSword *)p->TypeNext())
+	for(CSword *p = (CSword*) GameWorld()->FindFirst(ENTTYPE_SWORD); p; p = (CSword *)p->TypeNext())
 	{
 		if(p && m_Owner != p->m_Owner)
 		{
@@ -55,7 +55,7 @@ void CSword::Tick()
 	}
 
 	// Find other players
-	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 	{
 		if(p->GetPlayer() && p)
 		{

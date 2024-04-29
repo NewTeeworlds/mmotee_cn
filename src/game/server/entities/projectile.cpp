@@ -9,7 +9,7 @@
 
 CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
 		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon, int TakeDamageMode)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_PROJECTILE)
+: CEntity(pGameWorld, ENTTYPE_PROJECTILE)
 {
 	m_Type = Type;
 	m_Pos = Pos;
@@ -93,7 +93,7 @@ void CProjectile::Tick()
 			GameServer()->CreateDamageInd(CurPos, 0, 1);
 	}
 
-	for(CBiologistMine* pMine = (CBiologistMine*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_BIOLOGIST_MINE); pMine; pMine = (CBiologistMine*) pMine->TypeNext())
+	for(CBiologistMine* pMine = (CBiologistMine*) GameWorld()->FindFirst(ENTTYPE_BIOLOGIST_MINE); pMine; pMine = (CBiologistMine*) pMine->TypeNext())
 	{
 		vec2 IntersectPos = closest_point_on_line(pMine->m_Pos, pMine->m_EndPos, CurPos);
 		if(distance(CurPos, IntersectPos) < 30)

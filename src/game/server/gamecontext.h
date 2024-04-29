@@ -3,6 +3,15 @@
 #ifndef GAME_SERVER_GAMECONTEXT_H
 #define GAME_SERVER_GAMECONTEXT_H
 
+#ifdef _MSC_VER
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#else
+#include <stdint.h>
+#endif
+
 #include <engine/server.h>
 #include <engine/storage.h>
 #include <engine/console.h>
@@ -20,20 +29,12 @@
 #include "gameworld.h"
 #include "player.h"
 
-#ifdef _MSC_VER
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#else
-#include <stdint.h>
-#endif
 
 #define BROADCAST_DURATION_REALTIME (0)
 #define BROADCAST_DURATION_GAMEANNOUNCE (Server()->TickSpeed() * 2)
 
 const int BOSSID = MAX_CLIENTS - 1;
-const int MAX_COUNT = 20000000;
+const int MAX_COUNT = 10000000;
 
 enum
 {
@@ -204,7 +205,7 @@ public:
 		char m_aCommand[VOTE_CMD_LENGTH] = {0};
 		void *data = {0};
 	};
-	array<CVoteOptions> m_PlayerVotes[MAX_CLIENTS];
+	array<CVoteOptions> m_aPlayerVotes[MAX_CLIENTS];
 
 	// Клан функции
 	// 公会
@@ -344,8 +345,8 @@ public:
 	int m_ZoneHandle_Damage;
 	int m_ZoneHandle_Teleport;
 	int m_ZoneHandle_Bonus;
-	int m_InviteClanID[MAX_NOBOT];
-	int m_InviteTick[MAX_NOBOT];
+	int m_aInviteClanID[MAX_PLAYERS];
+	int m_aInviteTick[MAX_PLAYERS];
 
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
@@ -353,16 +354,16 @@ private:
 	{
 	public:
 		int m_NoChangeTick;
-		char m_PrevMessage[1024];
+		char m_aPrevMessage[1024];
 
 		int m_Priority;
-		char m_NextMessage[1024];
+		char m_aNextMessage[1024];
 
 		int m_LifeSpanTick;
 		int m_TimedPriority;
-		char m_TimedMessage[1024];
+		char m_aTimedMessage[1024];
 	};
-	CBroadcastState m_BroadcastStates[MAX_NOBOT];
+	CBroadcastState m_aBroadcastStates[MAX_PLAYERS];
 };
 
 inline int64_t CmaskAll() { return -1LL; }

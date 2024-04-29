@@ -5,7 +5,7 @@
 #include "biologist-laser.h"
 
 CBiologistLaser::CBiologistLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg, bool Explode)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER)
+: CEntity(pGameWorld, ENTTYPE_LASER)
 {
 	m_Dmg = Dmg;
 	m_Pos = Pos;

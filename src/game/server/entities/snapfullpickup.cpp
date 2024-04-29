@@ -6,7 +6,7 @@
 #include "biologist-laser.h"
 
 CSnapFullPickup::CSnapFullPickup(CGameWorld *pGameWorld, vec2 Pos, int Owner, int Num, int Type, int SubType, bool Changing)
-	: CEntity(pGameWorld, CGameWorld::ENTTYPE_SNAP_FULLPICKUP)
+	: CEntity(pGameWorld, ENTTYPE_SNAP_FULLPICKUP)
 {
 	m_Pos = Pos;
 	m_LoadingTick = Server()->TickSpeed();
@@ -50,7 +50,7 @@ void CSnapFullPickup::Tick()
 		{
 			/*if(m_LoadingTick == 1)
 			{
-				for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+				for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 				{
 					if(p->GetPlayer() && p)
 					{

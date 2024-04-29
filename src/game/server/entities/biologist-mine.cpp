@@ -7,7 +7,7 @@
 #include "biologist-laser.h"
 
 CBiologistMine::CBiologistMine(CGameWorld *pGameWorld, vec2 Pos, vec2 EndPos, int Owner, int Health)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_BIOLOGIST_MINE)
+: CEntity(pGameWorld, ENTTYPE_BIOLOGIST_MINE)
 {
 	m_Pos = Pos;
 	m_EndPos = EndPos;
@@ -88,7 +88,7 @@ void CBiologistMine::Tick()
 	}
 
 	// Find other players
-	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
+	for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
 	{
 		if(p->GetPlayer()->GetCID() != m_Owner)
 		{

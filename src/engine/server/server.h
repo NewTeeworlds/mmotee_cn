@@ -141,7 +141,7 @@ public:
 		int m_ItemNumReward[21];
 		int m_MailID[21];
 
-		char m_SelectPlayer[64][25];
+		char m_aSelectPlayer[64][25];
 
 		//Login
 		int m_LogInstance;
