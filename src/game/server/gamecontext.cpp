@@ -2244,6 +2244,18 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					ResetVotes(ClientID, AUTH);
 					return;
 				}
+				else if (str_comp(aCmd, "sspawnsettings") == 0)
+				{
+					int Get = Server()->GetItemSettings(ClientID, SSPAWNSETTINGS) + 1;
+					if (Get > 2)
+						Server()->SetItemSettingsCount(ClientID, SSPAWNSETTINGS, 0);
+					else
+						Server()->SetItemSettingsCount(ClientID, SSPAWNSETTINGS, Get);
+
+					UpdateStats(ClientID);
+					ResetVotes(ClientID, SETTINGS);
+					return;
+				}
 				else if (str_comp(aCmd, "sssecurity") == 0)
 				{
 					if (Server()->GetSecurity(ClientID))
@@ -2737,6 +2749,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			if(!Server()->GetItemCount(ClientID, SANTIPING))
 				GiveItem(ClientID, SANTIPING, 1);
+
+			if(!Server()->GetItemCount(ClientID, SSPAWNSETTINGS))
+				GiveItem(ClientID, SSPAWNSETTINGS, 1);
 		}
 		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_World.m_Paused)
 		{
@@ -3937,6 +3952,12 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 		Data = Server()->GetItemSettings(ClientID, SSHOWCLAN) ? "☑" : "☐";
 		AddVote_Localization(ClientID, "ssshowclan", "☞ TAB显示公会 {str:stat}", "stat", Data);
+
+		if(Server()->GetSpawnInClanHouse(ClientID, 0) || Server()->GetSpawnInClanHouse(ClientID, 1) || Server()->GetSpawnInClanHouse(ClientID, 2))
+		{
+			Data = Server()->GetItemSettings(ClientID, SSPAWNSETTINGS) ? "公会" : "默认";
+			AddVote_Localization(ClientID, "sspawnsettings", "☞ 出生点设置 {str:stat}", "stat", Data);
+		}
 
 		Data = "正常";
 		if (Server()->GetItemSettings(ClientID, SCHAT) == 1)

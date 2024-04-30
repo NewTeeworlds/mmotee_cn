@@ -271,16 +271,19 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 		else if(pPlayer->AccData.m_Jail)
 			Type = 4;
 
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 0))
-			Type = 16;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 1))
-			Type = 17;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 2))
-			Type = 18;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 3))
-			Type = 19;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 4))
-			Type = 20;
+		else if (Server()->GetItemSettings(pPlayer->GetCID(), SSPAWNSETTINGS))
+		{
+			if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 0))
+				Type = 16;
+			else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 1))
+				Type = 17;
+			else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 2))
+				Type = 18;
+			/*else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 3))
+				Type = 19;
+			else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 4))
+				Type = 20;*/
+		}
 	}
 	else
 	{
