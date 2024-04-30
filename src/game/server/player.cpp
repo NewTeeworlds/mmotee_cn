@@ -1295,15 +1295,15 @@ const char *CPlayer::TitleGot()
 		}
 	}
 	else if (Server()->GetItemSettings(m_ClientID, TITLEQUESTS))
-		return "任务达人";
+		return "1阶段";
 	else if (Server()->GetItemSettings(m_ClientID, BOSSDIE))
 		return "Boss克星";
 	else if (Server()->GetItemSettings(m_ClientID, PIGPIG))
 		return "猪猪";
 	else if (Server()->GetItemSettings(m_ClientID, BIGCRAFT))
-		return "合成大师";
+		return "合成师";
 	else if (Server()->GetItemSettings(m_ClientID, TITLESUMMER))
-		return "沐浴阳光";
+		return "沐浴阳";
 	else if (Server()->GetItemSettings(m_ClientID, TITLEENCHANT))
 		return "魔法师";
 	else if(Server()->GetItemSettings(m_ClientID, TITLE_DONATE_BAOJI50))
@@ -1312,8 +1312,24 @@ const char *CPlayer::TitleGot()
 		return "TANK!";
 	else if(Server()->GetItemSettings(m_ClientID, TITLE_SPECIAL_TEEFUN))
 		return "TeeFun";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_GUARD))
-		return "Guard杀手";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_WORKERF))
+		return "工人爷";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_WORKERM))
+		return "工人奶";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_FRAMERF))
+		return "农民爷";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_FRAMERM))
+		return "农民奶";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_MANUAL))
+		return "手工业";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_PPP))
+		return "GS合营";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_TGPCR))
+		return "文革";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_GLF))
+		return "大跃进";
+	else if(Server()->GetItemSettings(m_ClientID, TITLE_PC))
+		return "公社";
 	//else if(Server()->GetItemSettings(m_ClientID, TITLEMOON))
 	//	return "~〇~ Moon ~〇~";	
 	else 
@@ -1375,11 +1391,13 @@ void CPlayer::UpdateSnap()
 		}
 		break;
 	case 2:
+	{
 		SetSnap(ENTTYPE_PICKUP, false);
 		SetSnap(ENTTYPE_GROWINGEXPLOSION, false);
 		SetSnap(ENTTYPE_BONUS, false);
 		SetSnap(ENTTYPE_BIOLOGIST_MINE, false);	
-		
+		[[fallthrough]];
+	}
 	case 1:
 		SetSnap(ENTTYPE_FLYINGPOINT, false);
 		SetSnap(ENTTYPE_SNAP_FULLPICKUP, false);

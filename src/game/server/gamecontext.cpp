@@ -2168,6 +2168,67 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					return;
 				}
 
+				else if (str_comp(aCmd, "blabourpack") == 0)
+				{
+					Server()->SetItemPrice(ClientID, LABOURPACK, 0, 300);
+					BuyItem(LABOURPACK, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bwf") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_WORKERF, 0, 300);
+					BuyItem(TITLE_WORKERF, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bwm") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_WORKERM, 0, 300);
+					BuyItem(TITLE_WORKERM, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bff") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_FRAMERF, 0, 300);
+					BuyItem(TITLE_FRAMERF, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bfm") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_FRAMERM, 0, 300);
+					BuyItem(TITLE_FRAMERM, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bsgy") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_MANUAL, 0, 300);
+					BuyItem(TITLE_MANUAL, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bgshy") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_PPP, 0, 200);
+					BuyItem(TITLE_PPP, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bwhdgm") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_TGPCR, 0, 100);
+					BuyItem(TITLE_TGPCR, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "brmgs") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_PC, 0, 220);
+					BuyItem(TITLE_PC, ClientID, 1);
+					return;
+				}
+				else if (str_comp(aCmd, "bdyj") == 0)
+				{
+					Server()->SetItemPrice(ClientID, TITLE_GLF, 0, 200);
+					BuyItem(TITLE_GLF, ClientID, 1);
+					return;
+				}
+
 				// НАСТРОЙКИ ФУНКЦИИ
 				// 功能设置
 				else if (str_comp(aCmd, "ssantiping") == 0)
@@ -2425,6 +2486,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					long int Get = (long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35) * 0.95f;
 					if(Get <= 0)
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("您没有可用于榨汁儿的蔬菜水果!"), NULL);
+					
+					if(Server()->GetItemSettings(ClientID, TITLE_PC))
+						Get *= 1.5;
 
 					Server()->RemItem(ClientID, CARROT, carrot, -1);
 					Server()->RemItem(ClientID, TOMATE, tomato, -1);
@@ -3116,7 +3180,12 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 			return;
 		}
 		Server()->RemItem(ClientID, ESUMMER, 20, -1);
-		if (random_prob(0.96f) && m_apPlayers[ClientID]->AccData.m_SummerHealingTimes < 15)
+
+		float RandomProb = 0.96f;
+		if(Server()->GetItemSettings(ClientID, TITLE_MANUAL))
+			RandomProb -= 0.2f;
+
+		if (random_prob(RandomProb) && m_apPlayers[ClientID]->AccData.m_SummerHealingTimes < 15)
 		{
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 在合成 {str:item}x{int:coun} 的时候失败了"),
 										"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
@@ -3419,7 +3488,11 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 			return;
 		}
 		Server()->RemItem(ClientID, GUARD_HAMMER_FRAG, 10, -1);
-		if (random_prob(0.94f))
+		float RandomProba = 0.94f;
+		if(Server()->GetItemSettings(ClientID, TITLE_MANUAL))
+			RandomProba -= 0.2f;
+
+		if (random_prob(RandomProba))
 		{
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 在合成 {str:item}x{int:coun} 的时候失败了"),
 										"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
@@ -3571,6 +3644,8 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "rules", "☞ 注意事项");
 		AddVoteMenu_Localization(ClientID, RESLIST, MENUONLY, "☞ 通缉犯");
 		AddVoteMenu_Localization(ClientID, EVENTLIST, MENUONLY, "☞ 事件与奖金");
+		if (g_Config.m_MtLabourDay)
+			AddVoteMenu_Localization(ClientID, LABOURDAY, MENUONLY, "☞ 劳动节限定称号购买！");
 		AddVoteMenu_Localization(ClientID, JOBSSET, MENUONLY, "☞ 工作与专长");
 		AddVoteMenu_Localization(ClientID, TOPMENU, MENUONLY, "☞ 玩家/公会排名");
 		AddVote_Localization(ClientID, "ssantiping", "☞ 特效显示(减轻服务器负担): {str:stat}", "stat", Data);
@@ -3789,6 +3864,16 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		CreateNewShop(ClientID, TITLE_DONATE_BAOJI50, 1, 0, 0);
 		CreateNewShop(ClientID, TITLE_DONATE_SHENGMIN70, 1, 0, 0);
 		CreateNewShop(ClientID, TITLE_GUARD, 1, 0, 0);
+		AddVote("", "null", ClientID);
+		CreateNewShop(ClientID, TITLE_WORKERF, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_WORKERM, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_FRAMERF, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_FRAMERM, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_MANUAL, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_PPP, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_TGPCR, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_PC, 1, 0, 0);
+		CreateNewShop(ClientID, TITLE_GLF, 1, 0, 0);
 
 		AddBack(ClientID);
 		return;
@@ -4273,6 +4358,55 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "bcustomized", "☞ 物品 个性化包 [300]");
 		AddVote_Localization(ClientID, "null", "让你使用自己的皮肤和颜色");
 		AddVote_Localization(ClientID, "null", "-----");
+		AddVote("", "null", ClientID);
+		AddBack(ClientID);
+		return;
+	}
+
+	else if (Type == LABOURDAY)
+	{
+		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+		AddVote_Localization(ClientID, "null", "劳动节限定");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "null", _("{int:rmb} 人民币 - {int:donate} 点券"), "rmb", &g_Config.m_InfRmb, "donate", &g_Config.m_InfDonate);
+		AddVote_Localization(ClientID, "null", " ");
+		AddVote_Localization(ClientID, "null", "向管理员 FFS或Minjun 捐赠获得点卷");
+		AddVote_Localization(ClientID, "null", "FFS联系方式, QQ: 1562151175, 微信: teeffs");
+		AddVote_Localization(ClientID, "null", "Minjun联系方式QQ: 2398396911");
+		AddVote("", "null", ClientID);
+		AddVote_Localization(ClientID, "null", "$ 你充了 {int:don}", "don", &m_apPlayers[ClientID]->AccData.m_Donate);
+		AddVote_Localization(ClientID, "null", " ");
+		AddVote_Localization(ClientID, "blabourpack", "☞ 劳动节捆绑包 [1800]");
+		AddVote_Localization(ClientID, "null", "获得以下所有称号");
+		AddVote_Localization(ClientID, "null", "可以节省720点卷");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bwf", "☞ 称号:工人爷爷 [300]");
+		AddVote_Localization(ClientID, "null", "挖矿速度提升100%");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bwm", "☞ 称号:工人奶奶 [300]");
+		AddVote_Localization(ClientID, "null", "挖矿所得增加100%");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bff", "☞ 称号:农民爷爷 [300]");
+		AddVote_Localization(ClientID, "null", "种地速度提升100%");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bfm", "☞ 称号:农民奶奶 [300]");
+		AddVote_Localization(ClientID, "null", "种地所得增加100%");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bsgy", "☞ 称号:手工业 [300]");
+		AddVote_Localization(ClientID, "null", "合成成功率提升20%");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bgshy", "☞ 称号:公私合营: [200]");
+		AddVote_Localization(ClientID, "null", "打怪爆率提升30%");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bwhdgm", "☞ 称号:文化大革命 [100]");
+		AddVote_Localization(ClientID, "null", "杀人不增加愤怒值");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "brmgs", "☞ 称号:人民公社 [220]");
+		AddVote_Localization(ClientID, "null", "吃菜获得的经验*1.5");
+		AddVote_Localization(ClientID, "null", "-----");
+		AddVote_Localization(ClientID, "bdyj", "☞ 称号:大跃进 [200]");
+		AddVote_Localization(ClientID, "null", "移动速度增加，具有'浮夸风'");
 		AddVote("", "null", ClientID);
 		AddBack(ClientID);
 		return;
@@ -4873,6 +5007,11 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("broadcast", "r<message>", CFGFLAG_SERVER, ConBroadcast, this, "Broadcast message");
 	Console()->Register("say", "r", CFGFLAG_SERVER, ConSay, this, "Say in chat");
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
+
+	for (int i = 0; i < 100; i++)
+	{
+		dbg_msg("sda", "%d %d", i, random_prob(0.96f));
+	}
 }
 
 void CGameContext::OnInit(/*class IKernel *pKernel*/)
@@ -5287,6 +5426,8 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 		else if (ItemID == TOMATE)
 		{
 			PackOne = 15 * Count;
+			if(Server()->GetItemSettings(ClientID, TITLE_PC))
+				PackOne *= 1.5;
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 经验"),
 										"name", Server()->ClientName(ClientID), "used", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, "pvars", &PackOne, NULL);
 			pPlayer->ExpAdd(PackOne, false);
@@ -5294,6 +5435,8 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 		else if (ItemID == POTATO)
 		{
 			PackOne = 25 * Count;
+			if(Server()->GetItemSettings(ClientID, TITLE_PC))
+				PackOne *= 1.5;
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 经验"),
 										"name", Server()->ClientName(ClientID), "used", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, "pvars", &PackOne, NULL);
 			pPlayer->ExpAdd(PackOne, false);
@@ -5301,6 +5444,8 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 		else if (ItemID == CARROT)
 		{
 			PackOne = 10 * Count;
+			if(Server()->GetItemSettings(ClientID, TITLE_PC))
+				PackOne *= 1.5;
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 经验"),
 										"name", Server()->ClientName(ClientID), "used", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, "pvars", &PackOne, NULL);
 			pPlayer->ExpAdd(PackOne, false);
@@ -5308,6 +5453,8 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 		else if (ItemID == CABBAGE)
 		{
 			PackOne = 35 * Count;
+			if(Server()->GetItemSettings(ClientID, TITLE_PC))
+				PackOne *= 1.5;
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 经验"),
 										"name", Server()->ClientName(ClientID), "used", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, "pvars", &PackOne, NULL);
 			pPlayer->ExpAdd(PackOne, false);

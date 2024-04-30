@@ -1711,8 +1711,11 @@ void CCharacter::Die(int Killer, int Weapon)
 					get = 50;
 			}
 			
-			pKillerPlayer->AccData.m_Rel += get;
-			GameServer()->SendChatTarget_Localization(Killer, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pKillerPlayer->AccData.m_Rel, NULL);
+			if(!Server()->GetItemSettings(Killer, TITLE_TGPCR))
+			{
+				pKillerPlayer->AccData.m_Rel += get;
+				GameServer()->SendChatTarget_Localization(Killer, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pKillerPlayer->AccData.m_Rel, NULL);
+			}
 		}
 		
 		if(m_pPlayer->m_Search)
@@ -1901,7 +1904,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 				
 			// Агрессия
 			// 守卫愤怒值
-			if(m_pPlayer->GetBotType() == BOT_GUARD)
+			if(m_pPlayer->GetBotType() == BOT_GUARD && !Server()->GetItemSettings(From, TITLE_TGPCR))
 			{
 				pFrom->AccData.m_Rel += 10;
 				GameServer()->SendChatTarget_Localization(From, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pFrom->AccData.m_Rel, NULL);
@@ -2757,12 +2760,18 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 	if(!IsAlive())
 		return; 
 	
-	if(Random == false) 
+	if(!Random) 
 	{
-		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);		
+		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
 		return;
 	}
-	if(random_prob(1.0f/(float)Random)) 
+	if (Server()->GetItemSettings(HowID, TITLE_PPP))
+		Random += 20;
+	
+	if(Random > 100)
+		Random = 100;
+	
+	if(random_prob(1.0f/(float)Random))
 		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
 }
 

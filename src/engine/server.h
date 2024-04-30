@@ -69,6 +69,7 @@ enum Menus
 	JOBSSET,
 	MAILMENU,
 	ARMORMENU,
+	LABOURDAY,
 	MAXMENU,
 
 	CREATEBOSS
@@ -248,6 +249,16 @@ enum Items
 	JUICER,
 	SANTIPING,
 	CUSTOMPACKAGE,
+	TITLE_WORKERF,
+	TITLE_WORKERM,
+	TITLE_FRAMERF,
+	TITLE_FRAMERM,
+	TITLE_MANUAL,
+	TITLE_PPP,
+	TITLE_TGPCR,
+	TITLE_PC,
+	TITLE_GLF,
+	LABOURPACK,
 	MAX_ITEM,
 	// 1 - Weapon Upgradins, 2 - Rare Artifacts, 3 - Quest Item's, 4 - Useds Items, 5 - Crafted Item
 	// Sufix S - SettingsItem
