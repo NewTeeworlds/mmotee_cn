@@ -2359,7 +2359,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					int SelectItem = m_apPlayers[ClientID]->m_SelectItem;
 
 					int Get = chartoint(pReason, MAX_COUNT);
-					if (SelectItem == RESETINGUPGRADE || SelectItem == RESETINGSKILL || SelectItem == VIPPACKAGE)
+					if (SelectItem == RESETINGUPGRADE || SelectItem == RESETINGSKILL || SelectItem == VIPPACKAGE  || SelectItem == LABOURPACK)
 						Get = 1;
 
 					Server()->RemItem(ClientID, SelectItem, Get, USEDUSE);
@@ -5516,6 +5516,20 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 			Count = 1;
 			SendMail(ClientID, 6, CUSTOMSKIN, 1);
 			SendMail(ClientID, 6, CUSTOMCOLOR, 1);
+			UpdateStats(ClientID);
+		}
+		else if (ItemID == LABOURPACK)
+		{
+			Count = 1;
+			SendMail(ClientID, 6, TITLE_WORKERF, 1);
+			SendMail(ClientID, 6, TITLE_WORKERM, 1);
+			SendMail(ClientID, 6, TITLE_FRAMERF, 1);
+			SendMail(ClientID, 6, TITLE_FRAMERM, 1);
+			SendMail(ClientID, 6, TITLE_MANUAL, 1);
+			SendMail(ClientID, 6, TITLE_PPP, 1);
+			SendMail(ClientID, 6, TITLE_TGPCR, 1);
+			SendMail(ClientID, 6, TITLE_PC, 1);
+			SendMail(ClientID, 6, TITLE_GLF, 1);
 			UpdateStats(ClientID);
 		}
 		else if (ItemID == RANDOMCRAFTITEM || ItemID == EVENTBOX || ItemID == FARMBOX)
