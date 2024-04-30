@@ -129,6 +129,7 @@ void CPickup::StartFarm(int ClientID)
 			Temp *= 2;
 		
 		m_Drop += Temp;
+		
 		GameServer()->CreateSound(m_Pos, 20); 
 
 		int LevelItem = 1+Server()->GetItemCount(ClientID, FARMLEVEL)/g_Config.m_SvFarmExp;
@@ -141,7 +142,7 @@ void CPickup::StartFarm(int ClientID)
 			"lvl", &LevelItem, "exp", &Exp, "expneed", &NeedExp, "name", ItemName, "count", &Count, "brok", &Dropable, "brok2", &Broke, "got", GameServer()->LevelString(100, (int)getlv, 10, ':', ' '), "gotp", &m_Drop, NULL);
 		
 
-		if(m_Drop == 100)
+		if(m_Drop >= 100)
 		{
 			if(random_prob(0.5f))
 				Server()->SetMaterials(2, Server()->GetMaterials(2)+1);
