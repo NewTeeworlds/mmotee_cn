@@ -281,6 +281,9 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		}
 		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id) && itemid > 0 && itemid < 500 && citem > 0)
 			GameServer()->GiveItem(id, itemid, citem, enchant);
+		char aBuf[128];
+		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家物品%dx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), itemid, citem);
+		GameServer()->Server()->LogWarning(aBuf);
 		return;
 	}
 
@@ -296,6 +299,10 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		}
 		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id) && itemid > 0 && itemid < 500 && citem > 0)
 			GameServer()->RemItem(id, itemid, citem);
+
+		char aBuf[128];
+		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s删除了游戏名为%s的玩家物品%dx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), itemid, citem);
+		GameServer()->Server()->LogWarning(aBuf);
 		return;
 	}
 
@@ -311,6 +318,22 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		}
 		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id) && itemid > 0 && itemid < 500 && citem > 0)
 			GameServer()->SendMail(id, 12, itemid, citem);
+		
+		char aBuf[128];
+		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家物品%dx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), itemid, citem);
+		GameServer()->Server()->LogWarning(aBuf);
+		return;
+	}
+
+	else if (!strncmp(Msg->m_pMessage, "/givedonate_acc", 14) && GameServer()->Server()->IsAuthed(ClientID))
+	{
+		LastChat();
+		char Username[64];
+		int Donate = 0;
+		if ((sscanf(Msg->m_pMessage, "/givedonate_acc %s %d", Username, &Donate)) != 2)
+			return GameServer()->SendChatTarget(ClientID, "命令方法: /givedonate_acc <用户名> <点券>");
+		
+		GameServer()->Server()->GiveDonate(Username, Donate, ClientID);
 		return;
 	}
 
@@ -326,10 +349,14 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		}
 		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id))
 		{
-			GameServer()->SendChatTarget(ClientID, "You gived donate.");
-			GameServer()->SendChatTarget(id, "Your donate balance added.");
+			GameServer()->SendChatTarget(ClientID, "你发出了点卷.");
+			GameServer()->SendChatTarget(id, "你的点卷数增加了.");
 			GameServer()->m_apPlayers[id]->AccData.m_Donate += citem;
 			GameServer()->UpdateStats(id);
+
+			char aBuf[128];
+			str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家%d点卷", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), citem);
+			GameServer()->Server()->LogWarning(aBuf);
 		}
 		return;
 	}

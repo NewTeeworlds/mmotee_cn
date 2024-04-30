@@ -519,6 +519,7 @@ public:
 	virtual int GetTimeShiftUnit() const { return m_TimeShiftUnit; } //In ms
 
 	virtual void LogWarning(const char Warning[256]);
+	virtual void GiveDonate(const char Username[64], int Donate, int WhoDid);
 };
 
 #endif

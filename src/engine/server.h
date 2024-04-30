@@ -625,6 +625,9 @@ public:
 
 	virtual int* GetIdMap(int ClientID) = 0;
 	virtual void SetCustClt(int ClientID) = 0;
+
+	virtual void LogWarning(const char Warning[256]) = 0;
+	virtual void GiveDonate(const char Username[64], int Donate, int WhoDid) = 0;
 }; 
 
 class IGameServer : public IInterface

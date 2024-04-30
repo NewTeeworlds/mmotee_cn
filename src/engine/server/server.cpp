@@ -1174,8 +1174,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					char aAddrStr[64];
 					char aBuf[128];
 					net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), false);
-					str_format(aBuf, sizeof(aBuf), "!Warning! UserID: %d, ClientID=%d, Name:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientID, ClientName(ClientID), aAddrStr);
-					dbg_msg("WARNING!WARNING!WARNING!", aBuf);
+					str_format(aBuf, sizeof(aBuf), "!警告! 陷阱被触发! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientName(ClientID), aAddrStr);
 					LogWarning(aBuf);
 					
 					Ban(ClientID, -1, "尝试黑入服务器");
@@ -1186,6 +1185,12 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					char aBuf[128];
 					str_format(aBuf, sizeof(aBuf), "Wrong password %d/%d.", m_aClients[ClientID].m_AuthTries, g_Config.m_SvRconMaxTries);
 					SendRconLine(ClientID, aBuf);
+					
+					char aAddrStr[64];
+					net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), false);
+					str_format(aBuf, sizeof(aBuf), "!警告! !错误的密码! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientName(ClientID), aAddrStr);
+					LogWarning(aBuf);
+
 					if(m_aClients[ClientID].m_AuthTries >= g_Config.m_SvRconMaxTries)
 					{
 						if(!g_Config.m_SvRconBantime)
@@ -5679,5 +5684,61 @@ public:
 void CServer::LogWarning(const char Warning[256])
 {
 	CSqlJob* pJob = new CSqlJob_Server_LogWarning(this, Warning);
+	pJob->Start();
+}
+
+class CSqlJob_Server_GiveDonate : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+	char m_aUsername[64];
+	int m_Donate;
+	int m_WhoDid;
+
+public:
+	CSqlJob_Server_GiveDonate(CServer* pServer, const char aUsername[64], int Donate, int Admin)
+	{
+		m_pServer = pServer;
+		str_copy(m_aUsername, aUsername, sizeof(m_aUsername));
+		m_Donate = Donate;
+		m_WhoDid = Admin;
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		char aBuf[128];
+		try
+		{
+			str_format(aBuf, sizeof(aBuf), "SELECT * FROM %s_Users WHERE Username = '%s';", pSqlServer->GetPrefix(), m_aUsername);
+			pSqlServer->executeSqlQuery(aBuf);
+			if(pSqlServer->GetResults()->next())
+			{
+				str_format(aBuf, sizeof(aBuf), "UPDATE %s_Users SET Donate = Donate + %d WHERE Username = '%s';", pSqlServer->GetPrefix(), m_Donate, m_aUsername);
+				pSqlServer->executeSql(aBuf);
+				str_format(aBuf, sizeof(aBuf), "管理员%s给了用户名为%s的玩家%d点卷", m_pServer->ClientName(m_WhoDid), m_aUsername, m_Donate);
+				dbg_msg("Donate", aBuf);
+				m_pServer->LogWarning(aBuf);
+				CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_WhoDid, CHATCATEGORY_DEFAULT, _("点卷已送达."));
+				m_pServer->AddGameServerCmd(pCmd);
+				return true;
+			}
+			CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_WhoDid, CHATCATEGORY_DEFAULT, _("未找到该玩家"));
+			m_pServer->AddGameServerCmd(pCmd);
+			return false;
+		}
+		catch (sql::SQLException const &e)
+		{
+			if(str_length(e.what()) > 0)
+				dbg_msg("sql", "在更新玩家状态时发生了错误 (MySQL 错误: %s)", e.what());
+			dbg_msg("sql", "在更新玩家状态时发生了错误 (MySQL 错误: %s)", e.what());
+			return false;
+		}
+		return true;
+	}
+};
+
+void CServer::GiveDonate(const char Username[64], int Donate, int Who)
+{
+	CSqlJob* pJob = new CSqlJob_Server_GiveDonate(this, Username, Donate, Who);
 	pJob->Start();
 }
