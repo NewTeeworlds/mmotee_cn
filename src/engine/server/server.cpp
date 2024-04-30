@@ -1273,7 +1273,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 	}
 	else
 	{
-		if (ClientCount < VANILLA_MAX_CLIENTS){
+		if (ClientCount < MAX_PLAYERS){
 			p.AddString(g_Config.m_SvName, 64);
 		}
 		else
