@@ -147,7 +147,7 @@ void CPickup::StartFarm(int ClientID)
 				Server()->SetMaterials(2, Server()->GetMaterials(2)+1);
 
 			if(Server()->GetItemSettings(ClientID, TITLE_FRAMERM))
-				LevelItem * 2;
+				LevelItem *= 2;
 
 			switch(random_int(0, 4))
 			{
