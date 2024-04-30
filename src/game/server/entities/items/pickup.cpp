@@ -289,7 +289,7 @@ void CPickup::StartFarm(int ClientID)
 		int Dropable = 0;
 		int Broke = 0;
 		int Count = 0;
-		int Temp;
+		int Temp = 0;
 
 		const char* ItemName = "啥都没有";
 		if(Server()->GetItemCount(ClientID, DRAGONAXE))
