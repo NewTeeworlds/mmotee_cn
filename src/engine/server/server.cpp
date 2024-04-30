@@ -1273,12 +1273,12 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 	}
 	else
 	{
-		if (ClientCount < MAX_PLAYERS){
+		if (ClientCount < VANILLA_MAX_CLIENTS){
 			p.AddString(g_Config.m_SvName, 64);
 		}
 		else
 		{
-			str_format(aBuf, sizeof(aBuf), "%s [%d/%d]", g_Config.m_SvName, ClientCount, MAX_PLAYERS);
+			str_format(aBuf, sizeof(aBuf), "%s [%d/%d]", g_Config.m_SvName, ClientCount, VANILLA_MAX_CLIENTS);
 			p.AddString(aBuf, 64);
 		}
 	}

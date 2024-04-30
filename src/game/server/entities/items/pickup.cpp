@@ -261,7 +261,7 @@ void CPickup::StartFarm(int ClientID)
 				DragonOre = 6;
 			}
 
-			if(Server()->GetItemSettings(ClientID, TITLE_FRAMERM))
+			if(Server()->GetItemSettings(ClientID, TITLE_WORKERM))
 				LevelItem *= 2;
 
 			switch(random_int(0, ItemDrop))
