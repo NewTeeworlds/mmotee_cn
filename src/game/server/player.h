@@ -23,6 +23,7 @@ public:
 
 	void Init(int CID);
 	int GetCID() const { return m_ClientID; };
+	int GetMapID() const { return IsBot() ? m_MapID : Server()->GetClientMapID(GetCID()); };
 
 	void TryRespawn();
 	void Respawn();
@@ -186,6 +187,8 @@ public:
 
 	SAccData AccData;
 	SAccUpgrade AccUpgrade;
+
+	int m_MapID;
 
 private:
 	CCharacter *m_pCharacter;

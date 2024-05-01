@@ -16,7 +16,7 @@
 #include <game/server/entities/bots/bossguard.h>
 #include <game/server/entities/bots/farmer.h>
 
-MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
+MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS * ENGINE_MAX_MAPS + MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 
@@ -672,7 +672,7 @@ void CPlayer::HandleTuningParams()
 			int *pParams = (int *)&m_NextTuningParams;
 			for (unsigned i = 0; i < sizeof(m_NextTuningParams) / sizeof(int); i++)
 				Msg.AddInt(pParams[i]);
-			Server()->SendMsg(&Msg, MSGFLAG_VITAL, GetCID());
+			Server()->SendMsg(&Msg, MSGFLAG_VITAL, GetCID(), GetMapID());
 		}
 		m_PrevTuningParams = m_NextTuningParams;
 	}
@@ -875,7 +875,7 @@ void CPlayer::OnDisconnect(int Type, const char *pReason)
 	// if(Server()->ClientIngame(m_ClientID))
 	//	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏"), "PlayerName", Server()->ClientName(m_ClientID), NULL);
 
-	if (Server()->ClientIngame(m_ClientID))
+	if (Server()->ClientIngame(m_ClientID) || !Server()->GetClientChangeMap(GetCID()))
 	{
 		if (Type == CLIENTDROPTYPE_BAN)
 		{
@@ -1019,6 +1019,8 @@ void CPlayer::TryRespawn()
 
 	m_Spawning = false;
 
+	const int AllocMemoryCell = m_ClientID + GameServer()->GetMapID() * MAX_CLIENTS;
+
 	if (IsBot())
 	{
 		// жирный бот рандом
@@ -1031,7 +1033,7 @@ void CPlayer::TryRespawn()
 		switch (m_BotType)
 		{
 		case BOT_L1MONSTER:
-			m_pCharacter = new (m_ClientID) CMonster(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CMonster(&GameServer()->m_World);
 
 			if (g_Config.m_SvCityStart == 1)
 			{
@@ -1052,7 +1054,7 @@ void CPlayer::TryRespawn()
 			}
 			break;
 		case BOT_L2MONSTER:
-			m_pCharacter = new (m_ClientID) CKwah(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CKwah(&GameServer()->m_World);
 
 			if (g_Config.m_SvCityStart == 1)
 			{
@@ -1068,7 +1070,7 @@ void CPlayer::TryRespawn()
 			}
 			break;
 		case BOT_L3MONSTER:
-			m_pCharacter = new (m_ClientID) CBoomer(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CBoomer(&GameServer()->m_World);
 
 			if (g_Config.m_SvCityStart == 1)
 			{
@@ -1084,7 +1086,7 @@ void CPlayer::TryRespawn()
 			}
 			break;
 		case BOT_BOSSSLIME:
-			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
 			AccData.m_Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
@@ -1093,7 +1095,7 @@ void CPlayer::TryRespawn()
 			AccUpgrade.m_Damage = 100;
 			break;
 		case BOT_BOSSVAMPIRE:
-			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
 			AccData.m_Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
@@ -1102,41 +1104,41 @@ void CPlayer::TryRespawn()
 			AccUpgrade.m_Damage = 400;
 			break;
 		case BOT_BOSSPIGKING:
-			m_pCharacter = new (m_ClientID) CBossPig(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CBossPig(&GameServer()->m_World);
 			AccData.m_Level = 100 + random_int(3, 13);
 			m_BigBot = true;
 			AccUpgrade.m_Health = (int)(AccData.m_Level / 6);
 			AccUpgrade.m_Damage = 10;
 			break;
 		case BOT_BOSSGUARD:
-			m_pCharacter = new (m_ClientID) CBossGuard(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CBossGuard(&GameServer()->m_World);
 			AccData.m_Level = 500 + random_int(0, 10);
 			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:
-			m_pCharacter = new (m_ClientID) CNpcSold(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CNpcSold(&GameServer()->m_World);
 			AccData.m_Level = 500 + random_int(0, 10);
 			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
 			AccUpgrade.m_Health = (int)(AccData.m_Level * 50);
 			m_BigBot = true;
 			break;
 		case BOT_NPCW:
-			m_pCharacter = new (m_ClientID) CNpcWSold(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CNpcWSold(&GameServer()->m_World);
 			AccData.m_Level = 3;
 			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
 			AccUpgrade.m_Health = (int)(AccData.m_Level * 2);
 			m_BigBot = true;
 			break;
 		case BOT_FARMER:
-			m_pCharacter = new (m_ClientID) CNpcFarmer(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CNpcFarmer(&GameServer()->m_World);
 			AccData.m_Level = 3;
 			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
 			AccUpgrade.m_Health = (int)(AccData.m_Level * 2);
 			m_BigBot = true;
 			break;
 		case BOT_BOSSCLEANER:
-			m_pCharacter = new (m_ClientID) CBossSlime(&GameServer()->m_World);
+			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
 			AccData.m_Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
@@ -1156,7 +1158,7 @@ void CPlayer::TryRespawn()
 	}
 	else
 	{
-		m_pCharacter = new (m_ClientID) CCharacter(&GameServer()->m_World);
+		m_pCharacter = new (AllocMemoryCell) CCharacter(&GameServer()->m_World);
 		if(Server()->GetItemSettings(GetCID(), TITLE_GUARD))
 		{
 			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);

@@ -56,7 +56,7 @@ CInputCount CountInput(int Prev, int Cur)
 }
 
 
-MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
+MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS * ENGINE_MAX_MAPS + MAX_CLIENTS)
 
 // Character, "physical" player's part
 CCharacter::CCharacter(CGameWorld *pWorld)
@@ -150,6 +150,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_ReckoningTick = 0;
 	mem_zero(&m_SendCore, sizeof(m_SendCore));
 	mem_zero(&m_ReckoningCore, sizeof(m_ReckoningCore));
+	m_Core.m_MapID = m_pPlayer->GetMapID();
 
 	GameServer()->m_World.InsertEntity(this);
 	m_Alive = true;
@@ -599,7 +600,7 @@ void CCharacter::FireWeapon()
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime*2), 20, Explode, 10, -1, WEAPON_SHOTGUN);
 				}
 			}
-			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), GetPlayer()->GetMapID());
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
 		} break;
 
@@ -647,7 +648,7 @@ void CCharacter::FireWeapon()
 						(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime), 
 						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
 				}
-				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), GetPlayer()->GetMapID());
 			}
 			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 		} break;
@@ -869,6 +870,9 @@ void CCharacter::ResetInput()
 
 void CCharacter::Tick()
 {
+	if (!m_pPlayer || !IsAlive()) // bugfix
+		return;
+
 	vec2 PrevPos = m_Core.m_Pos;
 	if(IsAlive())
 	{	
@@ -1251,6 +1255,9 @@ void CCharacter::Tick()
 				break;
 			}
 
+			// 此处有bug!!!
+			No build because bug here.
+			BUG START
 			if (PlayerPos == ZONE_WATER && !m_InWater)
 			{
 				GameServer()->CreateSound(m_Pos, 11);
@@ -1265,6 +1272,8 @@ void CCharacter::Tick()
 				m_InWater = false;
 				break;
 			}
+			BUG END
+			Try then you know the bug.
 
 			if (PlayerPos == ZONE_BOSS && !InBoss)
 			{
@@ -1651,7 +1660,7 @@ void CCharacter::Die(int Killer, int Weapon)
 		Msg.m_Victim = m_pPlayer->GetCID();
 		Msg.m_Weapon = Weapon;
 		Msg.m_ModeSpecial = ModeSpecial;
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1, -1);
 	}
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
@@ -1780,7 +1789,7 @@ int CCharacter::SendToJail(int PlayerID, int JailLength) //手动送某人进监
 	Msg.m_Victim = PlayerID;
 	Msg.m_Weapon = WEAPON_WORLD;
 	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1, -1);
 	
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
@@ -1822,7 +1831,7 @@ int CCharacter::Unjail(int PlayerID) //手动救某人出监狱
 	Msg.m_Victim = PlayerID;
 	Msg.m_Weapon = WEAPON_WORLD;
 	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1, -1);
 	
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);

@@ -437,10 +437,10 @@ public:
 	virtual int GetMaterials(int ID) = 0;
 	virtual void SetMaterials(int ID, int Count) = 0;
 
-	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID) = 0;
+	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID, int MapID) = 0;
 
 	template<class T>
-	int SendPackMsg(T *pMsg, int Flags, int ClientID)
+	int SendPackMsg(T *pMsg, int Flags, int ClientID, int MapID)
 	{
 		int result = 0;
 		T tmp;
@@ -450,29 +450,29 @@ public:
 				if(ClientIngame(i))
 				{
 					mem_copy(&tmp, pMsg, sizeof(T));
-					result = SendPackMsgTranslate(&tmp, Flags, i);
+					result = SendPackMsgTranslate(&tmp, Flags, i, MapID);
 				}
 		} else 
 		{
 			mem_copy(&tmp, pMsg, sizeof(T));
-			result = SendPackMsgTranslate(&tmp, Flags, ClientID);
+			result = SendPackMsgTranslate(&tmp, Flags, ClientID, MapID);
 		}
 		return result;
 	}
 
 	template<class T>
-	int SendPackMsgTranslate(T *pMsg, int Flags, int ClientID)
+	int SendPackMsgTranslate(T *pMsg, int Flags, int ClientID, int MapID)
 	{
-		return SendPackMsgOne(pMsg, Flags, ClientID);
+		return SendPackMsgOne(pMsg, Flags, ClientID, MapID);
 	}
 
-	int SendPackMsgTranslate(CNetMsg_Sv_Emoticon *pMsg, int Flags, int ClientID)
+	int SendPackMsgTranslate(CNetMsg_Sv_Emoticon *pMsg, int Flags, int ClientID, int MapID)
 	{
-		return Translate(pMsg->m_ClientID, ClientID) && SendPackMsgOne(pMsg, Flags, ClientID);
+		return Translate(pMsg->m_ClientID, ClientID) && SendPackMsgOne(pMsg, Flags, ClientID, MapID);
 	}
 
 	char msgbuf[1000];
-	int SendPackMsgTranslate(CNetMsg_Sv_Chat *pMsg, int Flags, int ClientID)
+	int SendPackMsgTranslate(CNetMsg_Sv_Chat *pMsg, int Flags, int ClientID, int MapID)
 	{
 		if (pMsg->m_ClientID >= 0 && !Translate(pMsg->m_ClientID, ClientID))
 		{
@@ -480,23 +480,23 @@ public:
 			pMsg->m_pMessage = msgbuf;
 			pMsg->m_ClientID = VANILLA_MAX_CLIENTS - 1;
 		}
-		return SendPackMsgOne(pMsg, Flags, ClientID);
+		return SendPackMsgOne(pMsg, Flags, ClientID, MapID);
 	}
 
-	int SendPackMsgTranslate(CNetMsg_Sv_KillMsg *pMsg, int Flags, int ClientID)
+	int SendPackMsgTranslate(CNetMsg_Sv_KillMsg *pMsg, int Flags, int ClientID, int MapID)
 	{
 		if (!Translate(pMsg->m_Victim, ClientID)) return 0;
 		if (!Translate(pMsg->m_Killer, ClientID)) pMsg->m_Killer = pMsg->m_Victim;
-		return SendPackMsgOne(pMsg, Flags, ClientID);
+		return SendPackMsgOne(pMsg, Flags, ClientID, MapID);
 	}
 
 	template<class T>
-	int SendPackMsgOne(T *pMsg, int Flags, int ClientID)
+	int SendPackMsgOne(T *pMsg, int Flags, int ClientID, int MapID)
 	{
 		CMsgPacker Packer(pMsg->MsgID());
 		if(pMsg->Pack(&Packer))
 			return -1;
-		return SendMsg(&Packer, Flags, ClientID);
+		return SendMsg(&Packer, Flags, ClientID, MapID);
 	}
 
 	bool Translate(int& target, int client)
@@ -633,13 +633,17 @@ public:
 	virtual const char *GetClanName(int ClanID) = 0;
 
 	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType) = 0;
-	virtual void InitClientBot(int ClientID) = 0;
+	virtual void InitClientBot(int ClientID, int MapID) = 0;
 
 	virtual int* GetIdMap(int ClientID) = 0;
 	virtual void SetCustClt(int ClientID) = 0;
 
 	virtual void LogWarning(const char Warning[256]) = 0;
 	virtual void GiveDonate(const char Username[64], int Donate, int WhoDid) = 0;
+
+	virtual void ChangeClientMap(int CID, int MapID) = 0;
+	virtual int GetClientMapID(int ClientID) = 0;
+	virtual bool GetClientChangeMap(int ClientID) = 0;
 }; 
 
 class IGameServer : public IInterface
@@ -687,6 +691,8 @@ public:
 	
 	virtual void OnSetAuthed(int ClientID, int Level) = 0;
 /* INFECTION MODIFICATION END *****************************************/
+
+	virtual void PrepareClientChangeMap(int ClientID) = 0;
 };
 
 extern IGameServer *CreateGameServer();

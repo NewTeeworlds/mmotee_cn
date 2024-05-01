@@ -193,8 +193,9 @@ public:
 		bool m_CustClt;
 
 		int m_MapID;
-		int m_NextMapID;
+		int m_OldMapID;
 		bool m_IsChangeMap;
+		bool m_Quitting;
 	};
 
 	struct _m_stClan
@@ -305,7 +306,7 @@ public:
 	virtual int GetMailRewardDell(int ClientID, int ID);
 
 	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType);
-	virtual void InitClientBot(int ClientID);
+	virtual void InitClientBot(int ClientID, int MapID);
 
 	CClient m_aClients[MAX_CLIENTS];
 	int IdMap[MAX_CLIENTS * VANILLA_MAX_CLIENTS];
@@ -366,10 +367,10 @@ public:
 	bool ClientIngame(int ClientID);
 	int MaxClients() const;
 
-	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
-	int SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System);
+	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID, int MapID);
+	int SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System, int MapID);
 
-	void DoSnapshot();
+	void DoSnapshot(int MapID);
 
 	static int NewClientCallback(int ClientID, void *pUser);
 	static int DelClientCallback(int ClientID, int Type, const char *pReason, void *pUser);
@@ -528,6 +529,11 @@ public:
 
 	virtual void LogWarning(const char Warning[256]);
 	virtual void GiveDonate(const char Username[64], int Donate, int WhoDid);
+
+	int m_NumGameServer;
+	virtual void ChangeClientMap(int CID, int MapID);
+	virtual int GetClientMapID(int ClientID);
+	virtual bool GetClientChangeMap(int ClientID);
 };
 
 #endif

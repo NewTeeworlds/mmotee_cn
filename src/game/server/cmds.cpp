@@ -142,7 +142,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 						Msg.m_pDescription = 0;
 
 						Msg.m_pDescription = GameServer()->Server()->Localization()->Localize(m_pPlayer->GetLanguage(), _("是否加入公会?"));
-						GameServer()->Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
+						GameServer()->Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i, GameServer()->m_apPlayers[i]->GetMapID());
 
 						GameServer()->m_aInviteTick[i] = 10 * GameServer()->Server()->TickSpeed();
 						GameServer()->SendBroadcast_Localization(i, BROADCAST_PRIORITY_INTERFACE, 600, _("玩家 {str:name} 邀请你加入 {str:cname} 公会!"), "name", GameServer()->Server()->ClientName(ClientID), "cname", GameServer()->Server()->ClientClan(ClientID), NULL);
@@ -471,6 +471,16 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		}
 
 		GameServer()->Server()->SetOffline(ClientID, Nick);
+		return;
+	}
+	else if (!strncmp(Msg->m_pMessage, "/goto", 5))
+	{
+		LastChat();
+		int MapID;
+		if (sscanf(Msg->m_pMessage, "/goto %d", &MapID) != 1)
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _(""), NULL);
+
+		GameServer()->Server()->ChangeClientMap(ClientID, MapID);
 		return;
 	}
 	if (!strncmp(Msg->m_pMessage, "/", 1))

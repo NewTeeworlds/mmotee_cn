@@ -348,6 +348,8 @@ public:
 	int m_aInviteClanID[MAX_PLAYERS];
 	int m_aInviteTick[MAX_PLAYERS];
 
+	void PrepareClientChangeMap(int ClientID) override;
+	int GetMapID() { return m_MapID; }
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState
