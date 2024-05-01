@@ -122,7 +122,7 @@ class CGameContext : public IGameServer
 	IServer *m_pServer;
 	IStorage *m_pStorage;
 	class IConsole *m_pConsole;
-	CLayers m_Layers;
+	CLayers *m_pLayers;
 	CCollision m_Collision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
@@ -149,7 +149,7 @@ public:
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
-	virtual class CLayers *Layers() { return &m_Layers; }
+	virtual class CLayers *Layers() { return m_pLayers; }
 
 	CGameContext();
 	~CGameContext();

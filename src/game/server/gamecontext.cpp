@@ -5043,8 +5043,9 @@ void CGameContext::OnInit(int MapID)
 	for (int i = 0; i < NUM_NETOBJTYPES; i++)
 		Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
-	m_Layers.Init(Kernel(), MapID);
-	m_Collision.Init(&m_Layers);
+	m_pLayers = new CLayers();
+	m_pLayers->Init(Kernel(), MapID);
+	m_Collision.Init(m_pLayers);
 
 	// Get zones
 	m_ZoneHandle_Damage = m_Collision.GetZoneHandle("icDamage");
@@ -5055,14 +5056,14 @@ void CGameContext::OnInit(int MapID)
 	m_pController = new CGameControllerMOD(this);
 
 	// create all entities from entity layers
-	if (m_Layers.EntityGroup())
+	if (m_pLayers->EntityGroup())
 	{
 		char aLayerName[12];
 
-		const CMapItemGroup *pGroup = m_Layers.EntityGroup();
+		const CMapItemGroup *pGroup = m_pLayers->EntityGroup();
 		for (int l = 0; l < pGroup->m_NumLayers; l++)
 		{
-			CMapItemLayer *pLayer = m_Layers.GetLayer(pGroup->m_StartLayer + l);
+			CMapItemLayer *pLayer = m_pLayers->GetLayer(pGroup->m_StartLayer + l);
 			if (pLayer->m_Type == LAYERTYPE_QUADS)
 			{
 				CMapItemLayerQuads *pQLayer = (CMapItemLayerQuads *)pLayer;
@@ -5085,14 +5086,14 @@ void CGameContext::OnInit(int MapID)
 	int CurID = 0;
 	if (!g_Config.m_SvCityStart)
 	{
-		for (int o = 0; o < 12; o++, CurID++)
+		for (int o = 0; o < 11; o++, CurID++)
 			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
 		for (int o = 0; o < 11; o++, CurID++)
-			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
+			CreateBot(CurID+1, BOT_L2MONSTER, g_Config.m_SvCityStart);
 		for (int o = 0; o < 10; o++, CurID++)
-			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
+			CreateBot(CurID+1, BOT_L3MONSTER, g_Config.m_SvCityStart);
 		for (int o = 0; o < 1; o++, CurID++)
-			CreateBot(CurID, BOT_FARMER, o);
+			CreateBot(CurID+1, BOT_FARMER, o);
 	}
 	else if (g_Config.m_SvCityStart == 1)
 	{

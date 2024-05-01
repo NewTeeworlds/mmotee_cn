@@ -1255,9 +1255,6 @@ void CCharacter::Tick()
 				break;
 			}
 
-			// 此处有bug!!!
-			No build because bug here.
-			BUG START
 			if (PlayerPos == ZONE_WATER && !m_InWater)
 			{
 				GameServer()->CreateSound(m_Pos, 11);
@@ -1272,8 +1269,6 @@ void CCharacter::Tick()
 				m_InWater = false;
 				break;
 			}
-			BUG END
-			Try then you know the bug.
 
 			if (PlayerPos == ZONE_BOSS && !InBoss)
 			{
