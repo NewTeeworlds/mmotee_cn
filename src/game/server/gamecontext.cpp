@@ -233,7 +233,6 @@ void CGameContext::CreateDeath(vec2 Pos, int ClientID)
 	CNetEvent_Death *pEvent = (CNetEvent_Death *)m_Events.Create(NETEVENTTYPE_DEATH, sizeof(CNetEvent_Death));
 	if (pEvent)
 	{
-		dbg_msg("dsasdadsaasda", "%d", ClientID);
 		pEvent->m_X = (int)Pos.x;
 		pEvent->m_Y = (int)Pos.y;
 		pEvent->m_ClientID = ClientID;
