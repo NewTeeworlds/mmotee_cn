@@ -647,7 +647,7 @@ class IGameServer : public IInterface
 	MACRO_INTERFACE("gameserver", 0)
 protected:
 public:
-	virtual void OnInit() = 0;
+	virtual void OnInit(int MapID) = 0;
 	virtual void OnConsoleInit() = 0;
 	virtual void OnShutdown() = 0;
 	virtual void GiveItem(int ClientID, int ItemID, int Count, int Enchant = 0) = 0;

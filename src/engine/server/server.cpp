@@ -42,6 +42,9 @@
 #include <teeuniverses/components/localization.h>
 
 #include <engine/server/sql_connector.h>
+
+#include <engine/external/json-parser/json.h>
+
 #if defined(CONF_FAMILY_WINDOWS)
 	#define _WIN32_WINNT 0x0501
 	#define WIN32_LEAN_AND_MEAN
@@ -1458,6 +1461,12 @@ int CServer::LoadMap(const char *pMapName)
 	}
 
 	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", "### Map is loaded!!");
+
+	m_vpGameServer[MapID] = CreateGameServer();
+	Kernel()->RegisterInterface(m_vpMap[MapID], MapID);
+	Kernel()->RegisterInterface(static_cast<IMap*>(m_vpMap[MapID]), MapID);
+	Kernel()->RegisterInterface(m_vpGameServer[MapID], MapID);
+	GameServer(MapID)->OnInit(MapID);
 	return 1;
 }
 
@@ -1470,12 +1479,45 @@ int CServer::Run()
 {
 	m_PrintCBIndex = Console()->RegisterPrintCallback(g_Config.m_ConsoleOutputLevel, SendRconLineAuthed, this);
 
-	// load map
-	if(!LoadMap(g_Config.m_SvMap))
+	// read file data into buffer
+	char aFileBuf[512];
+	str_format(aFileBuf, sizeof(aFileBuf), "maps.json");
+	const IOHANDLE File = m_pStorage->OpenFile(aFileBuf, IOFLAG_READ, IStorage::TYPE_ALL);
+	if(!File)
 	{
-		dbg_msg("server", "failed to load map. mapname='%s'", g_Config.m_SvMap);
-		return -1;
+		dbg_msg("Maps", "Probably deleted or error when the file is invalid.");
+		return false;
 	}
+	
+	const int FileSize = (int)io_length(File);
+	char* pFileData = (char*)malloc(FileSize);
+	io_read(File, pFileData, FileSize);
+	io_close(File);
+
+	// parse json data
+	json_settings JsonSettings;
+	mem_zero(&JsonSettings, sizeof(JsonSettings));
+	char aError[256];
+	json_value* pJsonData = json_parse_ex(&JsonSettings, pFileData, aError);
+	free(pFileData);
+	if(pJsonData == nullptr)
+	{
+		return false;
+	}
+	
+	char m_aName[64];
+	char m_aPath[512];
+
+	// extract data
+	const json_value& rStart = (*pJsonData)["maps"];
+	if(rStart.type == json_array)
+	{
+		for(unsigned i = 0; i < rStart.u.array.length; ++i)
+			LoadMap(rStart[i]["map"]);
+	}
+
+	// clean up
+	json_value_free(pJsonData);
 
 	// start server
 	NETADDR BindAddr;
@@ -1506,7 +1548,6 @@ int CServer::Run()
 	str_format(aBuf, sizeof(aBuf), "server name is '%s'", g_Config.m_SvName);
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 
-	GameServer()->OnInit();
 	str_format(aBuf, sizeof(aBuf), "version %s", GameServer()->NetVersion());
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 
@@ -1884,7 +1925,6 @@ bool CServer::ConDumpSqlServers(IConsole::IResult *pResult, void *pUserData)
 void CServer::RegisterCommands()
 {
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
-	m_vpGameServer[DEFAULT_MAP_ID] = Kernel()->RequestInterface<IGameServer>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
 
 	// register console commands

@@ -315,7 +315,7 @@ public:
 	void CheckPureTuning();
 	void SendTuningParams(int ClientID);
 
-	virtual void OnInit();
+	virtual void OnInit(int MapID);
 	virtual void OnConsoleInit();
 	virtual void OnShutdown();
 
@@ -364,6 +364,8 @@ private:
 		char m_aTimedMessage[1024];
 	};
 	CBroadcastState m_aBroadcastStates[MAX_PLAYERS];
+
+	int m_MapID;
 };
 
 inline int64_t CmaskAll() { return -1LL; }

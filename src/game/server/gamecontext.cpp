@@ -5035,17 +5035,19 @@ void CGameContext::OnConsoleInit()
 	}
 }
 
-void CGameContext::OnInit(/*class IKernel *pKernel*/)
+void CGameContext::OnInit(int MapID)
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_World.SetGameServer(this);
 	m_Events.SetGameServer(this);
+	
+	m_MapID = MapID;
 
 	for (int i = 0; i < NUM_NETOBJTYPES; i++)
 		Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
-	m_Layers.Init(Kernel());
+	m_Layers.Init(Kernel(), MapID);
 	m_Collision.Init(&m_Layers);
 
 	// Get zones
@@ -5069,7 +5071,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 			{
 				CMapItemLayerQuads *pQLayer = (CMapItemLayerQuads *)pLayer;
 				IntsToStr(pQLayer->m_aName, sizeof(aLayerName) / sizeof(int), aLayerName);
-				const CQuad *pQuads = (const CQuad *)Kernel()->RequestInterface<IMap>()->GetDataSwapped(pQLayer->m_Data);
+				const CQuad *pQuads = (const CQuad *)Kernel()->RequestInterface<IMap>(MapID)->GetDataSwapped(pQLayer->m_Data);
 
 				for (int q = 0; q < pQLayer->m_NumQuads; q++)
 				{
@@ -5339,7 +5341,8 @@ void CGameContext::CreateBot(int ClientID, int BotType, int BotSubType)
 	if (m_apPlayers[BotClientID])
 		return;
 
-	m_apPlayers[BotClientID] = new (BotClientID) CPlayer(this, BotClientID, TEAM_RED);
+	const int AllocMemoryCell = BotClientID + m_MapID * MAX_CLIENTS;
+	m_apPlayers[BotClientID] = new (AllocMemoryCell) CPlayer(this, BotClientID, TEAM_RED);
 	m_apPlayers[BotClientID]->SetBotType(BotType);
 	m_apPlayers[BotClientID]->SetBotSubType(BotSubType);
 

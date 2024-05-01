@@ -16,7 +16,7 @@ CLayers::CLayers()
 	m_pMap = 0;
 }
 
-void CLayers::Init(class IKernel *pKernel)
+void CLayers::Init(class IKernel *pKernel, int MapID)
 {
 	m_pMap = pKernel->RequestInterface<IMap>();
 	m_pMap->GetType(MAPITEMTYPE_GROUP, &m_GroupsStart, &m_GroupsNum);

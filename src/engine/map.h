@@ -6,7 +6,7 @@
 #include "kernel.h"
 #include <engine/storage.h>
 
-class IMap
+class IMap : public IInterface
 {
 	MACRO_INTERFACE("map", 0)
 public:
