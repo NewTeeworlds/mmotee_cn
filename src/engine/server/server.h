@@ -66,16 +66,16 @@ public:
 
 class CServer : public IServer
 {
-	class IGameServer *m_pGameServer;
 	class IConsole *m_pConsole;
 	class IStorage *m_pStorage;
 	CSqlServer* m_apSqlReadServers[MAX_SQLSERVERS];
 	CSqlServer* m_apSqlWriteServers[MAX_SQLSERVERS];
+	std::map<int, IGameServer *> m_vpGameServer;
 
 private:
 	int m_TimeShiftUnit;
 public:
-	class IGameServer *GameServer() { return m_pGameServer; }
+	class IGameServer *GameServer(int MapID = 0) { return m_vpGameServer[MapID]; }
 	class IConsole *Console() { return m_pConsole; }
 	class IStorage *Storage() { return m_pStorage; }
 
@@ -191,6 +191,10 @@ public:
 		char m_aUsername[MAX_NAME_LENGTH];
 		int m_SelectItem;
 		bool m_CustClt;
+
+		int m_MapID;
+		int m_NextMapID;
+		bool m_IsChangeMap;
 	};
 
 	struct _m_stClan
@@ -313,7 +317,7 @@ public:
 	CEcon m_Econ;
 	CServerBan m_ServerBan;
 
-	IEngineMap *m_pMap;
+	std::vector<IEngineMap*> m_vpMap;
 
 	int64 m_GameStartTime;
 	int m_RunServer;
@@ -323,14 +327,18 @@ public:
 	int m_PrintCBIndex;
 
 	int64 m_Lastheartbeat;
-	char m_aCurrentMap[64];
-	
-	unsigned m_CurrentMapCrc;
-	unsigned char *m_pCurrentMapData;
-	unsigned int m_CurrentMapSize;
+
+	struct CMapData
+	{
+		char m_aCurrentMap[64];
+		unsigned m_CurrentMapCrc;
+		unsigned char *m_pCurrentMapData;
+		int m_CurrentMapSize;
+	};
+
+	std::vector<CMapData> m_vMapData;
 
 	CRegister m_Register;
-	CMapChecker m_MapChecker;
 
 	CServer();
 	virtual ~CServer();
@@ -368,8 +376,8 @@ public:
 
 	static int ClientRejoinCallback(int ClientID, void *pUser);
 
-	void SendMap(int ClientID);
-	void SendMapData(int ClientID, int Chunk);
+	void SendMap(int ClientID, int MapID);
+	void SendMapData(int ClientID, int Chunk, int MapID);
 	
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
