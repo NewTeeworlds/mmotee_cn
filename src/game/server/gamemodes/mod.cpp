@@ -18,7 +18,7 @@
 CGameControllerMOD::CGameControllerMOD(class CGameContext *pGameServer)
 : IGameController(pGameServer)
 {
-	m_pGameType = "MMOTee-Azataz-F idm";
+	m_pGameType = "MMOTee-Azataz-F";
 	m_pHeroFlag = 0;
 }
 
@@ -166,7 +166,7 @@ void CGameControllerMOD::Snap(int SnappingClient)
 	// FFS注: 这段代码或将导致三体文明毁灭（WTF???）
 	if(GameServer()->m_apPlayers[SnappingClient])
 	{
-		if(GameServer()->m_apPlayers[SnappingClient]->AccData.m_Class == PLAYERCLASS_NONE && !GameServer()->m_apPlayers[SnappingClient]->IsBot())
+		if(GameServer()->m_apPlayers[SnappingClient]->AccData()->m_Class == PLAYERCLASS_NONE && !GameServer()->m_apPlayers[SnappingClient]->IsBot())
 		{
 			pGameInfoObj->m_RoundStartTick = 0;
 			int Page = -1;
@@ -201,7 +201,7 @@ int CGameControllerMOD::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	CPlayer* pVictimPlayer = pVictim->GetPlayer();
 	if(pVictimPlayer && pVictimPlayer != pKiller)
 	{
-		pKiller->ExpAdd(pVictimPlayer->AccData.m_Level);
+		pKiller->ExpAdd(pVictimPlayer->AccData()->m_Level);
 	}
 	
 	if(Weapon == WEAPON_SELF)
@@ -250,7 +250,7 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 	int Type = 1;
 	if(!pPlayer->IsBot())
 	{
-		if(!pPlayer->AccData.m_Class)
+		if(!pPlayer->AccData()->m_Class)
 			Type = 0;
 		else if(!Server()->GetItemCount(pPlayer->GetCID(), SDROP))
 		{
@@ -268,7 +268,7 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 			Type = 9;
 		else if(pPlayer->m_InArea && GameServer()->m_AreaType == 2)
 			Type = 13;
-		else if(pPlayer->AccData.m_Jail)
+		else if(pPlayer->AccData()->m_Jail)
 			Type = 4;
 
 		else if (Server()->GetItemSettings(pPlayer->GetCID(), SSPAWNSETTINGS))

@@ -7,6 +7,8 @@
 #include <game/generated/protocol.h>
 #include <engine/shared/protocol.h>
 
+#include <game/server/playerdata.h>
+
 /* INFECTION MODIFICATION START ***************************************/
 enum InfWeapons
 {
@@ -644,6 +646,9 @@ public:
 	virtual void ChangeClientMap(int CID, int MapID) = 0;
 	virtual int GetClientMapID(int ClientID) = 0;
 	virtual bool GetClientChangeMap(int ClientID) = 0;
+
+	virtual SAccData *GetAccData(int ClientID) = 0;
+	virtual SAccUpgrade *GetAccUpgrade(int ClientID) = 0;
 }; 
 
 class IGameServer : public IInterface

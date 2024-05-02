@@ -296,7 +296,7 @@ void CServer::CClient::Reset(bool ResetScore)
 	{
 		m_WaitingTime = 0;
 		m_LogInstance = -1;
-		m_UserID = -1;
+		AccData.m_UserID = -1;
 
 		m_AntiPing = 0;
 		str_copy(m_aLanguage, "en", sizeof(m_aLanguage));
@@ -406,7 +406,7 @@ void CServer::SetClientClan(int ClientID, const char *pClan)
 	if(ClientID < 0 || ClientID >= MAX_PLAYERS || m_aClients[ClientID].m_State < CClient::STATE_READY || !pClan)
 		return;
 
-	str_copy(m_aClients[ClientID].m_Clan, pClan, MAX_CLAN_LENGTH);
+	str_copy(m_aClients[ClientID].AccData.m_Clan, pClan, MAX_CLAN_LENGTH);
 }
 
 void CServer::SetClientCountry(int ClientID, int Country)
@@ -530,10 +530,10 @@ const char *CServer::ClientClan(int ClientID)
 {
 	if(ClientID < 0 || ClientID >= MAX_PLAYERS || m_aClients[ClientID].m_State == CServer::CClient::STATE_EMPTY)
 		return "";
-	if(m_aClients[ClientID].m_ClanID > 0)
-		return m_stClan[m_aClients[ClientID].m_ClanID].Name;
+	if(m_aClients[ClientID].AccData.m_ClanID > 0)
+		return m_stClan[m_aClients[ClientID].AccData.m_ClanID].Name;
 	if(m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME && !IsClientLogged(ClientID))
-		return m_aClients[ClientID].m_Clan;
+		return m_aClients[ClientID].AccData.m_Clan;
 	else
 		return "NOPE";
 }
@@ -769,9 +769,9 @@ int CServer::ClientRejoinCallback(int ClientID, void *pUser)
 	pThis->m_aClients[ClientID].m_Authed = AUTHED_NO;
 	pThis->m_aClients[ClientID].m_pRconCmdToSend = 0;
 
-	pThis->m_aClients[ClientID].Reset();
+	pThis->m_aClients[ClientID].Reset(!pThis->m_aClients[ClientID].m_IsChangeMap);
 
-	pThis->SendMap(ClientID, DEFAULT_MAP_ID);
+	pThis->SendMap(ClientID, pThis->m_aClients[ClientID].m_MapID);
 
 	return 0;
 }
@@ -800,34 +800,35 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 	pThis->m_aClients[ClientID].m_AuthTries = 0;
 	pThis->m_aClients[ClientID].m_pRconCmdToSend = 0;
 	pThis->m_aClients[ClientID].m_WaitingTime = 0;
-	pThis->m_aClients[ClientID].m_UserID = -1;
-	pThis->m_aClients[ClientID].m_ClanID = -1;
-	pThis->m_aClients[ClientID].m_Level = -1;
-	pThis->m_aClients[ClientID].m_Jail = false;
-	pThis->m_aClients[ClientID].m_Rel = -1;
-	pThis->m_aClients[ClientID].m_Exp = -1;
-	pThis->m_aClients[ClientID].m_Donate = -1;
-	pThis->m_aClients[ClientID].m_Class = -1;
-	pThis->m_aClients[ClientID].m_Quest = -1;
-	pThis->m_aClients[ClientID].m_Kill = -1;
-	pThis->m_aClients[ClientID].m_WinArea = -1;
-	pThis->m_aClients[ClientID].m_ClanAdded = -1;
-	pThis->m_aClients[ClientID].m_IsJailed = false;
-	pThis->m_aClients[ClientID].m_JailLength = 0;
-	pThis->m_aClients[ClientID].m_SummerHealingTimes = 0;
-	pThis->m_aClients[ClientID].Health = 0;
-	pThis->m_aClients[ClientID].Speed = 0;
-	pThis->m_aClients[ClientID].Damage = 0;
-	pThis->m_aClients[ClientID].Ammo = 0;
-	pThis->m_aClients[ClientID].AmmoRegen = 0;
-	pThis->m_aClients[ClientID].Spray = 0;
-	pThis->m_aClients[ClientID].Mana = 0;
-	pThis->m_aClients[ClientID].HPRegen = 0;
-	pThis->m_aClients[ClientID].m_HammerRange = 0;
-	pThis->m_aClients[ClientID].m_Pasive2 = 0;
-	pThis->m_aClients[ClientID].Upgrade = 0;
-	pThis->m_aClients[ClientID].SkillPoint = 0;
-	
+
+	pThis->m_aClients[ClientID].AccData.m_UserID = -1;
+	pThis->m_aClients[ClientID].AccData.m_ClanID = -1;
+	pThis->m_aClients[ClientID].AccData.m_Level = -1;
+	pThis->m_aClients[ClientID].AccData.m_Jail = false;
+	pThis->m_aClients[ClientID].AccData.m_Rel = -1;
+	pThis->m_aClients[ClientID].AccData.m_Exp = -1;
+	pThis->m_aClients[ClientID].AccData.m_Donate = -1;
+	pThis->m_aClients[ClientID].AccData.m_Class = -1;
+	pThis->m_aClients[ClientID].AccData.m_Quest = -1;
+	pThis->m_aClients[ClientID].AccData.m_Kill = -1;
+	pThis->m_aClients[ClientID].AccData.m_WinArea = -1;
+	pThis->m_aClients[ClientID].AccData.m_ClanAdded = -1;
+	pThis->m_aClients[ClientID].AccData.m_IsJailed = false;
+	pThis->m_aClients[ClientID].AccData.m_JailLength = 0;
+	pThis->m_aClients[ClientID].AccData.m_SummerHealingTimes = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Health = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Speed = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Damage = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Ammo = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_AmmoRegen = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Spray = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Mana = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_HPRegen = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_HammerRange = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Pasive2 = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_Upgrade = 0;
+	pThis->m_aClients[ClientID].AccUpgrade.m_SkillPoint = 0;
+
 	for(int i = 0; i < 7; i++)
 		pThis->m_aClients[ClientID].m_ItemCount[i] = 0;
 
@@ -845,7 +846,7 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 		pThis->m_stInv[ClientID][i].i_nprice = 0;
 		pThis->m_stInv[ClientID][i].i_enchant = 0;
 		pThis->m_stInv[ClientID][i].i_id = 0;
-	}	
+	}
 
 	pThis->m_aClients[ClientID].m_LogInstance = -1;
 	pThis->m_aClients[ClientID].m_Snapshots.PurgeAll();
@@ -860,7 +861,7 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 
 void CServer::Logout(int ClientID)
 {
-	m_aClients[ClientID].m_UserID = -1;
+	m_aClients[ClientID].AccData.m_UserID = -1;
 }
 
 void CServer::SendMap(int ClientID, int MapID)
@@ -1201,7 +1202,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					char aAddrStr[64];
 					char aBuf[128];
 					net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), false);
-					str_format(aBuf, sizeof(aBuf), "!警告! 陷阱被触发! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientName(ClientID), aAddrStr);
+					str_format(aBuf, sizeof(aBuf), "!警告! 陷阱被触发! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].AccData.m_UserID, ClientName(ClientID), aAddrStr);
 					LogWarning(aBuf);
 					
 					Ban(ClientID, -1, "尝试黑入服务器");
@@ -1215,7 +1216,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					
 					char aAddrStr[64];
 					net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), false);
-					str_format(aBuf, sizeof(aBuf), "!警告! !错误的密码! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientName(ClientID), aAddrStr);
+					str_format(aBuf, sizeof(aBuf), "!警告! !错误的密码! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].AccData.m_UserID, ClientName(ClientID), aAddrStr);
 					LogWarning(aBuf);
 
 					if(m_aClients[ClientID].m_AuthTries >= g_Config.m_SvRconMaxTries)
@@ -1363,7 +1364,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 			p.AddString(ClientClan(i), MAX_CLAN_LENGTH); // client clan
 
 			str_format(aBuf, sizeof(aBuf), "%d", m_aClients[i].m_Country); p.AddString(aBuf, 6); // client country
-			str_format(aBuf, sizeof(aBuf), "%d", m_aClients[i].m_Level); p.AddString(aBuf, 6); // client score
+			str_format(aBuf, sizeof(aBuf), "%d", m_aClients[i].AccData.m_Level); p.AddString(aBuf, 6); // client score
 			str_format(aBuf, sizeof(aBuf), "%d", GameServer()->IsClientPlayer(i)?1:0); p.AddString(aBuf, 2); // is player?
 		}
 	}
@@ -2333,28 +2334,28 @@ void CServer::SetMaxAmmo(int ClientID, int WID, int n)
 
 int CServer::GetSecurity(int ClientID)
 {
-	return m_aClients[ClientID].m_Security;
+	return m_aClients[ClientID].AccData.m_Security;
 }
 
 void CServer::SetSecurity(int ClientID, int n)
 {
-	m_aClients[ClientID].m_Security = n;
+	m_aClients[ClientID].AccData.m_Security = n;
 	UpdateStats(ClientID, 0);
 }
 
 bool CServer::IsClientLogged(int ClientID)
 {
-	return m_aClients[ClientID].m_UserID >= 0;
+	return m_aClients[ClientID].AccData.m_UserID >= 0;
 }
 
 int CServer::GetUserID(int ClientID)
 {
-	return m_aClients[ClientID].m_UserID;
+	return m_aClients[ClientID].AccData.m_UserID;
 }
 
 int CServer::GetClanID(int ClientID)
 {
-	return m_aClients[ClientID].m_ClanID;
+	return m_aClients[ClientID].AccData.m_ClanID;
 }
 
 void CServer::AddGameServerCmd(CGameServerCmd* pCmd)
@@ -2471,22 +2472,22 @@ long int CServer::GetStat(int ClientID, Player Type)
 {
 	switch(Type)
 	{
-		case Player::Level: return m_aClients[ClientID].m_Level; break;
-		case Player::Exp: return m_aClients[ClientID].m_Exp; break;
-		case Player::Money: return m_aClients[ClientID].m_Money; break;
-		case Player::Gold: return m_aClients[ClientID].m_Gold; break;
-		case Player::Donate: return m_aClients[ClientID].m_Donate; break;
-		case Player::Quest: return m_aClients[ClientID].m_Quest; break;
-		case Player::Security: return m_aClients[ClientID].m_Security; break;
-		case Player::Rel: return m_aClients[ClientID].m_Rel; break;
-		case Player::Jail: return m_aClients[ClientID].m_Jail; break;
-		case Player::Class: return m_aClients[ClientID].m_Class; break;
-		case Player::Kill: return m_aClients[ClientID].m_Kill; break;
-		case Player::AreaWins: return m_aClients[ClientID].m_WinArea; break;
-		case Player::ClanAdded: return m_aClients[ClientID].m_ClanAdded; break;
-		case Player::IsJailed: return m_aClients[ClientID].m_IsJailed; break;
-		case Player::JailLength: return m_aClients[ClientID].m_JailLength; break;
-		case Player::SHTimes: return m_aClients[ClientID].m_SummerHealingTimes; break;
+		case Player::Level: return m_aClients[ClientID].AccData.m_Level; break;
+		case Player::Exp: return m_aClients[ClientID].AccData.m_Exp; break;
+		case Player::Money: return m_aClients[ClientID].AccData.m_Money; break;
+		case Player::Gold: return m_aClients[ClientID].AccData.m_Gold; break;
+		case Player::Donate: return m_aClients[ClientID].AccData.m_Donate; break;
+		case Player::Quest: return m_aClients[ClientID].AccData.m_Quest; break;
+		case Player::Security: return m_aClients[ClientID].AccData.m_Security; break;
+		case Player::Rel: return m_aClients[ClientID].AccData.m_Rel; break;
+		case Player::Jail: return m_aClients[ClientID].AccData.m_Jail; break;
+		case Player::Class: return m_aClients[ClientID].AccData.m_Class; break;
+		case Player::Kill: return m_aClients[ClientID].AccData.m_Kill; break;
+		case Player::AreaWins: return m_aClients[ClientID].AccData.m_WinArea; break;
+		case Player::ClanAdded: return m_aClients[ClientID].AccData.m_ClanAdded; break;
+		case Player::IsJailed: return m_aClients[ClientID].AccData.m_IsJailed; break;
+		case Player::JailLength: return m_aClients[ClientID].AccData.m_JailLength; break;
+		case Player::SHTimes: return m_aClients[ClientID].AccData.m_SummerHealingTimes; break;
 		default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
 	}
 	return 0;
@@ -2495,26 +2496,26 @@ long int CServer::GetStat(int ClientID, Player Type)
 
 void CServer::UpdateStat(int ClientID, Player Type, int Value)
 {
-	if(m_aClients[ClientID].m_Level > 0)
+	if(m_aClients[ClientID].AccData.m_Level > 0)
 	{
 		switch(Type)
 		{
-			case Player::Level: m_aClients[ClientID].m_Level = Value; break;
-			case Player::Exp: m_aClients[ClientID].m_Exp = Value; break;
-			case Player::Money: m_aClients[ClientID].m_Money = Value; break;
-			case Player::Gold: m_aClients[ClientID].m_Gold = Value; break;
-			case Player::Donate: m_aClients[ClientID].m_Donate = Value; break;	
-			case Player::Quest: m_aClients[ClientID].m_Quest = Value; break;
-			case Player::Security: m_aClients[ClientID].m_Security = Value; break;
-			case Player::Rel: m_aClients[ClientID].m_Rel = Value; break;
-			case Player::Jail: m_aClients[ClientID].m_Jail = Value; break;
-			case Player::Class: m_aClients[ClientID].m_Class = Value; break;
-			case Player::Kill: m_aClients[ClientID].m_Kill = Value; break;
-			case Player::AreaWins: m_aClients[ClientID].m_WinArea = Value; break;
-			case Player::ClanAdded: m_aClients[ClientID].m_ClanAdded = Value; break;
-			case Player::IsJailed: m_aClients[ClientID].m_IsJailed = Value; break;
-			case Player::JailLength: m_aClients[ClientID].m_JailLength = Value; break;
-			case Player::SHTimes: m_aClients[ClientID].m_SummerHealingTimes = Value; break;
+			case Player::Level: m_aClients[ClientID].AccData.m_Level = Value; break;
+			case Player::Exp: m_aClients[ClientID].AccData.m_Exp = Value; break;
+			case Player::Money: m_aClients[ClientID].AccData.m_Money = Value; break;
+			case Player::Gold: m_aClients[ClientID].AccData.m_Gold = Value; break;
+			case Player::Donate: m_aClients[ClientID].AccData.m_Donate = Value; break;	
+			case Player::Quest: m_aClients[ClientID].AccData.m_Quest = Value; break;
+			case Player::Security: m_aClients[ClientID].AccData.m_Security = Value; break;
+			case Player::Rel: m_aClients[ClientID].AccData.m_Rel = Value; break;
+			case Player::Jail: m_aClients[ClientID].AccData.m_Jail = Value; break;
+			case Player::Class: m_aClients[ClientID].AccData.m_Class = Value; break;
+			case Player::Kill: m_aClients[ClientID].AccData.m_Kill = Value; break;
+			case Player::AreaWins: m_aClients[ClientID].AccData.m_WinArea = Value; break;
+			case Player::ClanAdded: m_aClients[ClientID].AccData.m_ClanAdded = Value; break;
+			case Player::IsJailed: m_aClients[ClientID].AccData.m_IsJailed = Value; break;
+			case Player::JailLength: m_aClients[ClientID].AccData.m_JailLength = Value; break;
+			case Player::SHTimes: m_aClients[ClientID].AccData.m_SummerHealingTimes = Value; break;
 			default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
 		}
 	}
@@ -2524,18 +2525,18 @@ int CServer::GetUpgrade(int ClientID, Player Type)
 {
 	switch(Type)
 	{
-		case Player::UpgradePoint: return m_aClients[ClientID].Upgrade; break;
-		case Player::SkillPoint: return m_aClients[ClientID].SkillPoint; break;
-		case Player::Speed: return m_aClients[ClientID].Speed; break;
-		case Player::Damage: return m_aClients[ClientID].Damage; break;
-		case Player::Health: return m_aClients[ClientID].Health; break;
-		case Player::HealthRegen: return m_aClients[ClientID].HPRegen; break;
-		case Player::AmmoRegen: return m_aClients[ClientID].AmmoRegen; break;
-		case Player::Ammo: return m_aClients[ClientID].Ammo; break;
-		case Player::Spray: return m_aClients[ClientID].Spray; break;
-		case Player::Mana: return m_aClients[ClientID].Mana; break;
-		case Player::Skill1: return m_aClients[ClientID].m_HammerRange; break;
-		case Player::Skill2: return m_aClients[ClientID].m_Pasive2; break;
+		case Player::UpgradePoint: return m_aClients[ClientID].AccUpgrade.m_Upgrade; break;
+		case Player::SkillPoint: return m_aClients[ClientID].AccUpgrade.m_SkillPoint; break;
+		case Player::Speed: return m_aClients[ClientID].AccUpgrade.m_Speed; break;
+		case Player::Damage: return m_aClients[ClientID].AccUpgrade.m_Damage; break;
+		case Player::Health: return m_aClients[ClientID].AccUpgrade.m_Health; break;
+		case Player::HealthRegen: return m_aClients[ClientID].AccUpgrade.m_HPRegen; break;
+		case Player::AmmoRegen: return m_aClients[ClientID].AccUpgrade.m_AmmoRegen; break;
+		case Player::Ammo: return m_aClients[ClientID].AccUpgrade.m_Ammo; break;
+		case Player::Spray: return m_aClients[ClientID].AccUpgrade.m_Spray; break;
+		case Player::Mana: return m_aClients[ClientID].AccUpgrade.m_Mana; break;
+		case Player::Skill1: return m_aClients[ClientID].AccUpgrade.m_HammerRange; break;
+		case Player::Skill2: return m_aClients[ClientID].AccUpgrade.m_Pasive2; break;
 		default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
 	}
 	return 0;
@@ -2543,22 +2544,22 @@ int CServer::GetUpgrade(int ClientID, Player Type)
 
 void CServer::UpdateUpgrade(int ClientID, Player Type, int Vaule)
 {
-	if(m_aClients[ClientID].m_Level > 0)
+	if(m_aClients[ClientID].AccData.m_Level > 0)
 	{
 		switch(Type)
 		{
-			case Player::UpgradePoint: m_aClients[ClientID].Upgrade = Vaule; break;
-			case Player::SkillPoint: m_aClients[ClientID].SkillPoint = Vaule; break;
-			case Player::Speed: m_aClients[ClientID].Speed = Vaule; break;
-			case Player::Damage: m_aClients[ClientID].Damage = Vaule; break;
-			case Player::Health: m_aClients[ClientID].Health = Vaule; break;
-			case Player::HealthRegen: m_aClients[ClientID].HPRegen = Vaule; break;
-			case Player::AmmoRegen: m_aClients[ClientID].AmmoRegen = Vaule; break;
-			case Player::Ammo: m_aClients[ClientID].Ammo = Vaule; break;
-			case Player::Spray: m_aClients[ClientID].Spray = Vaule; break;
-			case Player::Mana: m_aClients[ClientID].Mana = Vaule; break;
-			case Player::Skill1: m_aClients[ClientID].m_HammerRange = Vaule; break;
-			case Player::Skill2: m_aClients[ClientID].m_Pasive2 = Vaule; break;
+			case Player::UpgradePoint: m_aClients[ClientID].AccUpgrade.m_Upgrade = Vaule; break;
+			case Player::SkillPoint: m_aClients[ClientID].AccUpgrade.m_SkillPoint = Vaule; break;
+			case Player::Speed: m_aClients[ClientID].AccUpgrade.m_Speed = Vaule; break;
+			case Player::Damage: m_aClients[ClientID].AccUpgrade.m_Damage = Vaule; break;
+			case Player::Health: m_aClients[ClientID].AccUpgrade.m_Health = Vaule; break;
+			case Player::HealthRegen: m_aClients[ClientID].AccUpgrade.m_HPRegen = Vaule; break;
+			case Player::AmmoRegen: m_aClients[ClientID].AccUpgrade.m_AmmoRegen = Vaule; break;
+			case Player::Ammo: m_aClients[ClientID].AccUpgrade.m_Ammo = Vaule; break;
+			case Player::Spray: m_aClients[ClientID].AccUpgrade.m_Spray = Vaule; break;
+			case Player::Mana: m_aClients[ClientID].AccUpgrade.m_Mana = Vaule; break;
+			case Player::Skill1: m_aClients[ClientID].AccUpgrade.m_HammerRange = Vaule; break;
+			case Player::Skill2: m_aClients[ClientID].AccUpgrade.m_Pasive2 = Vaule; break;
 			default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
 		}
 	}
@@ -2823,7 +2824,7 @@ public:
 				"SELECT * FROM %s_Mail "
 				"WHERE IDOwner = '%d' LIMIT 20;"
 				, pSqlServer->GetPrefix()
-				, m_pServer->m_aClients[m_ClientID].m_UserID);
+				, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 			while(pSqlServer->GetResults()->next())
 			{
@@ -2971,7 +2972,7 @@ public:
 	{
 		m_pServer = pServer;
 		m_ClientID = ClientID;
-		m_IDOwner = m_pServer->m_aClients[m_ClientID].m_UserID;
+		m_IDOwner = m_pServer->m_aClients[m_ClientID].AccData.m_UserID;
 	}
 
 	virtual bool Job(CSqlServer* pSqlServer)
@@ -3192,7 +3193,7 @@ public:
 			else
 			{
 				char aBuf[128];
-				str_format(aBuf, sizeof(aBuf), "SELECT item_count FROM %s_uItems WHERE item_owner = '%d' AND il_id = '%d';", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
+				str_format(aBuf, sizeof(aBuf), "SELECT item_count FROM %s_uItems WHERE item_owner = '%d' AND il_id = '%d';", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
 				pSqlServer->executeSqlQuery(aBuf);
 
 				if(pSqlServer->GetResults()->next())
@@ -3246,7 +3247,7 @@ public:
 					"SET item_count = item_count + '%d', item_settings = item_settings + '%d' "
 					"WHERE item_owner = '%d' AND il_id = '%d';"
 					, pSqlServer->GetPrefix()
-					, m_Count, m_Settings, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
+					, m_Count, m_Settings, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
 				pSqlServer->executeSql(aBuf);
 				
 				m_pServer->m_stInv[m_ClientID][m_ItemID].i_count += m_Count;
@@ -3258,7 +3259,7 @@ public:
 				"(il_id, item_owner, item_count, item_type, item_settings, item_enchant) "
 				"VALUES ('%d', '%d', '%d', '%d', '%d', '%d');"
 				, pSqlServer->GetPrefix()
-				, m_ItemID, m_pServer->m_aClients[m_ClientID].m_UserID, m_Count, m_pServer->m_stInv[m_ClientID][m_ItemID].i_type, m_Settings, m_Enchant);	
+				, m_ItemID, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_Count, m_pServer->m_stInv[m_ClientID][m_ItemID].i_type, m_Settings, m_Enchant);	
 			pSqlServer->executeSql(aBuf);
 
 			m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings = m_Settings;
@@ -3320,7 +3321,7 @@ public:
 				"SELECT item_count FROM %s_uItems "
 				"WHERE item_owner = '%d' AND il_id = '%d';",
 				pSqlServer->GetPrefix(),
-				m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
+				m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			if(pSqlServer->GetResults()->next())
@@ -3335,7 +3336,7 @@ public:
 						"SET item_count = item_count - '%d' "
 						"WHERE item_owner = '%d' AND il_id = '%d';"
 						, pSqlServer->GetPrefix()
-						, m_Count, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
+						, m_Count, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
 					pSqlServer->executeSql(aBuf);	
 					m_pServer->m_stInv[m_ClientID][m_ItemID].i_count -= m_Count;
 				}
@@ -3345,7 +3346,7 @@ public:
 						"DELETE FROM %s_uItems " 
 						"WHERE item_owner = '%d' AND il_id = '%d';"
 						, pSqlServer->GetPrefix()
-						, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);	
+						, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);	
 					pSqlServer->executeSql(aBuf);			
 					m_pServer->m_stInv[m_ClientID][m_ItemID].i_count = 0;
 					m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings = 0;
@@ -3369,7 +3370,7 @@ public:
 };
 void CServer::RemItems(int ItemID, int ClientID, int Count, int Type)
 {
-	if(m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
+	if(m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_RemItems(this, ItemID, ClientID, Count, Type);
@@ -3470,7 +3471,7 @@ public:
 					"SET item_settings = '%d', item_enchant = '%d' "
 					"WHERE item_owner = '%d' AND il_id = '%d';"
 					, pSqlServer->GetPrefix()
-					, m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings, m_pServer->m_stInv[m_ClientID][m_ItemID].i_enchant, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
+					, m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings, m_pServer->m_stInv[m_ClientID][m_ItemID].i_enchant, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
 				pSqlServer->executeSql(aBuf);
 			}
 			return true;
@@ -3484,7 +3485,7 @@ public:
 };
 void CServer::UpdateItemSettings(int ItemID, int ClientID)
 {
-	if(m_aClients[ClientID].m_Level <= 0) return;
+	if(m_aClients[ClientID].AccData.m_Level <= 0) return;
 	CSqlJob* pJob = new CSqlJob_Server_UpdateItemSettings(this, ItemID, ClientID);
 	pJob->Start();
 }
@@ -3521,7 +3522,7 @@ public:
 					"SELECT il_id, item_type FROM %s_uItems "
 					"WHERE item_owner = '%d' AND item_type != '10, 12, 15, 16, 17';",
 					pSqlServer->GetPrefix(),
-					m_pServer->m_aClients[m_ClientID].m_UserID, m_Type);
+					m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_Type);
 				pSqlServer->executeSqlQuery(aBuf);
 
 				for(int i = 0; i < 16; i++)
@@ -3539,7 +3540,7 @@ public:
 				"SELECT il_id, item_count FROM %s_uItems "
 				"WHERE item_owner = '%d' AND item_type = '%d';",
 				pSqlServer->GetPrefix(),
-				m_pServer->m_aClients[m_ClientID].m_UserID, m_Type);
+				m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_Type);
 			pSqlServer->executeSqlQuery(aBuf);
 			
 			bool found = false;
@@ -3608,7 +3609,7 @@ public:
 };
 void CServer::ListInventory(int ClientID, int Type, int GetCount)
 {
-	if(m_aClients[ClientID].m_LogInstance >= 0 && (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
+	if(m_aClients[ClientID].m_LogInstance >= 0 && (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_ListInventory(this, ClientID, Type, GetCount);
@@ -3619,7 +3620,7 @@ void CServer::ListInventory(int ClientID, int Type, int GetCount)
 ///////////////////////////////////////////////////////////// СОЗДАНИЕ КЛАНА
 bool CServer::GetLeader(int ClientID, int ClanID)
 {
-	if(m_aClients[ClientID].m_ClanID < 1)
+	if(m_aClients[ClientID].AccData.m_ClanID < 1)
 		return false;
 	
 	if(str_comp_nocase(m_stClan[ClanID].Creator, ClientName(ClientID)) == 0)
@@ -3630,7 +3631,7 @@ bool CServer::GetLeader(int ClientID, int ClanID)
 
 bool CServer::GetAdmin(int ClientID, int ClanID)
 {
-	if(m_aClients[ClientID].m_ClanID < 1)
+	if(m_aClients[ClientID].AccData.m_ClanID < 1)
 		return false;
 	
 	if(str_comp_nocase(m_stClan[ClanID].Admin, ClientName(ClientID)) == 0)
@@ -3919,7 +3920,7 @@ public:
 			{
 				str_format(aBuf, sizeof(aBuf), 
 					"INSERT INTO %s_Clans (Clanname, LeaderName, LeaderID, Money, Exp) VALUES ('%s', '%s', '%d', '0', '0');"
-					, pSqlServer->GetPrefix(), m_sName.ClrStr(), m_sNick.ClrStr(), m_pServer->m_aClients[m_ClientID].m_UserID);
+					, pSqlServer->GetPrefix(), m_sName.ClrStr(), m_sNick.ClrStr(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 				pSqlServer->executeSql(aBuf);
 				//dbg_msg("test","1");
 				str_format(aBuf, sizeof(aBuf), 
@@ -3939,15 +3940,15 @@ public:
 					str_copy(m_pServer->m_stClan[ClanID].Name, pSqlServer->GetResults()->getString("Clanname").c_str(), sizeof(m_pServer->m_stClan[ClanID].Name));
 					str_copy(m_pServer->m_stClan[ClanID].Creator, pSqlServer->GetResults()->getString("LeaderName").c_str(), sizeof(m_pServer->m_stClan[ClanID].Creator));
 
-					m_pServer->m_aClients[m_ClientID].m_ClanID = ClanID;
-					str_copy(m_pServer->m_aClients[m_ClientID].m_Clan, pSqlServer->GetResults()->getString("Clanname").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].m_Clan));
+					m_pServer->m_aClients[m_ClientID].AccData.m_ClanID = ClanID;
+					str_copy(m_pServer->m_aClients[m_ClientID].AccData.m_Clan, pSqlServer->GetResults()->getString("Clanname").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].AccData.m_Clan));
 					//dbg_msg("test","3");
 					//try
 					//{
 						//dbg_msg("test","4,%d", ClanID);
 						str_format(aBuf, sizeof(aBuf), "UPDATE %s_Users SET ClanID = '%d' WHERE UserId = '%d';"
 							, pSqlServer->GetPrefix()
-							, ClanID, m_pServer->m_aClients[m_ClientID].m_UserID);
+							, ClanID, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 						pSqlServer->executeSql(aBuf);	// 麻了,鬼知道为啥这玩意执行以后,明明是成功的,读取到的值居然是失败的
 						//dbg_msg("test","5");
 					/*}
@@ -3992,7 +3993,7 @@ public:
 };
 void CServer::NewClan(int ClientID, const char* pName)
 {
-	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
+	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_Newclan(this, ClientID, pName);
@@ -4071,7 +4072,7 @@ public:
 };
 void CServer::ListClan(int ClientID, int ClanID)
 {
-	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
+	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_Listclan(this, ClientID, ClanID);
@@ -4130,8 +4131,8 @@ void CServer::UpdClanCount(int ClanID)
 void CServer::EnterClan(int ClientID, int ClanID)
 {
 	m_stClan[ClanID].MemberNum++;
-	m_aClients[ClientID].m_ClanAdded = 0;
-	m_aClients[ClientID].m_ClanID = ClanID;
+	m_aClients[ClientID].AccData.m_ClanAdded = 0;
+	m_aClients[ClientID].AccData.m_ClanID = ClanID;
 	UpdateStats(ClientID, 3);
 }
 
@@ -4184,9 +4185,9 @@ void CServer::ExitClanOff(int ClientID, const char* pName)
 {
 	for(int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		if(ClientIngame(i) && m_aClients[i].m_UserID)
+		if(ClientIngame(i) && m_aClients[i].AccData.m_UserID)
 			if(str_comp_nocase(pName, ClientName(i)) == 0)
-				m_aClients[i].m_ClanID = 0;
+				m_aClients[i].AccData.m_ClanID = 0;
 	}
 
 	CSqlJob* pJob = new CSqlJob_Server_ExitClanOff(this, ClientID, pName);
@@ -4217,37 +4218,37 @@ public:
 				"SELECT * FROM %s_Users "
 				"WHERE UserId = %d;"
 				, pSqlServer->GetPrefix()
-				, m_pServer->m_aClients[m_ClientID].m_UserID);
+				, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			if(pSqlServer->GetResults()->next())
 			{
-				m_pServer->m_aClients[m_ClientID].m_Level = pSqlServer->GetResults()->getInt("Level");
-				m_pServer->m_aClients[m_ClientID].m_Exp = pSqlServer->GetResults()->getInt("Exp");
-				m_pServer->m_aClients[m_ClientID].m_Money = pSqlServer->GetResults()->getInt("Money");
-				m_pServer->m_aClients[m_ClientID].m_Gold = pSqlServer->GetResults()->getInt("Gold");
-				m_pServer->m_aClients[m_ClientID].m_Donate = pSqlServer->GetResults()->getInt("Donate");
-				m_pServer->m_aClients[m_ClientID].m_Jail = pSqlServer->GetResults()->getInt("Jail");
-				m_pServer->m_aClients[m_ClientID].m_Rel = pSqlServer->GetResults()->getInt("Rel");
-				m_pServer->m_aClients[m_ClientID].m_Class = pSqlServer->GetResults()->getInt("Class");
-				m_pServer->m_aClients[m_ClientID].m_ClanID = pSqlServer->GetResults()->getInt("ClanID");
-				m_pServer->m_aClients[m_ClientID].m_Quest = pSqlServer->GetResults()->getInt("Quest");
-				m_pServer->m_aClients[m_ClientID].m_Kill = pSqlServer->GetResults()->getInt("Killing");
-				m_pServer->m_aClients[m_ClientID].m_WinArea = pSqlServer->GetResults()->getInt("WinArea");
-				m_pServer->m_aClients[m_ClientID].m_IsJailed = pSqlServer->GetResults()->getInt("IsJailed");
-				m_pServer->m_aClients[m_ClientID].m_JailLength = pSqlServer->GetResults()->getInt("JailLength");
-				m_pServer->m_aClients[m_ClientID].m_SummerHealingTimes = pSqlServer->GetResults()->getInt("SummerHealingTimes");
-				m_pServer->m_aClients[m_ClientID].m_ClanAdded = m_pServer->m_aClients[m_ClientID].m_ClanID > 0 ? pSqlServer->GetResults()->getInt("ClanAdded") : 0;
+				m_pServer->m_aClients[m_ClientID].AccData.m_Level = pSqlServer->GetResults()->getInt("Level");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Exp = pSqlServer->GetResults()->getInt("Exp");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Money = pSqlServer->GetResults()->getInt("Money");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Gold = pSqlServer->GetResults()->getInt("Gold");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Donate = pSqlServer->GetResults()->getInt("Donate");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Jail = pSqlServer->GetResults()->getInt("Jail");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Rel = pSqlServer->GetResults()->getInt("Rel");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Class = pSqlServer->GetResults()->getInt("Class");
+				m_pServer->m_aClients[m_ClientID].AccData.m_ClanID = pSqlServer->GetResults()->getInt("ClanID");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Quest = pSqlServer->GetResults()->getInt("Quest");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Kill = pSqlServer->GetResults()->getInt("Killing");
+				m_pServer->m_aClients[m_ClientID].AccData.m_WinArea = pSqlServer->GetResults()->getInt("WinArea");
+				m_pServer->m_aClients[m_ClientID].AccData.m_IsJailed = pSqlServer->GetResults()->getInt("IsJailed");
+				m_pServer->m_aClients[m_ClientID].AccData.m_JailLength = pSqlServer->GetResults()->getInt("JailLength");
+				m_pServer->m_aClients[m_ClientID].AccData.m_SummerHealingTimes = pSqlServer->GetResults()->getInt("SummerHealingTimes");
+				m_pServer->m_aClients[m_ClientID].AccData.m_ClanAdded = m_pServer->m_aClients[m_ClientID].AccData.m_ClanID > 0 ? pSqlServer->GetResults()->getInt("ClanAdded") : 0;
 	
 				str_copy(m_pServer->m_aClients[m_ClientID].m_aUsername, pSqlServer->GetResults()->getString("Nick").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].m_aUsername));
-				if(m_pServer->m_aClients[m_ClientID].m_Level <= 0 || m_pServer->m_aClients[m_ClientID].m_Class == -1 ) 
+				if(m_pServer->m_aClients[m_ClientID].AccData.m_Level <= 0 || m_pServer->m_aClients[m_ClientID].AccData.m_Class == -1 ) 
 				{
 					CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, "登录时出现错误,请报告管理员");
 					m_pServer->AddGameServerCmd(pCmd);
-					dbg_msg("user", "玩家ID %d 的数据初始化出现问题", m_pServer->m_aClients[m_ClientID].m_UserID);	
+					dbg_msg("user", "玩家ID %d 的数据初始化出现问题", m_pServer->m_aClients[m_ClientID].AccData.m_UserID);	
 					return false;
 				}
-				dbg_msg("user", "玩家ID %d 的数据初始化成功", m_pServer->m_aClients[m_ClientID].m_UserID);	
+				dbg_msg("user", "玩家ID %d 的数据初始化成功", m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 			}
 			else
 			{
@@ -4270,7 +4271,7 @@ public:
 		try
 		{
 			str_format(aBuf, sizeof(aBuf), 
-				"SELECT il_id, item_count, item_settings, item_enchant FROM %s_uItems WHERE item_owner = %d;", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].m_UserID);
+				"SELECT il_id, item_count, item_settings, item_enchant FROM %s_uItems WHERE item_owner = %d;", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			while(pSqlServer->GetResults()->next())
@@ -4297,23 +4298,23 @@ public:
 			str_format(aBuf, sizeof(aBuf), 
 				"SELECT * FROM %s_uClass WHERE UserID = %d;"
 				, pSqlServer->GetPrefix()
-				, m_pServer->m_aClients[m_ClientID].m_UserID);
+				, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			if(pSqlServer->GetResults()->next())
 			{				
-				m_pServer->m_aClients[m_ClientID].Upgrade = pSqlServer->GetResults()->getInt("Upgrade");
-				m_pServer->m_aClients[m_ClientID].SkillPoint = pSqlServer->GetResults()->getInt("SkillPoint");
-				m_pServer->m_aClients[m_ClientID].Damage = pSqlServer->GetResults()->getInt("Damage");
-				m_pServer->m_aClients[m_ClientID].Speed = pSqlServer->GetResults()->getInt("Speed");
-				m_pServer->m_aClients[m_ClientID].Health = pSqlServer->GetResults()->getInt("Health");
-				m_pServer->m_aClients[m_ClientID].HPRegen = pSqlServer->GetResults()->getInt("HPRegen");
-				m_pServer->m_aClients[m_ClientID].AmmoRegen = pSqlServer->GetResults()->getInt("AmmoRegen");
-				m_pServer->m_aClients[m_ClientID].Ammo = pSqlServer->GetResults()->getInt("Ammo");
-				m_pServer->m_aClients[m_ClientID].Spray = pSqlServer->GetResults()->getInt("Spray");
-				m_pServer->m_aClients[m_ClientID].Mana = pSqlServer->GetResults()->getInt("Mana");
-				m_pServer->m_aClients[m_ClientID].m_HammerRange = pSqlServer->GetResults()->getInt("HammerRange");
-				m_pServer->m_aClients[m_ClientID].m_Pasive2 = pSqlServer->GetResults()->getInt("Pasive2");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Upgrade = pSqlServer->GetResults()->getInt("Upgrade");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_SkillPoint = pSqlServer->GetResults()->getInt("SkillPoint");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Damage = pSqlServer->GetResults()->getInt("Damage");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Speed = pSqlServer->GetResults()->getInt("Speed");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Health = pSqlServer->GetResults()->getInt("Health");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HPRegen = pSqlServer->GetResults()->getInt("HPRegen");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_AmmoRegen = pSqlServer->GetResults()->getInt("AmmoRegen");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Ammo = pSqlServer->GetResults()->getInt("Ammo");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Spray = pSqlServer->GetResults()->getInt("Spray");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Mana = pSqlServer->GetResults()->getInt("Mana");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HammerRange = pSqlServer->GetResults()->getInt("HammerRange");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Pasive2 = pSqlServer->GetResults()->getInt("Pasive2");
 
 				CServer::CGameServerCmd *pCmd1 = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("登录成功.按下esc界面中的“开始游戏”进入."));
 				m_pServer->AddGameServerCmd(pCmd1);
@@ -4332,7 +4333,7 @@ public:
 
 void CServer::InitClientDB(int ClientID)
 {
-	if(m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
+	if(m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_InitClient(this, ClientID);
@@ -4363,7 +4364,7 @@ public:
 		{
 			if(m_Type == 0)
 			{
-				if(m_pServer->m_aClients[m_ClientID].m_Level <= 0) return false;
+				if(m_pServer->m_aClients[m_ClientID].AccData.m_Level <= 0) return false;
 				str_format(aBuf, sizeof(aBuf), 
 					"UPDATE %s_Users "
 					"SET Level = '%d', "
@@ -4384,22 +4385,22 @@ public:
 					"SummerHealingTimes = '%d'"
 					"WHERE UserId = '%d';"
 					, pSqlServer->GetPrefix(), 
-					m_pServer->m_aClients[m_ClientID].m_Level, 
-					m_pServer->m_aClients[m_ClientID].m_Exp, 
-					m_pServer->m_aClients[m_ClientID].m_Class, 
-					m_pServer->m_aClients[m_ClientID].m_Money, 
-					m_pServer->m_aClients[m_ClientID].m_Gold, 
-					m_pServer->m_aClients[m_ClientID].m_Donate, 
-					m_pServer->m_aClients[m_ClientID].m_Rel, 
-					m_pServer->m_aClients[m_ClientID].m_Jail, 
-					m_pServer->m_aClients[m_ClientID].m_Quest, 
-					m_pServer->m_aClients[m_ClientID].m_Kill,  
-					m_pServer->m_aClients[m_ClientID].m_WinArea, 
-					m_pServer->m_aClients[m_ClientID].m_Security, 
-					m_pServer->m_aClients[m_ClientID].m_ClanAdded, 
-					m_pServer->m_aClients[m_ClientID].m_IsJailed, 
-					m_pServer->m_aClients[m_ClientID].m_JailLength,
-					m_pServer->m_aClients[m_ClientID].m_SummerHealingTimes,  
+					m_pServer->m_aClients[m_ClientID].AccData.m_Level, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Exp, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Class, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Money, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Gold, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Donate, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Rel, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Jail, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Quest, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Kill,  
+					m_pServer->m_aClients[m_ClientID].AccData.m_WinArea, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_Security, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_ClanAdded, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_IsJailed, 
+					m_pServer->m_aClients[m_ClientID].AccData.m_JailLength,
+					m_pServer->m_aClients[m_ClientID].AccData.m_SummerHealingTimes,  
 					m_UserID);
 				//dbg_msg("sql",aBuf);
 				pSqlServer->executeSqlQuery(aBuf);
@@ -4421,19 +4422,19 @@ public:
 					"HammerRange = '%d', "
 					"Pasive2 = '%d' "
 					"WHERE UserID = '%d';"
-					, pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].Upgrade, m_pServer->m_aClients[m_ClientID].SkillPoint, m_pServer->m_aClients[m_ClientID].Speed, m_pServer->m_aClients[m_ClientID].Health, m_pServer->m_aClients[m_ClientID].Damage,
-					m_pServer->m_aClients[m_ClientID].HPRegen, m_pServer->m_aClients[m_ClientID].AmmoRegen, m_pServer->m_aClients[m_ClientID].Ammo, m_pServer->m_aClients[m_ClientID].Spray, m_pServer->m_aClients[m_ClientID].Mana, 
-					m_pServer->m_aClients[m_ClientID].m_HammerRange, m_pServer->m_aClients[m_ClientID].m_Pasive2, m_UserID);
+					, pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Upgrade, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_SkillPoint, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Speed, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Health, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Damage,
+					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HPRegen, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_AmmoRegen, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Ammo, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Spray, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Mana, 
+					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HammerRange, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Pasive2, m_UserID);
 				
 				pSqlServer->executeSqlQuery(aBuf);
 			}
 			else if(m_Type == 3)
 			{
-				int ClanID = m_pServer->m_aClients[m_ClientID].m_ClanID;
+				int ClanID = m_pServer->m_aClients[m_ClientID].AccData.m_ClanID;
 				str_format(aBuf, sizeof(aBuf), 
 					"UPDATE %s_Users SET ClanID = '%d' WHERE UserId = '%d';"
 					, pSqlServer->GetPrefix()
-					, ClanID, m_pServer->m_aClients[m_ClientID].m_UserID);
+					, ClanID, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 				pSqlServer->executeSqlQuery(aBuf);	
 				
 				if(ClanID > 0)
@@ -4467,10 +4468,10 @@ public:
 
 void CServer::UpdateStats(int ClientID, int Type)
 {
-	if(m_aClients[ClientID].m_Class < 0 || (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]) || m_aClients[ClientID].m_Level <= 0)
+	if(m_aClients[ClientID].AccData.m_Class < 0 || (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]) || m_aClients[ClientID].AccData.m_Level <= 0)
 		return;
 	
-	CSqlJob* pJob = new CSqlJob_Server_UpdateStat(this, ClientID, m_aClients[ClientID].m_UserID, Type);
+	CSqlJob* pJob = new CSqlJob_Server_UpdateStat(this, ClientID, m_aClients[ClientID].AccData.m_UserID, Type);
 	pJob->Start();
 }    
 
@@ -4502,7 +4503,7 @@ public:
 		char aBuf[512];
 		try
 		{	
-			if(m_pServer->m_aClients[m_ClientID].m_Security)
+			if(m_pServer->m_aClients[m_ClientID].AccData.m_Security)
 				str_format(aBuf, sizeof(aBuf), "SELECT UserId, Username, Nick, PasswordHash FROM %s_Users "
 					"WHERE Username = '%s' AND PasswordHash = '%s' AND Nick = '%s';", pSqlServer->GetPrefix(), m_sName.ClrStr(), m_sPasswordHash.ClrStr(), m_sNick.ClrStr());
 			else
@@ -4515,13 +4516,13 @@ public:
 			{
 				for(int i = 0; i < MAX_PLAYERS; ++i)
 				{
-					if((int)pSqlServer->GetResults()->getInt("UserId") == m_pServer->m_aClients[i].m_UserID)
+					if((int)pSqlServer->GetResults()->getInt("UserId") == m_pServer->m_aClients[i].AccData.m_UserID)
 					{
-						m_pServer->m_aClients[m_ClientID].m_UserID = -1;
+						m_pServer->m_aClients[m_ClientID].AccData.m_UserID = -1;
 						return false;
 					}
 				}
-				m_pServer->m_aClients[m_ClientID].m_UserID = (int)pSqlServer->GetResults()->getInt("UserId");
+				m_pServer->m_aClients[m_ClientID].AccData.m_UserID = (int)pSqlServer->GetResults()->getInt("UserId");
 				m_pServer->InitClientDB(m_ClientID);
 				
 				
@@ -4591,7 +4592,7 @@ public:
 			pSqlServer->executeSqlQuery(aBuf);
 			
 			if(pSqlServer->GetResults()->next())
-				m_pServer->m_aClients[m_ClientID].m_Security = (int)pSqlServer->GetResults()->getInt("Seccurity");
+				m_pServer->m_aClients[m_ClientID].AccData.m_Security = (int)pSqlServer->GetResults()->getInt("Seccurity");
 			else
 			{
 				CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(-1, CHATCATEGORY_DEFAULT, _("欢迎新玩家!"));
@@ -4711,7 +4712,7 @@ public:
 					, UsedID, m_sName.ClrStr());
 				pSqlServer->executeSql(aBuf);
 
-				str_copy(m_pServer->m_aClients[m_ClientID].m_Clan, "NOPE", sizeof(m_pServer->m_aClients[m_ClientID].m_Clan));
+				str_copy(m_pServer->m_aClients[m_ClientID].AccData.m_Clan, "NOPE", sizeof(m_pServer->m_aClients[m_ClientID].AccData.m_Clan));
 				CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("账户注册成功.请使用/login <密码> 登录."));
 				m_pServer->AddGameServerCmd(pCmd);
 				return true;
@@ -4845,7 +4846,7 @@ public:
 			str_format(aBuf, sizeof(aBuf), 
 				"UPDATE %s_Users SET PasswordHash = '%s' WHERE UserId = '%d';"
 				, pSqlServer->GetPrefix()
-				, m_sPasswordHash.ClrStr(), m_pServer->m_aClients[m_ClientID].m_UserID);
+				, m_sPasswordHash.ClrStr(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 			//dbg_msg("test","1.5");
 			pSqlServer->executeSql(aBuf);	
 			//dbg_msg("test","2");
@@ -5247,7 +5248,7 @@ public:
 			if(pSqlServer->GetResults()->next())
 			{
 				m_pServer->m_aClients[m_ClientID].m_UserStatusID = (int)pSqlServer->GetResults()->getInt("ID");
-				//dbg_msg("uid","%d",m_pServer->m_aClients[m_ClientID].m_UserID);
+				//dbg_msg("uid","%d",m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
 			}
 				dbg_msg("user","玩家 %s 上线了", m_sNick.ClrStr());
 		}
@@ -5816,7 +5817,7 @@ void CServer::ChangeClientMap(int ClientID, int MapID)
 	memset(pIdMap, -1, sizeof(int) * VANILLA_MAX_CLIENTS);
 	pIdMap[0] = ClientID;
 
-	m_aClients[ClientID].Reset();
+	m_aClients[ClientID].Reset(false);
 	m_aClients[ClientID].m_IsChangeMap = true;
 	m_aClients[ClientID].m_State = CClient::STATE_CONNECTING;
 	SendMap(ClientID, MapID);
@@ -5830,4 +5831,14 @@ int CServer::GetClientMapID(int CID)
 bool CServer::GetClientChangeMap(int CID)
 {
 	return m_aClients[CID].m_IsChangeMap;
+}
+
+SAccData *CServer::GetAccData(int ClientID)
+{
+	return &m_aClients[ClientID].AccData;
+}
+
+SAccUpgrade *CServer::GetAccUpgrade(int ClientID)
+{
+	return &m_aClients[ClientID].AccUpgrade;
 }

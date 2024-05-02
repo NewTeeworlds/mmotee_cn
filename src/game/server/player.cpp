@@ -55,10 +55,6 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_MoneyAdd = m_ExperienceAdd = m_aInviteClanID = m_Mana = 0;
 	m_Search = m_BigBot = m_InArea = m_IsInGame = m_InBossed = false;
 
-	AccData.m_Level = AccUpgrade.m_SkillPoint = AccUpgrade.m_Upgrade = AccUpgrade.m_Speed = AccUpgrade.m_Health = AccUpgrade.m_Damage = -1;
-	AccData.m_Exp = AccData.m_Money = AccData.m_Rel = AccData.m_Gold = -1;
-	AccData.m_Class = PLAYERCLASS_NONE;
-
 	m_pChatCmd = new CCmd(this, m_pGameServer);
 	SetLanguage("en");
 
@@ -267,29 +263,29 @@ void CPlayer::BasicAuthedTick()
 		GameServer()->SendChat(m_ClientID, m_Team, "系统已收回100个猪肉");
 		Server()->RemItem(m_ClientID, PIGPORNO, 100, -1);
 	}
-	if (AccData.m_Money >= 10000)
+	if (AccData()->m_Money >= 10000)
 	{
-		AccData.m_Gold += AccData.m_Money / 10000;
-		int Got = AccData.m_Money / 10000;
+		AccData()->m_Gold += AccData()->m_Money / 10000;
+		int Got = AccData()->m_Money / 10000;
 
-		AccData.m_Money -= Got * 10000;
+		AccData()->m_Money -= Got * 10000;
 	}
 	bool upgraded = false;
-	unsigned long int needexp = AccData.m_Level * GetNeedForUp();
-	while (AccData.m_Exp >= needexp)
+	unsigned long int needexp = AccData()->m_Level * GetNeedForUp();
+	while (AccData()->m_Exp >= needexp)
 	{
 
 		upgraded = true;
-		AccData.m_Exp -= AccData.m_Level * GetNeedForUp();
-		AccData.m_Level++;
-		AccUpgrade.m_SkillPoint += 1;
-		AccUpgrade.m_Upgrade += 2;
-		needexp = AccData.m_Level * GetNeedForUp();
+		AccData()->m_Exp -= AccData()->m_Level * GetNeedForUp();
+		AccData()->m_Level++;
+		AccUpgrade()->m_SkillPoint += 1;
+		AccUpgrade()->m_Upgrade += 2;
+		needexp = AccData()->m_Level * GetNeedForUp();
 		int GetBag = Server()->GetItemCount(m_ClientID, AMULETCLEEVER) ? 20 : 1;
 		GameServer()->GiveItem(m_ClientID, MONEYBAG, GetBag);
-		if (AccData.m_Level % 10 == 0)
+		if (AccData()->m_Level % 10 == 0)
 			GameServer()->SendMail(m_ClientID, 8, RANDOMCRAFTITEM, 3);
-		if (AccData.m_Level == 2)
+		if (AccData()->m_Level == 2)
 			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("你现在可以去做任务了."), NULL);
 	}
 	if (upgraded)
@@ -315,9 +311,9 @@ void CPlayer::Tick()
 		if (!Server()->ClientIngame(m_ClientID))
 			return;
 
-	if (Server()->IsClientLogged(m_ClientID) && AccData.m_Level == -1)
+	if (Server()->IsClientLogged(m_ClientID) && AccData()->m_Level == -1)
 	{
-		AccData.m_Level = 1;
+		AccData()->m_Level = 1;
 		if (!Server()->GetSecurity(m_ClientID))
 			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("你的账户有风险, 请设置安全设置(security)"), NULL);
 	}
@@ -430,15 +426,15 @@ void CPlayer::Tick()
 
 		// Агресия и тюрьма
 		// 通缉和监狱
-		if (!m_Search && AccData.m_Rel >= 1000)
+		if (!m_Search && AccData()->m_Rel >= 1000)
 		{
 			m_Search = true;
 			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被通缉了!"), "name", Server()->ClientName(m_ClientID), NULL);
 		}
-		if (m_JailTick && AccData.m_Jail)
+		if (m_JailTick && AccData()->m_Jail)
 		{
 			int Time = m_JailTick / Server()->TickSpeed();
-			if (!AccData.m_IsJailed)
+			if (!AccData()->m_IsJailed)
 			{
 				GameServer()->SendBroadcast_Localization(m_ClientID, 100, 100, _("你进了监狱, 刑期:{sec:siska}."), "siska", &Time, NULL);
 			}
@@ -450,9 +446,9 @@ void CPlayer::Tick()
 			if (!m_JailTick)
 			{
 				m_JailTick = 0;
-				AccData.m_Jail = false;
-				AccData.m_IsJailed = false;
-				AccData.m_JailLength = 0;
+				AccData()->m_Jail = false;
+				AccData()->m_IsJailed = false;
+				AccData()->m_JailLength = 0;
 
 				if (m_pCharacter)
 					m_pCharacter->Die(m_ClientID, WEAPON_WORLD);
@@ -461,18 +457,18 @@ void CPlayer::Tick()
 				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name}, 出狱了"), "name", Server()->ClientName(m_ClientID), NULL);
 			}
 		}
-		if (GetTeam() != TEAM_SPECTATORS && AccData.m_Rel > 0 && Server()->Tick() % (1 * Server()->TickSpeed() * 60) == 0)
+		if (GetTeam() != TEAM_SPECTATORS && AccData()->m_Rel > 0 && Server()->Tick() % (1 * Server()->TickSpeed() * 60) == 0)
 		{
-			AccData.m_Rel -= 100;
-			if (AccData.m_Rel < 0)
-				AccData.m_Rel = 0;
+			AccData()->m_Rel -= 100;
+			if (AccData()->m_Rel < 0)
+				AccData()->m_Rel = 0;
 
-			if (AccData.m_Rel == 0 && m_Search)
+			if (AccData()->m_Rel == 0 && m_Search)
 			{
 				m_Search = false;
 				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被取消通缉了"), "name", Server()->ClientName(m_ClientID), NULL);
 			}
-			GameServer()->SendBroadcast_Localization(m_ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, BROADCAST_DURATION_GAMEANNOUNCE, _("交际愤怒值 -100. 你的交际愤怒值:{int:rel}"), "rel", &AccData.m_Rel, NULL);
+			GameServer()->SendBroadcast_Localization(m_ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, BROADCAST_DURATION_GAMEANNOUNCE, _("交际愤怒值 -100. 你的交际愤怒值:{int:rel}"), "rel", &AccData()->m_Rel, NULL);
 			GameServer()->UpdateStats(m_ClientID);
 		}
 
@@ -594,40 +590,40 @@ void CPlayer::Tick()
 int CPlayer::GetNeedForUp()
 {
 	// 玩家升级所需经验基数赋值
-	if (AccData.m_Level < 100)
+	if (AccData()->m_Level < 100)
 		return 400;
-	else if (AccData.m_Level < 200)
+	else if (AccData()->m_Level < 200)
 		return 10000;
-	else if (AccData.m_Level < 300)
+	else if (AccData()->m_Level < 300)
 		return 50000;
-	else if (AccData.m_Level < 400)
+	else if (AccData()->m_Level < 400)
 		return 80000;
-	else if (AccData.m_Level < 500)
+	else if (AccData()->m_Level < 500)
 		return 110000;
-	else if (AccData.m_Level < 600)
+	else if (AccData()->m_Level < 600)
 		return 130000;
-	else if (AccData.m_Level < 700)
+	else if (AccData()->m_Level < 700)
 		return 160000;
-	else if (AccData.m_Level < 1000)
+	else if (AccData()->m_Level < 1000)
 		return 190000;
-	else if (AccData.m_Level < 1100)
+	else if (AccData()->m_Level < 1100)
 		return 240000;
-	else if (AccData.m_Level < 1200)
+	else if (AccData()->m_Level < 1200)
 		return 300000;
 	else
 		return 400000;
 
 	/*
-	if(AccData.m_Level >= 100) return 1000;
-	else if(AccData.m_Level >= 200) return 5000;
-	else if(AccData.m_Level >= 300) return 10000;
-	else if(AccData.m_Level >= 400) return 50000;
-	else if(AccData.m_Level >= 500) return 100000;
-	else if(AccData.m_Level >= 600) return 150000;
-	else if(AccData.m_Level >= 700) return 200000;
-	else if(AccData.m_Level >= 1000) return 250000;
-	else if(AccData.m_Level >= 1100) return 300000;
-	else if(AccData.m_Level >= 1200) return 350000;
+	if(AccData()->m_Level >= 100) return 1000;
+	else if(AccData()->m_Level >= 200) return 5000;
+	else if(AccData()->m_Level >= 300) return 10000;
+	else if(AccData()->m_Level >= 400) return 50000;
+	else if(AccData()->m_Level >= 500) return 100000;
+	else if(AccData()->m_Level >= 600) return 150000;
+	else if(AccData()->m_Level >= 700) return 200000;
+	else if(AccData()->m_Level >= 1000) return 250000;
+	else if(AccData()->m_Level >= 1100) return 300000;
+	else if(AccData()->m_Level >= 1200) return 350000;
 	else return 100;
 	*/
 }
@@ -698,14 +694,14 @@ void CPlayer::MoneyAdd(int Size, bool ClanBonus, bool MoneyDouble)
 
 	if (Size >= 10000)
 	{
-		AccData.m_Gold += Size / 10000;
+		AccData()->m_Gold += Size / 10000;
 		int Got = (int)(Size / 10000);
 
-		AccData.m_Money -= Got * 10000;
+		AccData()->m_Money -= Got * 10000;
 	}
 
 	GameServer()->SendBroadcast_LStat(m_ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, 100, INADDMONEY, GetMoney);
-	AccData.m_Money += GetMoney;
+	AccData()->m_Money += GetMoney;
 	if (random_prob(0.125f))
 		GameServer()->UpdateStats(m_ClientID);
 
@@ -742,7 +738,7 @@ void CPlayer::ExpAdd(unsigned long int Size, bool Bonus)
 	}
 
 	GameServer()->SendBroadcast_LStat(m_ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, 100, Server()->GetClanID(m_ClientID) > 0 ? INADDCEXP : INADDEXP, GetExp, Get);
-	AccData.m_Exp += GetExp;
+	AccData()->m_Exp += GetExp;
 	if (random_prob(0.125f))
 		GameServer()->UpdateStats(m_ClientID);
 
@@ -778,7 +774,7 @@ void CPlayer::Snap(int SnappingClient)
 			switch (GetBotType())
 			{
 			default:
-				str_format(pSendName, sizeof(pSendName), "%d:%s[%d\%]", AccData.m_Level, Server()->ClientName(m_ClientID), (int)getlv);
+				str_format(pSendName, sizeof(pSendName), "%d:%s[%d\%]", AccData()->m_Level, Server()->ClientName(m_ClientID), (int)getlv);
 				break;
 			case BOT_GUARD:
 			case BOT_BOSSSLIME:
@@ -824,7 +820,7 @@ void CPlayer::Snap(int SnappingClient)
 	pPlayerInfo->m_ClientID = id;
 
 	if (IsBoss() || !IsBot())
-		pPlayerInfo->m_Score = AccData.m_Level;
+		pPlayerInfo->m_Score = AccData()->m_Level;
 	else
 		pPlayerInfo->m_Score = 0;
 
@@ -1037,14 +1033,14 @@ void CPlayer::TryRespawn()
 
 			if (g_Config.m_SvCityStart == 1)
 			{
-				AccData.m_Level = m_BigBot ? 280 + random_int(0, 3) : 250;
-				AccUpgrade.m_Health = 100 + AccData.m_Level * 20;
-				AccUpgrade.m_Damage = AccData.m_Level + 50;
+				AccData()->m_Level = m_BigBot ? 280 + random_int(0, 3) : 250;
+				AccUpgrade()->m_Health = 100 + AccData()->m_Level * 20;
+				AccUpgrade()->m_Damage = AccData()->m_Level + 50;
 			}
 			else
 			{
-				AccData.m_Level = m_BigBot ? 10 + random_int(0, 3) : 5;
-				AccUpgrade.m_Health = m_BigBot ? AccData.m_Level : 0;
+				AccData()->m_Level = m_BigBot ? 10 + random_int(0, 3) : 5;
+				AccUpgrade()->m_Health = m_BigBot ? AccData()->m_Level : 0;
 				if (m_BigBot)
 				{
 					Server()->SetMaxAmmo(m_ClientID, INFWEAPON_GUN, 10);
@@ -1058,15 +1054,15 @@ void CPlayer::TryRespawn()
 
 			if (g_Config.m_SvCityStart == 1)
 			{
-				AccData.m_Level = m_BigBot ? 370 + random_int(0, 3) : 350 + random_int(0, 3);
-				AccUpgrade.m_Health = 100 + AccData.m_Level * 2;
-				AccUpgrade.m_Damage = AccData.m_Level + 50;
+				AccData()->m_Level = m_BigBot ? 370 + random_int(0, 3) : 350 + random_int(0, 3);
+				AccUpgrade()->m_Health = 100 + AccData()->m_Level * 2;
+				AccUpgrade()->m_Damage = AccData()->m_Level + 50;
 			}
 			else
 			{
-				AccData.m_Level = m_BigBot ? 140 : 125 + random_int(0, 3);
-				AccUpgrade.m_Health = 100 + AccData.m_Level;
-				AccUpgrade.m_Damage = AccData.m_Level / 2;
+				AccData()->m_Level = m_BigBot ? 140 : 125 + random_int(0, 3);
+				AccUpgrade()->m_Health = 100 + AccData()->m_Level;
+				AccUpgrade()->m_Damage = AccData()->m_Level / 2;
 			}
 			break;
 		case BOT_L3MONSTER:
@@ -1074,79 +1070,79 @@ void CPlayer::TryRespawn()
 
 			if (g_Config.m_SvCityStart == 1)
 			{
-				AccData.m_Level = m_BigBot ? 510 + random_int(0, 3) : 490 + random_int(0, 15);
-				AccUpgrade.m_Health = 100 + (int)(AccData.m_Level * 2);
-				AccUpgrade.m_Damage = (int)(AccData.m_Level + 50);
+				AccData()->m_Level = m_BigBot ? 510 + random_int(0, 3) : 490 + random_int(0, 15);
+				AccUpgrade()->m_Health = 100 + (int)(AccData()->m_Level * 2);
+				AccUpgrade()->m_Damage = (int)(AccData()->m_Level + 50);
 			}
 			else
 			{
-				AccData.m_Level = m_BigBot ? 250 + random_int(0, 3) : 200 + random_int(0, 3);
-				AccUpgrade.m_Health = 100 + AccData.m_Level;
-				AccUpgrade.m_Damage = AccData.m_Level;
+				AccData()->m_Level = m_BigBot ? 250 + random_int(0, 3) : 200 + random_int(0, 3);
+				AccUpgrade()->m_Health = 100 + AccData()->m_Level;
+				AccUpgrade()->m_Damage = AccData()->m_Level;
 			}
 			break;
 		case BOT_BOSSSLIME:
 			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
-			AccData.m_Level = 1000 + random_int(0, 3);
+			AccData()->m_Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
 
-			AccUpgrade.m_Health = (int)(AccData.m_Level / 3);
-			AccUpgrade.m_Damage = 100;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
+			AccUpgrade()->m_Damage = 100;
 			break;
 		case BOT_BOSSVAMPIRE:
 			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
-			AccData.m_Level = 1000 + random_int(0, 3);
+			AccData()->m_Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
 
-			AccUpgrade.m_Health = (int)(AccData.m_Level / 3);
-			AccUpgrade.m_Damage = 400;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
+			AccUpgrade()->m_Damage = 400;
 			break;
 		case BOT_BOSSPIGKING:
 			m_pCharacter = new (AllocMemoryCell) CBossPig(&GameServer()->m_World);
-			AccData.m_Level = 100 + random_int(3, 13);
+			AccData()->m_Level = 100 + random_int(3, 13);
 			m_BigBot = true;
-			AccUpgrade.m_Health = (int)(AccData.m_Level / 6);
-			AccUpgrade.m_Damage = 10;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 6);
+			AccUpgrade()->m_Damage = 10;
 			break;
 		case BOT_BOSSGUARD:
 			m_pCharacter = new (AllocMemoryCell) CBossGuard(&GameServer()->m_World);
-			AccData.m_Level = 500 + random_int(0, 10);
-			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
+			AccData()->m_Level = 500 + random_int(0, 10);
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:
 			m_pCharacter = new (AllocMemoryCell) CNpcSold(&GameServer()->m_World);
-			AccData.m_Level = 500 + random_int(0, 10);
-			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
-			AccUpgrade.m_Health = (int)(AccData.m_Level * 50);
+			AccData()->m_Level = 500 + random_int(0, 10);
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 50);
 			m_BigBot = true;
 			break;
 		case BOT_NPCW:
 			m_pCharacter = new (AllocMemoryCell) CNpcWSold(&GameServer()->m_World);
-			AccData.m_Level = 3;
-			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
-			AccUpgrade.m_Health = (int)(AccData.m_Level * 2);
+			AccData()->m_Level = 3;
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 2);
 			m_BigBot = true;
 			break;
 		case BOT_FARMER:
 			m_pCharacter = new (AllocMemoryCell) CNpcFarmer(&GameServer()->m_World);
-			AccData.m_Level = 3;
-			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
-			AccUpgrade.m_Health = (int)(AccData.m_Level * 2);
+			AccData()->m_Level = 3;
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 2);
 			m_BigBot = true;
 			break;
 		case BOT_BOSSCLEANER:
 			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
-			AccData.m_Level = 1000 + random_int(0, 3);
+			AccData()->m_Level = 1000 + random_int(0, 3);
 
 			m_BigBot = true;
 
-			AccUpgrade.m_Health = (int)(AccData.m_Level / 3);
-			AccUpgrade.m_Damage = 100;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
+			AccUpgrade()->m_Damage = 100;
 			if (g_Config.m_SvCityStart == 1)
-				AccUpgrade.m_Damage = 400;
+				AccUpgrade()->m_Damage = 400;
 			break;
 		default: 
 			dbg_msg("sys", "Invalid value %d in %s:%d", m_BotType, __FILE__, __LINE__); 
@@ -1161,8 +1157,8 @@ void CPlayer::TryRespawn()
 		m_pCharacter = new (AllocMemoryCell) CCharacter(&GameServer()->m_World);
 		if(Server()->GetItemSettings(GetCID(), TITLE_GUARD))
 		{
-			AccUpgrade.m_Damage = (int)(AccData.m_Level * 5);
-			AccUpgrade.m_Health = (int)(AccData.m_Level * 50);
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 50);
 		}
 	}
 
@@ -1173,7 +1169,7 @@ void CPlayer::TryRespawn()
 
 int CPlayer::GetClass()
 {
-	return AccData.m_Class;
+	return AccData()->m_Class;
 }
 
 void CPlayer::SetClassSkin(int newClass, int State)
@@ -1200,10 +1196,10 @@ void CPlayer::SetClassSkin(int newClass, int State)
 
 void CPlayer::SetClass(int newClass)
 {
-	if (AccData.m_Class == newClass)
+	if (AccData()->m_Class == newClass)
 		return;
 
-	AccData.m_Class = newClass;
+	AccData()->m_Class = newClass;
 	SetClassSkin(newClass);
 
 	if (m_pCharacter)
@@ -1222,11 +1218,11 @@ const char *CPlayer::GetLanguage()
 
 const char *CPlayer::GetClassName()
 {
-	if (AccData.m_Class == PLAYERCLASS_ASSASINS)
+	if (AccData()->m_Class == PLAYERCLASS_ASSASINS)
 		return "Assasin";
-	else if (AccData.m_Class == PLAYERCLASS_BERSERK)
+	else if (AccData()->m_Class == PLAYERCLASS_BERSERK)
 		return "Berserk";
-	else if (AccData.m_Class == PLAYERCLASS_HEALER)
+	else if (AccData()->m_Class == PLAYERCLASS_HEALER)
 		return "Healer";
 	else
 		return "You bitch";
@@ -1257,11 +1253,11 @@ void CPlayer::ResetUpgrade(int ClientID)
 {
 	if (Server()->IsClientLogged(m_ClientID))
 	{
-		int Back = AccUpgrade.m_Speed + AccUpgrade.m_Health + AccUpgrade.m_Damage + AccUpgrade.m_HPRegen + AccUpgrade.m_Mana + AccUpgrade.m_AmmoRegen + (AccUpgrade.m_Ammo * 5 + AccUpgrade.m_Spray * 10);
-		AccUpgrade.m_Speed = AccUpgrade.m_Health = AccUpgrade.m_Damage = AccUpgrade.m_HPRegen = AccUpgrade.m_Mana = 0;
-		AccUpgrade.m_AmmoRegen = AccUpgrade.m_Ammo = AccUpgrade.m_Spray = 0;
+		int Back = AccUpgrade()->m_Speed + AccUpgrade()->m_Health + AccUpgrade()->m_Damage + AccUpgrade()->m_HPRegen + AccUpgrade()->m_Mana + AccUpgrade()->m_AmmoRegen + (AccUpgrade()->m_Ammo * 5 + AccUpgrade()->m_Spray * 10);
+		AccUpgrade()->m_Speed = AccUpgrade()->m_Health = AccUpgrade()->m_Damage = AccUpgrade()->m_HPRegen = AccUpgrade()->m_Mana = 0;
+		AccUpgrade()->m_AmmoRegen = AccUpgrade()->m_Ammo = AccUpgrade()->m_Spray = 0;
 
-		AccUpgrade.m_Upgrade += Back;
+		AccUpgrade()->m_Upgrade += Back;
 		GameServer()->UpdateUpgrades(ClientID);
 	}
 }
@@ -1270,9 +1266,9 @@ void CPlayer::ResetSkill(int ClientID)
 {
 	if (Server()->IsClientLogged(m_ClientID))
 	{
-		int Back = AccUpgrade.m_HammerRange * 15 + AccUpgrade.m_Pasive2 * 15;
-		AccUpgrade.m_Pasive2 = AccUpgrade.m_HammerRange = 0;
-		AccUpgrade.m_SkillPoint += Back;
+		int Back = AccUpgrade()->m_HammerRange * 15 + AccUpgrade()->m_Pasive2 * 15;
+		AccUpgrade()->m_Pasive2 = AccUpgrade()->m_HammerRange = 0;
+		AccUpgrade()->m_SkillPoint += Back;
 		GameServer()->UpdateUpgrades(ClientID);
 	}
 }

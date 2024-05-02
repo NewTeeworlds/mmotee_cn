@@ -130,11 +130,11 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	if(m_pPlayer->IsBot())
 		LockBotPos = m_Pos;
 	
-	if(m_pPlayer->AccData.m_Jail)
+	if(m_pPlayer->AccData()->m_Jail)
 	{
-		if(m_pPlayer->AccData.m_IsJailed && m_pPlayer->AccData.m_JailLength > 0)
+		if(m_pPlayer->AccData()->m_IsJailed && m_pPlayer->AccData()->m_JailLength > 0)
 		{
-			m_pPlayer->m_JailTick = Server()->TickSpeed()*m_pPlayer->AccData.m_JailLength;
+			m_pPlayer->m_JailTick = Server()->TickSpeed()*m_pPlayer->AccData()->m_JailLength;
 		}
 		else
 		{
@@ -487,8 +487,8 @@ void CCharacter::FireWeapon()
 
 			// ---------- 检查玩家职业是 Berserk(狂战士) 还是 Assasins(刺客)
 			int Range = 0;
-			if(m_pPlayer->AccData.m_Class == PLAYERCLASS_BERSERK)	Range = m_pPlayer->AccUpgrade.m_HammerRange*20;
-			else if(m_pPlayer->AccData.m_Class == PLAYERCLASS_ASSASINS) Range = 100;
+			if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_BERSERK)	Range = m_pPlayer->AccUpgrade()->m_HammerRange*20;
+			else if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS) Range = 100;
 		
 			// reset objects Hit
 			m_NumObjectsHit = 0;
@@ -564,7 +564,7 @@ void CCharacter::FireWeapon()
 		{
 			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXSHOTGUN) != 0;
 			
-			int ShotSpread = 5 + m_pPlayer->AccUpgrade.m_Spray;
+			int ShotSpread = 5 + m_pPlayer->AccUpgrade()->m_Spray;
 			if(ShotSpread > 36)
 				ShotSpread = 36;
 
@@ -584,7 +584,7 @@ void CCharacter::FireWeapon()
 				float a = GetAngle(Direction);
 				a += Spreading[i + 20];
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 2;
-				float Speed = m_pPlayer->AccUpgrade.m_Spray > 0 ? 1.0f : mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
+				float Speed = m_pPlayer->AccUpgrade()->m_Spray > 0 ? 1.0f : mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 				
 				if(Server()->GetItemSettings(m_pPlayer->GetCID(), HYBRIDSG))
 					new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, Explode, WEAPON_GUN, 12);
@@ -616,7 +616,7 @@ void CCharacter::FireWeapon()
 			}
 			else
 			{
-				int ShotSpread = 2 + m_pPlayer->AccUpgrade.m_Spray/3;
+				int ShotSpread = 2 + m_pPlayer->AccUpgrade()->m_Spray/3;
 				if(ShotSpread > 10)
 					ShotSpread = 10;
 
@@ -657,7 +657,7 @@ void CCharacter::FireWeapon()
 		{
 			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXLASER) != 0;
 						
-			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade.m_Spray/3;
+			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade()->m_Spray/3;
 			if(ShotSpread > 10)
 				ShotSpread = 10;
 
@@ -895,12 +895,12 @@ void CCharacter::Tick()
 
 			case BOT_BOSSPIGKING:
 				m_Health = 10+GameServer()->GetBossLeveling()*100;
-				m_pPlayer->AccUpgrade.m_Damage = GameServer()->GetBossLeveling();
+				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling();
 				break;
 
 			case BOT_BOSSGUARD:
 				m_Health = 10+GameServer()->GetBossLeveling()*1250;
-				m_pPlayer->AccUpgrade.m_Damage = GameServer()->GetBossLeveling()*50;
+				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*50;
 				break;
 
 			default:
@@ -911,9 +911,9 @@ void CCharacter::Tick()
 		}
 		
 		// 生命值恢复
-		if(m_pPlayer->AccUpgrade.m_HPRegen && m_pPlayer->m_Health < m_pPlayer->m_HealthStart)
+		if(m_pPlayer->AccUpgrade()->m_HPRegen && m_pPlayer->m_Health < m_pPlayer->m_HealthStart)
 		{
-			if(!HPRegenTick) HPRegenTick = 900-m_pPlayer->AccUpgrade.m_HPRegen*3;
+			if(!HPRegenTick) HPRegenTick = 900-m_pPlayer->AccUpgrade()->m_HPRegen*3;
 			else
 			{
 				HPRegenTick--;
@@ -1004,15 +1004,15 @@ void CCharacter::Tick()
 				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(0));
 				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(0))*50);
 
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
 
 				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
 				{
 					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
 					return;
@@ -1027,15 +1027,15 @@ void CCharacter::Tick()
 				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(1));
 				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(1))*50);
 
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
 
 				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
 				{
 					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
 					return;
@@ -1050,15 +1050,15 @@ void CCharacter::Tick()
 				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2));
 				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2))*50);
 
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
 
 				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
 				{
 					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
 					return;
@@ -1073,15 +1073,15 @@ void CCharacter::Tick()
 				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3));
 				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3))*50);
 
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
 
 				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
 				{
 					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
 					return;
@@ -1096,15 +1096,15 @@ void CCharacter::Tick()
 				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4));
 				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4))*50);
 
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
 
 				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
 				{
 					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
 					return;
@@ -1121,13 +1121,13 @@ void CCharacter::Tick()
 				int Exp = 20;
 				int Money = 600;
 
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
 				if(g_Config.m_SvCityStart == 1)
 				{
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;
 					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 				}
 				else
@@ -1135,15 +1135,15 @@ void CCharacter::Tick()
 					Exp = 10;
 					Money = 200;
 
-					LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-					LegalMoney = m_pPlayer->AccData.m_Money + Money;
+					LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+					LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;
 					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 				}
 
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
 				{
 					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
 					return;
@@ -1159,13 +1159,13 @@ void CCharacter::Tick()
 				int Exp = 30;
 				int Money = 800;
 
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 			
 				if(g_Config.m_SvCityStart == 1)
 				{
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;					
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;					
 					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 				}
 				else
@@ -1173,15 +1173,15 @@ void CCharacter::Tick()
 					Exp = 15; // 白房间的座位
 					Money = 400;
 
-					LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-					LegalMoney = m_pPlayer->AccData.m_Money + Money;
+					LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+					LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;
 					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
 				}
 
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
 				{
 					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
 					return;
@@ -1472,13 +1472,13 @@ void CCharacter::Tick()
 					switch(m_pPlayer->m_MapMenuItem)
 					{
 						case CMapConverter::MENUCLASS_ASSASINS:
-							NewClass = m_pPlayer->AccData.m_Class = PLAYERCLASS_ASSASINS;
+							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_ASSASINS;
 							break;
 						case CMapConverter::MENUCLASS_BERSERK:
-							NewClass = m_pPlayer->AccData.m_Class = PLAYERCLASS_BERSERK;
+							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_BERSERK;
 							break;
 						case CMapConverter::MENUCLASS_HEALER:
-							NewClass = m_pPlayer->AccData.m_Class = PLAYERCLASS_HEALER;
+							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_HEALER;
 							break;
 					}
 					
@@ -1489,7 +1489,7 @@ void CCharacter::Tick()
 						m_pPlayer->SetClass(NewClass);
 						GameServer()->UpdateStats(m_pPlayer->GetCID());
 						Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-						m_pPlayer->SetClassSkin(m_pPlayer->AccData.m_Class);
+						m_pPlayer->SetClassSkin(m_pPlayer->AccData()->m_Class);
 						GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
 						GameServer()->GiveItem(m_pPlayer->GetCID(), MONEYBAG, 1);
 					}
@@ -1702,7 +1702,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	if(Killer >=0 && Killer < MAX_CLIENTS)
 	{
 		CPlayer* pKillerPlayer = GameServer()->m_apPlayers[Killer];
-		pKillerPlayer->AccData.m_Kill++;
+		pKillerPlayer->AccData()->m_Kill++;
 		
 		if(pKillerPlayer && !pKillerPlayer->IsBot() && !m_pPlayer->IsBot()
 			&& Killer != m_pPlayer->GetCID() && !pKillerPlayer->m_InArea)
@@ -1717,8 +1717,8 @@ void CCharacter::Die(int Killer, int Weapon)
 			
 			if(!Server()->GetItemSettings(Killer, TITLE_TGPCR))
 			{
-				pKillerPlayer->AccData.m_Rel += get;
-				GameServer()->SendChatTarget_Localization(Killer, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pKillerPlayer->AccData.m_Rel, NULL);
+				pKillerPlayer->AccData()->m_Rel += get;
+				GameServer()->SendChatTarget_Localization(Killer, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pKillerPlayer->AccData()->m_Rel, NULL);
 			}
 		}
 		
@@ -1730,13 +1730,13 @@ void CCharacter::Die(int Killer, int Weapon)
 				m_pPlayer->m_Search = false;
 				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name}, 击败玩家 {str:name1}, 并将其打入大牢"), "name", Server()->ClientName(Killer), "name1", Server()->ClientName(m_pPlayer->GetCID()), NULL);
 						
-				m_pPlayer->AccData.m_Jail = true;
-				m_pPlayer->AccData.m_Rel = 0;
+				m_pPlayer->AccData()->m_Jail = true;
+				m_pPlayer->AccData()->m_Rel = 0;
 				GameServer()->UpdateStats(m_pPlayer->GetCID());
 				
 				if(!pKillerPlayer->IsBot())
 				{
-					pKillerPlayer->MoneyAdd(m_pPlayer->AccData.m_Level*1000, false, true);
+					pKillerPlayer->MoneyAdd(m_pPlayer->AccData()->m_Level*1000, false, true);
 					GameServer()->UpdateStats(Killer);
 					GameServer()->ResetVotes(Killer, AUTH);
 				}
@@ -1798,15 +1798,15 @@ int CCharacter::SendToJail(int PlayerID, int JailLength) //手动送某人进监
 	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 	
 	CPlayer* pKillerPlayer = GameServer()->m_apPlayers[PlayerID];
-	pKillerPlayer->AccData.m_Kill++;
+	pKillerPlayer->AccData()->m_Kill++;
 	
 	m_pPlayer->m_Search = false;
 	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被捕了!"), "name", Server()->ClientName(m_pPlayer->GetCID()), NULL);
 					
-	m_pPlayer->AccData.m_Jail = true;
-	m_pPlayer->AccData.m_Rel = 0;
-	m_pPlayer->AccData.m_IsJailed = true;
-	m_pPlayer->AccData.m_JailLength = JailLength;
+	m_pPlayer->AccData()->m_Jail = true;
+	m_pPlayer->AccData()->m_Rel = 0;
+	m_pPlayer->AccData()->m_IsJailed = true;
+	m_pPlayer->AccData()->m_JailLength = JailLength;
 	GameServer()->UpdateStats(m_pPlayer->GetCID());
 	return 0;
 	
@@ -1842,9 +1842,9 @@ int CCharacter::Unjail(int PlayerID) //手动救某人出监狱
 	m_pPlayer->m_Search = false;
 	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 出监狱了!"), "name", Server()->ClientName(m_pPlayer->GetCID()), NULL);
 					
-	m_pPlayer->AccData.m_Jail = false;
-	m_pPlayer->AccData.m_Rel = 0;
-	m_pPlayer->AccData.m_IsJailed = false;
+	m_pPlayer->AccData()->m_Jail = false;
+	m_pPlayer->AccData()->m_Rel = 0;
+	m_pPlayer->AccData()->m_IsJailed = false;
 	GameServer()->UpdateStats(m_pPlayer->GetCID());
 	return 0;
 	
@@ -1881,7 +1881,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		{
 			// Тюрьма
 			// 监狱
-			if(m_pPlayer->AccData.m_Jail)
+			if(m_pPlayer->AccData()->m_Jail)
 				return true;
 
 			// АнтиПВП вся хуня
@@ -1910,8 +1910,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			// 守卫愤怒值
 			if(m_pPlayer->GetBotType() == BOT_GUARD && !Server()->GetItemSettings(From, TITLE_TGPCR))
 			{
-				pFrom->AccData.m_Rel += 10;
-				GameServer()->SendChatTarget_Localization(From, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pFrom->AccData.m_Rel, NULL);
+				pFrom->AccData()->m_Rel += 10;
+				GameServer()->SendChatTarget_Localization(From, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pFrom->AccData()->m_Rel, NULL);
 			}
 		}
 		// Арена
@@ -1971,9 +1971,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 		}
 		
-		if(m_pPlayer->AccData.m_Class == PLAYERCLASS_HEALER && m_pPlayer->AccUpgrade.m_Pasive2)
+		if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_HEALER && m_pPlayer->AccUpgrade()->m_Pasive2)
 		{
-			auto RandProc = (float)(100-m_pPlayer->AccUpgrade.m_Pasive2*2);
+			auto RandProc = (float)(100-m_pPlayer->AccUpgrade()->m_Pasive2*2);
 			if(random_prob(1.0f/RandProc))
 			{
 				if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT)) 
@@ -1982,12 +1982,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 		}
 		
-		auto getcount = (float)(pFrom->AccData.m_Class == PLAYERCLASS_ASSASINS ? 15-pFrom->AccUpgrade.m_HammerRange : 15.0f);
+		auto getcount = (float)(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASINS ? 15-pFrom->AccUpgrade()->m_HammerRange : 15.0f);
 		if(random_prob(1.0f/getcount))
 		{
-			int CritDamage = Dmg+pFrom->AccUpgrade.m_Damage*2+random_int(0, 50);
-			if(pFrom->AccData.m_Class == PLAYERCLASS_ASSASINS)
-				CritDamage += (CritDamage/100)*pFrom->AccUpgrade.m_Pasive2*3;
+			int CritDamage = Dmg+pFrom->AccUpgrade()->m_Damage*2+random_int(0, 50);
+			if(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASINS)
+				CritDamage += (CritDamage/100)*pFrom->AccUpgrade()->m_Pasive2*3;
 			
 			Dmg = CritDamage;
 			if(pFrom->GetCharacter()->m_ActiveWeapon == WEAPON_SHOTGUN)
@@ -2001,9 +2001,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		}
 		else
 		{
-			int DamageProc = Dmg+pFrom->AccUpgrade.m_Damage;
-			if(pFrom->AccData.m_Class == PLAYERCLASS_BERSERK)
-				DamageProc += (DamageProc/100)*pFrom->AccUpgrade.m_Pasive2*3;
+			int DamageProc = Dmg+pFrom->AccUpgrade()->m_Damage;
+			if(pFrom->AccData()->m_Class == PLAYERCLASS_BERSERK)
+				DamageProc += (DamageProc/100)*pFrom->AccUpgrade()->m_Pasive2*3;
 			
 			Dmg = DamageProc;
 			if(pFrom->GetCharacter()->m_ActiveWeapon == WEAPON_SHOTGUN)
@@ -2318,7 +2318,7 @@ void CCharacter::Snap(int SnappingClient)
 
 	// 武器：
 	// 在玩家被冻结时，或者玩家职业为 Assasins(刺客)且切换到锤子武器时，将玩家武器（外观）设置为 Ninja(忍者)
-	if((GetInfWeaponID(m_ActiveWeapon) == INFWEAPON_HAMMER && m_pPlayer && m_pPlayer->AccData.m_Class == PLAYERCLASS_ASSASINS && !m_pPlayer->m_InArea) || m_IsFrozen)
+	if((GetInfWeaponID(m_ActiveWeapon) == INFWEAPON_HAMMER && m_pPlayer && m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS && !m_pPlayer->m_InArea) || m_IsFrozen)
 	{
 		if(m_IsFrozen)
 			pCharacter->m_Emote = EMOTE_BLINK;
@@ -2440,11 +2440,11 @@ void CCharacter::ClassSpawnAttributes()
 	{
 		case PLAYERCLASS_HEALER:
 			RemoveAllGun();
-			m_Health = 10+m_pPlayer->AccUpgrade.m_Health*50;
-			if(m_pPlayer->AccUpgrade.m_HammerRange)
+			m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*50;
+			if(m_pPlayer->AccUpgrade()->m_HammerRange)
 			{
-				int Proc = (m_Health / 100)*m_pPlayer->AccUpgrade.m_HammerRange*4;
-				m_Health = 10+m_pPlayer->AccUpgrade.m_Health*50+Proc;
+				int Proc = (m_Health / 100)*m_pPlayer->AccUpgrade()->m_HammerRange*4;
+				m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*50+Proc;
 			}
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_HEALER))
 			{
@@ -2453,7 +2453,7 @@ void CCharacter::ClassSpawnAttributes()
 			break;
 		case PLAYERCLASS_BERSERK:
 			RemoveAllGun();
-			m_Health = 10+m_pPlayer->AccUpgrade.m_Health*40;
+			m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*40;
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_BERSERK))
 			{
 				m_pPlayer->m_aKnownClass[PLAYERCLASS_BERSERK] = true;
@@ -2461,7 +2461,7 @@ void CCharacter::ClassSpawnAttributes()
 			break;
 		case PLAYERCLASS_ASSASINS:
 			RemoveAllGun();
-			m_Health = 5+m_pPlayer->AccUpgrade.m_Health*40;
+			m_Health = 5+m_pPlayer->AccUpgrade()->m_Health*40;
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_ASSASINS))
 			{
 				m_pPlayer->m_aKnownClass[PLAYERCLASS_ASSASINS] = true;
@@ -2504,11 +2504,11 @@ void CCharacter::ClassSpawnAttributes()
 
 	/*if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEMOON))
 	{
-		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade.m_Speed += 10;
+		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade()->m_Speed += 10;
 	}*/
 	// 新手保护，禁用 PvP
 	m_pPlayer->m_AntiPvpSmall = false;
-	if(m_pPlayer->AccData.m_Level < 20)
+	if(m_pPlayer->AccData()->m_Level < 20)
 	{
 		m_pPlayer->m_AntiPvpSmall = true;
 
@@ -2523,19 +2523,19 @@ void CCharacter::ClassSpawnAttributes()
 		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKEXPMIN), NULL);		
 
 	if(m_pPlayer->IsBot())
-		m_Health = 10+m_pPlayer->AccUpgrade.m_Health*10;
+		m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*10;
 
 	// 佩戴 Ring Boomer 生命值增加 5%
 	if(Server()->GetItemCount(m_pPlayer->GetCID(), RINGBOOMER))
 		m_Health += (m_Health/100)*5*Server()->GetItemCount(m_pPlayer->GetCID(), RINGBOOMER);		
 
 	// 武器属性设置
-	int geta = (int)(5+m_pPlayer->AccUpgrade.m_Ammo);// 弹药数量
-	int getsp = 1000+m_pPlayer->AccUpgrade.m_Speed*20;// 射速
-	int getspg = 1000+m_pPlayer->AccUpgrade.m_Speed*8;// Grenade（火箭炮）射速
+	int geta = (int)(5+m_pPlayer->AccUpgrade()->m_Ammo);// 弹药数量
+	int getsp = 1000+m_pPlayer->AccUpgrade()->m_Speed*20;// 射速
+	int getspg = 1000+m_pPlayer->AccUpgrade()->m_Speed*8;// Grenade（火箭炮）射速
 	int getar = 0;									// 子弹回复速度
-	if(m_pPlayer->AccUpgrade.m_AmmoRegen > 0) 
-		getar= (int)(650-m_pPlayer->AccUpgrade.m_AmmoRegen*2);
+	if(m_pPlayer->AccUpgrade()->m_AmmoRegen > 0) 
+		getar= (int)(650-m_pPlayer->AccUpgrade()->m_AmmoRegen*2);
 		
 	// 按照弹夹数量添加弹药
 	if(Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))

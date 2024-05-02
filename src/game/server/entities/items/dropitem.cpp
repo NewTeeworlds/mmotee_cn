@@ -141,7 +141,7 @@ bool CDropItem::TakeItem(int ClientID)
 
 	if(m_HowID == ClientID || m_HowID == -1)
 	{
-		if(pOwner->AccData.m_Level < Server()->GetItemPrice(ClientID, m_ItemID, 0))
+		if(pOwner->AccData()->m_Level < Server()->GetItemPrice(ClientID, m_ItemID, 0))
 		{
 			GameServer()->SendBroadcast_Localization(ClientID, 201, 100, _("你的级别太低了, 这个物品你驾驭不住"), NULL);	
 			return false;

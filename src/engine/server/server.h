@@ -13,6 +13,8 @@
 #include "engine/server/sql_server.h"
 /* DDNET MODIFICATION END *********************************************/
 
+#include <game/server/playerdata.h>
+
 class CSnapIDPool
 {
 	enum
@@ -145,48 +147,13 @@ public:
 
 		//Login
 		int m_LogInstance;
-		int m_UserID;
 		int m_UserStatusID;
-		int m_ClanID;
-		int m_Level;
-		long int m_Exp;
-		int m_Money;
-		unsigned long int m_Gold;
-		int m_Donate;
-		int m_Rel;
-		bool m_Jail;
-		int m_Class;
-		int m_Quest;
-		int m_Kill;
-		int m_WinArea;
-		bool m_Security;
-		char m_Clan[64];
-		unsigned long int m_ClanAdded;
-		
-		bool m_IsJailed;
-		int m_JailLength;
-		int m_SummerHealingTimes;
-		int m_LoginID;
 
 		// int m_ItemCount[7];
 		std::array<int, 16> m_ItemCount;
 
-		// All
-		int Upgrade;
-		int SkillPoint;
-		
-		int m_HammerRange;
-		int m_Pasive2;
-		
-		//upgrade
-		int Health;
-		int Damage;
-		int Speed;
-		int HPRegen;
-		int AmmoRegen;
-		int Ammo;
-		int Spray;
-		int Mana;
+		SAccData AccData;
+		SAccUpgrade AccUpgrade;
 
 		char m_aUsername[MAX_NAME_LENGTH];
 		int m_SelectItem;
@@ -534,6 +501,9 @@ public:
 	virtual void ChangeClientMap(int CID, int MapID);
 	virtual int GetClientMapID(int ClientID);
 	virtual bool GetClientChangeMap(int ClientID);
+
+	virtual SAccData *GetAccData(int ClientID);
+	virtual SAccUpgrade *GetAccUpgrade(int ClientID);
 };
 
 #endif

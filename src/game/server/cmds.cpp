@@ -5,6 +5,9 @@
 #include <engine/server.h>
 #include <game/version.h>
 #include "cmds.h"
+
+#include "playerdata.h"
+
 /*
 聊天指令一览： ()为可选项，<>为必填项
 1.注册与登录
@@ -351,7 +354,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		{
 			GameServer()->SendChatTarget(ClientID, "你发出了点卷.");
 			GameServer()->SendChatTarget(id, "你的点卷数增加了.");
-			GameServer()->m_apPlayers[id]->AccData.m_Donate += citem;
+			GameServer()->m_apPlayers[id]->AccData()->m_Donate += citem;
 			GameServer()->UpdateStats(id);
 
 			char aBuf[128];
@@ -385,10 +388,10 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		{
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("输入的 ID 无效."), NULL);
 		}
-		GameServer()->m_apPlayers[id]->AccData.m_IsJailed = true;
-		GameServer()->m_apPlayers[id]->AccData.m_Jail = true;
-		GameServer()->m_apPlayers[id]->AccData.m_Rel = 0;
-		GameServer()->m_apPlayers[id]->AccData.m_JailLength = JailLength;
+		GameServer()->m_apPlayers[id]->AccData()->m_IsJailed = true;
+		GameServer()->m_apPlayers[id]->AccData()->m_Jail = true;
+		GameServer()->m_apPlayers[id]->AccData()->m_Rel = 0;
+		GameServer()->m_apPlayers[id]->AccData()->m_JailLength = JailLength;
 		if (GameServer()->m_apPlayers[id]->GetCharacter())
 			GameServer()->m_apPlayers[id]->GetCharacter()->Die(id, WEAPON_WORLD);
 		GameServer()->UpdateStats(id);
@@ -406,12 +409,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		{
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("输入的 ID 无效."), NULL);
 		}
-		GameServer()->m_apPlayers[id]->AccData.m_IsJailed = false;
-		GameServer()->m_apPlayers[id]->AccData.m_Jail = false;
-		GameServer()->m_apPlayers[id]->AccData.m_Rel = 0;
+		GameServer()->m_apPlayers[id]->AccData()->m_IsJailed = false;
+		GameServer()->m_apPlayers[id]->AccData()->m_Jail = false;
+		GameServer()->m_apPlayers[id]->AccData()->m_Rel = 0;
 		GameServer()->m_apPlayers[id]->m_JailTick = 0;
 		GameServer()->UpdateStats(id);
-		GameServer()->m_apPlayers[id]->AccData.m_JailLength = 0;
+		GameServer()->m_apPlayers[id]->AccData()->m_JailLength = 0;
 		if (GameServer()->m_apPlayers[id]->GetCharacter())
 			GameServer()->m_apPlayers[id]->GetCharacter()->Die(id, WEAPON_WORLD);
 		return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, ("成功将 {str:name} 放出监狱"), "name", GameServer()->Server()->ClientName(id), NULL);
