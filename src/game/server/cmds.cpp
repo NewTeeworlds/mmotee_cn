@@ -207,11 +207,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("两次密码不一致"), NULL);
 		}
 
-		/*if(sscanf(Msg->m_pMessage, "/password %s", Password) != 1)
-			{
-				return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("修改密码: /password <密码>"), NULL);
-			}
-		*/
 		if (str_length(Password) > 15 || str_length(Password) < 2)
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("密码必须包含 2~15 个字符"), NULL);
 
@@ -222,53 +217,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if (!strncmp(Msg->m_pMessage, "/lang", 5))
 	{
 		GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, ("Sorry, currently we have not finished translation yet. \nFor more info, see https://github.com/StarOnTheSky/mmotee_cn ."), NULL);
-		// 我们还没完成国际化
-		/*
-		char pLanguageCode[128];
-		char aFinalLanguageCode[8];
-		aFinalLanguageCode[0] = 0;
-
-		if(sscanf(Msg->m_pMessage, "/lang %s", pLanguageCode) == 1)
-		{
-			if(str_comp_nocase(pLanguageCode, "ua") == 0)
-				str_copy(aFinalLanguageCode, "uk", sizeof(aFinalLanguageCode));
-			else
-			{
-				for(int i=0; i< GameServer()->Server()->Localization()->m_pLanguages.size(); i++)
-				{
-					if(str_comp_nocase(pLanguageCode, GameServer()->Server()->Localization()->m_pLanguages[i]->GetFilename()) == 0)
-						str_copy(aFinalLanguageCode, pLanguageCode, sizeof(aFinalLanguageCode));
-				}
-			}
-		}
-
-		if(aFinalLanguageCode[0])
-		{
-			GameServer()->Server()->SetClientLanguage(ClientID, aFinalLanguageCode);
-			if(m_pPlayer)
-				m_pPlayer->SetLanguage(aFinalLanguageCode);
-
-			if(GameServer()->Server()->IsClientLogged(ClientID)) GameServer()->ResetVotes(ClientID, AUTH);
-			else GameServer()->ResetVotes(ClientID, NOAUTH);
-		}
-		else
-		{
-			const char* pLanguage = m_pPlayer->GetLanguage();
-			dynamic_string BufferList;
-			int BufferIter = 0;
-			for(int i=0; i< GameServer()->Server()->Localization()->m_pLanguages.size(); i++)
-			{
-				if(i>0)
-					BufferIter = BufferList.append_at(BufferIter, ", ");
-				BufferIter = BufferList.append_at(BufferIter, GameServer()->Server()->Localization()->m_pLanguages[i]->GetFilename());
-			}
-
-			dynamic_string Buffer;
-			GameServer()->Server()->Localization()->Format_L(Buffer, pLanguage, _("Available languages: {str:ListOfLanguage}"), "ListOfLanguage", BufferList.buffer(), NULL);
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), Buffer.buffer());
-			Buffer.clear();
-		}
-		*/
 		return;
 	}
 	// 管理员指令

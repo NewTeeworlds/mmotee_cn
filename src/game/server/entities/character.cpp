@@ -2017,32 +2017,6 @@ bool CCharacter::InQuest()
 	return false;
 }
 
-// InfClass 的功能,这边用不上
-// 给 Ninja(忍者) Buff(加成)
-/*
-void CCharacter::GiveNinjaBuf()
-{
-	if(GetClass() != PLAYERCLASS_ASSASINS)
-		return;
-	
-	switch(random_int(0, 2))
-	{
-		case 0: //速度增益
-			m_NinjaVelocityBuff++;
-			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("Sword velocity increased"), NULL);
-			break;
-		case 1: //力量增益
-			m_NinjaStrengthBuff++;
-			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("Sword strength increased"), NULL);
-			break;
-		case 2: //弹药增益
-			m_NinjaAmmoBuff++;
-			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("Grenade limit increased"), NULL);
-			break;
-	}
-}
-*/
-
 // 空间属性
 void CCharacter::ClassSpawnAttributes()
 {			
@@ -2141,10 +2115,10 @@ void CCharacter::ClassSpawnAttributes()
 	if (Server()->GetItemSettings(m_pPlayer->GetCID(), TITLE_DONATE_SHENGMIN70))
 		m_Health *= 70;
 
-	/*if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEMOON))
+	if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLE_PPP))
 	{
 		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade()->m_Speed += 10;
-	}*/
+	}
 	// 新手保护，禁用 PvP
 	m_pPlayer->m_AntiPvpSmall = false;
 	if(m_pPlayer->AccData()->m_Level < 20)

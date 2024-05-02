@@ -43,12 +43,7 @@ bool CBossPig::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 
     return false;
 }
-/*
-void CBossPig::PlaySound()
-{
 
-}
-*/
 void CBossPig::RunAction()
 {
     if (m_BotClientIDFix != -1 && GameServer()->m_apPlayers[m_BotClientIDFix])

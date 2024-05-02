@@ -1060,44 +1060,6 @@ void CGameContext::OnTick()
 		Server()->GetTopClanHouse();
 	}
 
-	/*if(Server()->Tick() % (1 * Server()->TickSpeed() * 610) == 0)
-	{
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, ("### 服务器信息:"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, ("大家注意了!! 新人必须遵守的规则:"), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, ("只能玩一个服务器"), NULL);
-		//SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, ("你的账户如果被删除,你创建的公会会重组(reform)."), NULL);
-		//SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, ("服务器版本: 2.1 作者/管理：天上的星星,中文翻译:MC_TYH以及全体MMOTEE国服玩家."), NULL);
-	}
-	*/
-	// вывод топ листа раз в 5 минут
-	/*if(Server()->Tick() % (1 * Server()->TickSpeed() * 440) == 0)
-	{
-		switch(random_int(0, 6))
-		{
-			case 0:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) 玩家排行榜前五名:{str:name}:"), "name", "等级", NULL);
-				Server()->ShowTop10(25, "Level", 2); break;
-			case 1:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) 玩家排行榜前五名:{str:name}:"), "name", "黄金", NULL);
-				Server()->ShowTop10(25, "Gold", 2); break;
-			case 2:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) 玩家排行榜前五名:{str:name}:"), "name", "竞技", NULL);
-				Server()->ShowTop10(25, "WinArea", 2); break;
-			case 3:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) 玩家排行榜前五名:{str:name}:"), "name", "击杀", NULL);
-				Server()->ShowTop10(25, "Killing", 2); break;
-			case 4:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) 公会排行榜前五名:{str:name}:"), "name", "等级", NULL);
-				Server()->ShowTop10Clans(25, "Level", 2); break;
-			case 5:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) 公会排行榜前五名:{str:name}:"), "name", "Relevance", NULL);
-				Server()->ShowTop10Clans(25, "Relevance", 2); break;
-			default:
-				SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("(* ^ ω ^) 公会排行榜前五名:{str:name}:"), "name", "黄金", NULL);
-				Server()->ShowTop10Clans(25, "Money", 2); break;
-		}
-	}
-	*/
 	if (Server()->Tick() % (1 * Server()->TickSpeed() * 600) == 0)
 	{
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, "制作者名单:", NULL);
@@ -3808,11 +3770,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "null", "使你在升级时获得20个钱袋");
 			CreateNewShop(ClientID, RINGNOSELFDMG, 3, 1, 1000);
 			AddVote_Localization(ClientID, "null", "不会受到自己的伤害（比如爆炸）");
-			/*
-			CreateNewShop(ClientID, CUSTOMCOLOR, 3, 100, 20000);
-			AddVote_Localization(ClientID, "null", "让你使用自己的皮肤颜色!");
-			AddVote("", "null", ClientID);
-			*/
 		}
 
 		if (m_apPlayers[ClientID]->GetWork())
@@ -4263,10 +4220,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			found = true;
 			AddVote_Localization(ClientID, "null", "在线奖励(Back to School):");
 			AddVote_Localization(ClientID, "null", "每30分钟你会得到一次在线奖励");
-			/*
-			AddVote_Localization(ClientID, "null", "如果你收集了 25个灵魂碎片");
-			AddVote_Localization(ClientID, "null", "你将会在下次在线奖励中得到自定义皮肤道具");
-			*/
 		}
 		if (!found)
 			AddVote_Localization(ClientID, "null", "肥肠豹潜! 现在没有活动的事件."); // az ——翻译员
@@ -4816,10 +4769,6 @@ void CGameContext::StartArea(int WaitTime, int Type, int ClientID)
 	// int Gets = 0;
 	switch (m_AreaType)
 	{
-	/*
-	case 1: NameGame = "激光瞬杀"; Gets = 50; break;
-	case 2: NameGame = "激光献祭"; Gets = 5; break;
-	*/
 	case 1:
 		NameGame = "激光瞬杀";
 		break;

@@ -404,16 +404,6 @@ void CPlayer::Tick()
 
 					GameServer()->SendMail(m_ClientID, 9, Type, 1);
 					GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("在线奖励:{str:name} 获得了 {str:item}."), "name", Server()->ClientName(m_ClientID), "item", Server()->GetItemName(m_ClientID, Type), NULL);
-
-					/*
-					if(Server()->GetItemCount(m_ClientID, EVENTCUSTOMSOUL) >= 25)
-					{
-						Server()->RemItem(m_ClientID, EVENTCUSTOMSOUL, 25, -1);
-						//TODO
-						GameServer()->SendMail(m_ClientID, 11, CUSTOMSKIN, 1);
-						GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("在线奖励:你收集了 25 个灵魂碎片并且得到了自定义皮肤的机会."), NULL);
-					}
-					*/
 				}
 			}
 			if (Server()->Tick() % (1 * Server()->TickSpeed() * 120) == 0 && g_Config.m_SvLoginControl)
@@ -593,39 +583,25 @@ int CPlayer::GetNeedForUp()
 	if (AccData()->m_Level < 100)
 		return 400;
 	else if (AccData()->m_Level < 200)
-		return 10000;
+		return 20000;
 	else if (AccData()->m_Level < 300)
-		return 50000;
+		return 70000;
 	else if (AccData()->m_Level < 400)
-		return 80000;
+		return 100000;
 	else if (AccData()->m_Level < 500)
-		return 110000;
+		return 120000;
 	else if (AccData()->m_Level < 600)
-		return 130000;
+		return 140000;
 	else if (AccData()->m_Level < 700)
-		return 160000;
+		return 180000;
 	else if (AccData()->m_Level < 1000)
-		return 190000;
+		return 210000;
 	else if (AccData()->m_Level < 1100)
-		return 240000;
+		return 250000;
 	else if (AccData()->m_Level < 1200)
-		return 300000;
+		return 500000;
 	else
 		return 400000;
-
-	/*
-	if(AccData()->m_Level >= 100) return 1000;
-	else if(AccData()->m_Level >= 200) return 5000;
-	else if(AccData()->m_Level >= 300) return 10000;
-	else if(AccData()->m_Level >= 400) return 50000;
-	else if(AccData()->m_Level >= 500) return 100000;
-	else if(AccData()->m_Level >= 600) return 150000;
-	else if(AccData()->m_Level >= 700) return 200000;
-	else if(AccData()->m_Level >= 1000) return 250000;
-	else if(AccData()->m_Level >= 1100) return 300000;
-	else if(AccData()->m_Level >= 1200) return 350000;
-	else return 100;
-	*/
 }
 
 int CPlayer::GetNeedForUpgClan(Clan Type)
