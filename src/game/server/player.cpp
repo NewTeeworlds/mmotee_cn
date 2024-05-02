@@ -72,7 +72,7 @@ CPlayer::~CPlayer()
 
 bool CPlayer::GetShop()
 {
-	if (m_pCharacter && m_pCharacter->InShop)
+	if (m_pCharacter && m_pCharacter->m_InShop)
 		return true;
 
 	return false;
@@ -80,7 +80,7 @@ bool CPlayer::GetShop()
 
 bool CPlayer::GetWork()
 {
-	if (m_pCharacter && m_pCharacter->InWork)
+	if (m_pCharacter && m_pCharacter->m_InWork)
 		return true;
 
 	return false;
@@ -88,7 +88,7 @@ bool CPlayer::GetWork()
 
 bool CPlayer::GetBoss()
 {
-	if (m_pCharacter && m_pCharacter->InBoss)
+	if (m_pCharacter && m_pCharacter->m_InBoss)
 		return true;
 
 	return false;

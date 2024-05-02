@@ -340,6 +340,7 @@ public:
 	int m_ZoneHandle_Damage;
 	int m_ZoneHandle_Teleport;
 	int m_ZoneHandle_Bonus;
+	int m_ZoneHandle_chMap;
 	int m_aInviteClanID[MAX_PLAYERS];
 	int m_aInviteTick[MAX_PLAYERS];
 

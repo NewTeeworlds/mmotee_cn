@@ -2791,6 +2791,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			if(!Server()->GetItemCount(ClientID, SSPAWNSETTINGS))
 				GiveItem(ClientID, SSPAWNSETTINGS, 1);
+
+			pPlayer->UpdateSnap();
 		}
 		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_World.m_Paused)
 		{
@@ -5090,6 +5092,7 @@ void CGameContext::OnInit(int MapID)
 	m_ZoneHandle_Damage = m_Collision.GetZoneHandle("icDamage");
 	m_ZoneHandle_Teleport = m_Collision.GetZoneHandle("icTele");
 	m_ZoneHandle_Bonus = m_Collision.GetZoneHandle("icBonus");
+	m_ZoneHandle_chMap = m_Collision.GetZoneHandle("chMap");
 
 	// select gametype
 	m_pController = new CGameControllerMOD(this);
@@ -5137,26 +5140,16 @@ void CGameContext::OnInit(int MapID)
 	else if (g_Config.m_SvCityStart == 1)
 	{
 		for (int o = 0; o < 11; o++, CurID++)
-			CreateBot(CurID, BOT_L1MONSTER, g_Config.m_SvCityStart);
+			CreateBot(CurID+1, BOT_L1MONSTER, g_Config.m_SvCityStart);
 		for (int o = 0; o < 11; o++, CurID++)
-			CreateBot(CurID, BOT_L2MONSTER, g_Config.m_SvCityStart);
+			CreateBot(CurID+1, BOT_L2MONSTER, g_Config.m_SvCityStart);
 		for (int o = 0; o < 12; o++, CurID++)
-			CreateBot(CurID, BOT_L3MONSTER, g_Config.m_SvCityStart);
+			CreateBot(CurID+1, BOT_L3MONSTER, g_Config.m_SvCityStart);
 	}
 	for (int o = 0; o < 1; o++, CurID++)
-		CreateBot(CurID, BOT_GUARD, g_Config.m_SvCityStart);
+		CreateBot(CurID+1, BOT_GUARD, g_Config.m_SvCityStart);
 	for (int o = 0; o < 3; o++, CurID++)
-		CreateBot(CurID, BOT_NPCW, o);
-
-#ifdef CONF_DEBUG
-	if (g_Config.m_DbgDummies)
-	{
-		for (int i = 0; i < g_Config.m_DbgDummies; i++)
-		{
-			OnClientConnected(MAX_CLIENTS - i - 1);
-		}
-	}
-#endif
+		CreateBot(CurID+1, BOT_NPCW, o);
 
 	Server()->InitInvID();
 	Server()->InitClan();
