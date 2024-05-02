@@ -218,17 +218,7 @@ void CGameControllerMOD::OnCharacterSpawn(class CCharacter *pChr)
 }
 
 bool CGameControllerMOD::IsSpawnable(vec2 Pos, int TeleZoneIndex)
-{
-	//First check if there is a tee too close
-	CCharacter *aEnts[MAX_CLIENTS];
-	int Num = GameServer()->m_World.FindEntities(Pos, 64, (CEntity**)aEnts, MAX_CLIENTS, ENTTYPE_CHARACTER);
-	
-	for(int c = 0; c < Num; ++c)
-	{
-		if(distance(aEnts[c]->m_Pos, Pos) <= 60)
-			return false;
-	}
-	
+{	
 	//Check the center
 	int TeleIndex = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Teleport, Pos);
 	if(GameServer()->Collision()->CheckPoint(Pos))
@@ -281,16 +271,19 @@ bool CGameControllerMOD::PreSpawn(CPlayer* pPlayer, vec2 *pOutPos)
 		else if(pPlayer->AccData.m_Jail)
 			Type = 4;
 
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 0))
-			Type = 16;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 1))
-			Type = 17;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 2))
-			Type = 18;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 3))
-			Type = 19;
-		else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 4))
-			Type = 20;
+		else if (Server()->GetItemSettings(pPlayer->GetCID(), SSPAWNSETTINGS))
+		{
+			if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 0))
+				Type = 16;
+			else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 1))
+				Type = 17;
+			else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 2))
+				Type = 18;
+			/*else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 3))
+				Type = 19;
+			else if(Server()->GetSpawnInClanHouse(pPlayer->GetCID(), 4))
+				Type = 20;*/
+		}
 	}
 	else
 	{

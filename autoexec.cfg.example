@@ -16,6 +16,7 @@ sv_minerexp_work 50
 sv_event_hammer 1
 sv_event_school 1
 sv_dropdance 2
+mt_labourday 0
 
 ## Command moderation
 mod_command fban

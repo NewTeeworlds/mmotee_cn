@@ -107,8 +107,9 @@ void CPickup::StartFarm(int ClientID)
 		int Dropable = 0;
 		int Broke = 0;
 		int Count = 0;
+		int Temp = 0;
 		const char* ItemName = "啥都没有";
-		m_Drop += 20;	
+		Temp += 20;
 		if(Server()->GetItemCount(ClientID, DRAGONHOE))
 		{
 			Count = Server()->GetItemCount(ClientID, DRAGONHOE);
@@ -121,8 +122,13 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, DRAGONHOE, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, DRAGONHOE);
-			m_Drop += 5;	
+			Temp += 5;
 		}
+
+		if(Server()->GetItemSettings(ClientID, TITLE_FRAMERF))
+			Temp *= 2;
+		
+		m_Drop += Temp;
 		
 		GameServer()->CreateSound(m_Pos, 20); 
 
@@ -136,9 +142,13 @@ void CPickup::StartFarm(int ClientID)
 			"lvl", &LevelItem, "exp", &Exp, "expneed", &NeedExp, "name", ItemName, "count", &Count, "brok", &Dropable, "brok2", &Broke, "got", GameServer()->LevelString(100, (int)getlv, 10, ':', ' '), "gotp", &m_Drop, NULL);
 		
 
-		if(m_Drop == 100)
+		if(m_Drop >= 100)
 		{
-			if(random_prob(0.5f)) Server()->SetMaterials(2, Server()->GetMaterials(2)+1);
+			if(random_prob(0.5f))
+				Server()->SetMaterials(2, Server()->GetMaterials(2)+1);
+
+			if(Server()->GetItemSettings(ClientID, TITLE_FRAMERM))
+				LevelItem *= 2;
 
 			switch(random_int(0, 4))
 			{
@@ -163,6 +173,7 @@ void CPickup::StartFarm(int ClientID)
 		int Dropable = 0;
 		int Broke = 0;
 		int Count = 0;
+		int Temp = 0;
 		const char* ItemName = "啥都没有";
 		if(Server()->GetItemCount(ClientID, DIAMONDPIX))
 		{
@@ -176,7 +187,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, DIAMONDPIX, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, DIAMONDPIX);
-			m_Drop += 35;	
+			Temp += 35;	
 		}
 		else if(Server()->GetItemCount(ClientID, GOLDPIX))
 		{
@@ -190,7 +201,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, GOLDPIX, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, GOLDPIX);
-			m_Drop += 20;	
+			Temp += 20;	
 		}
 		else if(Server()->GetItemCount(ClientID, IRONPIX))
 		{
@@ -204,7 +215,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, IRONPIX, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, IRONPIX);
-			m_Drop += 15;	
+			Temp += 15;	
 		}
 		else if(Server()->GetItemCount(ClientID, COOPERPIX))
 		{
@@ -218,12 +229,17 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, COOPERPIX, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, COOPERPIX);
-			m_Drop += 10;	
+			Temp += 10;	
 		}
 		else
 		{
-			m_Drop += 5;
+			Temp += 5;
 		}
+		if(Server()->GetItemSettings(ClientID, TITLE_WORKERF))
+			Temp *= 2;
+
+		m_Drop += Temp;
+
 		GameServer()->CreateSound(m_Pos, 20); 
 
 		int LevelItem = 1+Server()->GetItemCount(ClientID, MINEREXP)/g_Config.m_SvMinerExp;
@@ -245,6 +261,13 @@ void CPickup::StartFarm(int ClientID)
 			{
 				DragonOre = 6;
 			}
+
+			if(Server()->GetItemSettings(ClientID, TITLE_WORKERM))
+			{
+				LevelItem *= 2;
+				DragonOre *= 2;
+			}
+
 			switch(random_int(0, ItemDrop))
 			{
 				case 3: GameServer()->GiveItem(ClientID, IRONORE, 1+LevelItem/15); break; 
@@ -270,7 +293,8 @@ void CPickup::StartFarm(int ClientID)
 		int Dropable = 0;
 		int Broke = 0;
 		int Count = 0;
-		
+		int Temp = 0;
+
 		const char* ItemName = "啥都没有";
 		if(Server()->GetItemCount(ClientID, DRAGONAXE))
 		{
@@ -284,12 +308,17 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, DRAGONAXE, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, DRAGONAXE);
-			m_Drop += 35;	
+			Temp += 35;	
 		}
 		else
 		{
-			m_Drop += 10+random_int(0, 25);
+			Temp += 10+random_int(0, 25);
 		}
+
+		if(Server()->GetItemSettings(ClientID, TITLE_GLF))
+			Temp *= 2;
+		
+		m_Drop += Temp;
 
 		GameServer()->CreateSound(m_Pos, 20); 
 
@@ -300,7 +329,10 @@ void CPickup::StartFarm(int ClientID)
 
 		if(m_Drop >= 100)
 		{
-			GameServer()->GiveItem(ClientID, WOOD, 1);
+			Temp = 1;
+			if(Server()->GetItemSettings(ClientID, TITLE_GLF))
+				Temp += 2;
+			GameServer()->GiveItem(ClientID, WOOD, Temp);
 		
 			// 加经验
 			GameServer()->m_apPlayers[ClientID]->AccData.m_Exp += 10;
