@@ -23,6 +23,7 @@ public:
 
 	void Init(int CID);
 	int GetCID() const { return m_ClientID; };
+	int GetMapID() const { return IsBot() ? m_MapID : Server()->GetClientMapID(GetCID()); };
 
 	void TryRespawn();
 	void Respawn();
@@ -156,7 +157,7 @@ public:
 	const char* GetClassName();
 	void SetLanguage(const char* pLanguage);
 	
-	int GetNeedMana() {	return 100+(AccUpgrade.m_Mana*5); };
+	int GetNeedMana() {	return 100+(AccUpgrade()->m_Mana*5); };
 	int GetNeedForUp();
 	int GetNeedForUpgClan(Clan Type);
 	int m_MapMenuItem;
@@ -184,8 +185,10 @@ public:
 	bool GetSnap(int EntityID);
 	void SetSnap(int EntityID, bool Snap);
 
-	SAccData AccData;
-	SAccUpgrade AccUpgrade;
+	SAccData *AccData() { return Server()->GetAccData(GetCID()); };
+	SAccUpgrade *AccUpgrade() { return Server()->GetAccUpgrade(GetCID()); };
+
+	int m_MapID;
 
 private:
 	CCharacter *m_pCharacter;

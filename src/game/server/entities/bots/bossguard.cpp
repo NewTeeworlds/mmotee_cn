@@ -152,7 +152,7 @@ void CBossGuard::TickBotAI()
             continue;
 
     		int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
-	    	if (Collide && pPlayer->AccData.m_Class != PLAYERCLASS_HEALER)
+	    	if (Collide && pPlayer->AccData()->m_Class != PLAYERCLASS_HEALER)
 		    	continue;
 
 			int Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);

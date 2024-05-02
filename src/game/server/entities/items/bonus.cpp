@@ -22,7 +22,7 @@ CBonus::CBonus(CGameWorld *pGameWorld, vec2 Pos, vec2 Dir, int Type, int Owner)
 	if(Owner > -1 && Owner < MAX_PLAYERS)
 	{
 		if(GameServer()->m_apPlayers[Owner])
-			m_GetLevel = GameServer()->m_apPlayers[Owner]->AccData.m_Level*100;
+			m_GetLevel = GameServer()->m_apPlayers[Owner]->AccData()->m_Level*100;
 	}
 	
 	m_Flashing = false;

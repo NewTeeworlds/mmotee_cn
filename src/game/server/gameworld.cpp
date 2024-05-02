@@ -164,8 +164,11 @@ void CGameWorld::UpdatePlayerMaps()
 	std::pair<float, int> dist[MAX_CLIENTS];
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if (!Server()->ClientIngame(i))
+		CPlayer *pPlayer = GameServer()->m_apPlayers[i];
+		int ClientMapID = Server()->GetClientMapID(i);
+		if (!Server()->ClientIngame(i) || ClientMapID != GameServer()->GetMapID() || !pPlayer)
 			continue;
+
 		int *map = Server()->GetIdMap(i);
 
 		// compute distances
@@ -173,7 +176,7 @@ void CGameWorld::UpdatePlayerMaps()
 		{
 			dist[j].second = j;
 			dist[j].first = 1e10;
-			if (!Server()->ClientIngame(j))
+			if (!Server()->ClientIngame(i) || Server()->GetClientMapID(j) != GameServer()->GetMapID() || !GameServer()->m_apPlayers[j])
 				continue;
 			CCharacter *ch = GameServer()->m_apPlayers[j]->GetCharacter();
 			if (!ch)
@@ -238,7 +241,8 @@ void CGameWorld::Tick()
 			for (CEntity *pEnt = m_apFirstEntityTypes[i]; pEnt;)
 			{
 				m_pNextTraverseEntity = pEnt->m_pNextTypeEntity;
-				pEnt->Tick();
+				if (pEnt)
+					pEnt->Tick();
 				pEnt = m_pNextTraverseEntity;
 			}
 

@@ -56,7 +56,7 @@ CInputCount CountInput(int Prev, int Cur)
 }
 
 
-MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
+MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS * ENGINE_MAX_MAPS + MAX_CLIENTS)
 
 // Character, "physical" player's part
 CCharacter::CCharacter(CGameWorld *pWorld)
@@ -130,11 +130,11 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	if(m_pPlayer->IsBot())
 		LockBotPos = m_Pos;
 	
-	if(m_pPlayer->AccData.m_Jail)
+	if(m_pPlayer->AccData()->m_Jail)
 	{
-		if(m_pPlayer->AccData.m_IsJailed && m_pPlayer->AccData.m_JailLength > 0)
+		if(m_pPlayer->AccData()->m_IsJailed && m_pPlayer->AccData()->m_JailLength > 0)
 		{
-			m_pPlayer->m_JailTick = Server()->TickSpeed()*m_pPlayer->AccData.m_JailLength;
+			m_pPlayer->m_JailTick = Server()->TickSpeed()*m_pPlayer->AccData()->m_JailLength;
 		}
 		else
 		{
@@ -150,6 +150,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_ReckoningTick = 0;
 	mem_zero(&m_SendCore, sizeof(m_SendCore));
 	mem_zero(&m_ReckoningCore, sizeof(m_ReckoningCore));
+	m_Core.m_MapID = m_pPlayer->GetMapID();
 
 	GameServer()->m_World.InsertEntity(this);
 	m_Alive = true;
@@ -170,15 +171,16 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_PositionLockAvailable = false;
 	m_InCrafted = false;
 	m_InQuest = false;
-	InWork = false;
-	InBoss = false;
+	m_InWork = false;
+	m_InBoss = false;
+	m_InChangMap = false;
 	
 	// FIXED BUG sry in Price, Initialized
 	if(Server()->GetItemPrice(m_pPlayer->GetCID(), IGUN, 0) <= 0)
 	{
-		InShop = true;
+		m_InShop = true;
 		GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-		InShop = false;
+		m_InShop = false;
 	}
 	GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
 
@@ -418,7 +420,7 @@ void CCharacter::FireWeapon()
 	if(m_pPlayer->m_JailTick > 0)
 		return;
 
-	if(InShop)
+	if(m_InShop)
 		return;
 	
 	if(m_ReloadTimer != 0)
@@ -486,8 +488,8 @@ void CCharacter::FireWeapon()
 
 			// ---------- 检查玩家职业是 Berserk(狂战士) 还是 Assasins(刺客)
 			int Range = 0;
-			if(m_pPlayer->AccData.m_Class == PLAYERCLASS_BERSERK)	Range = m_pPlayer->AccUpgrade.m_HammerRange*20;
-			else if(m_pPlayer->AccData.m_Class == PLAYERCLASS_ASSASINS) Range = 100;
+			if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_BERSERK)	Range = m_pPlayer->AccUpgrade()->m_HammerRange*20;
+			else if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS) Range = 100;
 		
 			// reset objects Hit
 			m_NumObjectsHit = 0;
@@ -563,7 +565,7 @@ void CCharacter::FireWeapon()
 		{
 			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXSHOTGUN) != 0;
 			
-			int ShotSpread = 5 + m_pPlayer->AccUpgrade.m_Spray;
+			int ShotSpread = 5 + m_pPlayer->AccUpgrade()->m_Spray;
 			if(ShotSpread > 36)
 				ShotSpread = 36;
 
@@ -583,7 +585,7 @@ void CCharacter::FireWeapon()
 				float a = GetAngle(Direction);
 				a += Spreading[i + 20];
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 2;
-				float Speed = m_pPlayer->AccUpgrade.m_Spray > 0 ? 1.0f : mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
+				float Speed = m_pPlayer->AccUpgrade()->m_Spray > 0 ? 1.0f : mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 				
 				if(Server()->GetItemSettings(m_pPlayer->GetCID(), HYBRIDSG))
 					new CBouncingBullet(GameWorld(), m_pPlayer->GetCID(), ProjStartPos, vec2(cosf(a), sinf(a))*Speed, Explode, WEAPON_GUN, 12);
@@ -599,7 +601,7 @@ void CCharacter::FireWeapon()
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime*2), 20, Explode, 10, -1, WEAPON_SHOTGUN);
 				}
 			}
-			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), GetPlayer()->GetMapID());
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
 		} break;
 
@@ -615,7 +617,7 @@ void CCharacter::FireWeapon()
 			}
 			else
 			{
-				int ShotSpread = 2 + m_pPlayer->AccUpgrade.m_Spray/3;
+				int ShotSpread = 2 + m_pPlayer->AccUpgrade()->m_Spray/3;
 				if(ShotSpread > 10)
 					ShotSpread = 10;
 
@@ -647,7 +649,7 @@ void CCharacter::FireWeapon()
 						(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime), 
 						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
 				}
-				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), GetPlayer()->GetMapID());
 			}
 			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 		} break;
@@ -656,7 +658,7 @@ void CCharacter::FireWeapon()
 		{
 			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXLASER) != 0;
 						
-			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade.m_Spray/3;
+			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade()->m_Spray/3;
 			if(ShotSpread > 10)
 				ShotSpread = 10;
 
@@ -869,6 +871,9 @@ void CCharacter::ResetInput()
 
 void CCharacter::Tick()
 {
+	if (!m_pPlayer || !IsAlive()) // bugfix
+		return;
+
 	vec2 PrevPos = m_Core.m_Pos;
 	if(IsAlive())
 	{	
@@ -891,12 +896,12 @@ void CCharacter::Tick()
 
 			case BOT_BOSSPIGKING:
 				m_Health = 10+GameServer()->GetBossLeveling()*100;
-				m_pPlayer->AccUpgrade.m_Damage = GameServer()->GetBossLeveling();
+				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling();
 				break;
 
 			case BOT_BOSSGUARD:
 				m_Health = 10+GameServer()->GetBossLeveling()*1250;
-				m_pPlayer->AccUpgrade.m_Damage = GameServer()->GetBossLeveling()*50;
+				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*50;
 				break;
 
 			default:
@@ -907,9 +912,9 @@ void CCharacter::Tick()
 		}
 		
 		// 生命值恢复
-		if(m_pPlayer->AccUpgrade.m_HPRegen && m_pPlayer->m_Health < m_pPlayer->m_HealthStart)
+		if(m_pPlayer->AccUpgrade()->m_HPRegen && m_pPlayer->m_Health < m_pPlayer->m_HealthStart)
 		{
-			if(!HPRegenTick) HPRegenTick = 900-m_pPlayer->AccUpgrade.m_HPRegen*3;
+			if(!HPRegenTick) HPRegenTick = 900-m_pPlayer->AccUpgrade()->m_HPRegen*3;
 			else
 			{
 				HPRegenTick--;
@@ -923,369 +928,7 @@ void CCharacter::Tick()
 		m_pPlayer->m_Health = m_Health;
 		
 		int PlayerPos = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Bonus, m_Pos.x, m_Pos.y);
-		switch (PlayerPos)
-		{
-		// 公会大门
-		case ZONE_INCLAN1:
-			if(!Server()->GetTopHouse(0))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(0) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(0))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
-		case ZONE_INCLAN2:
-			if(!Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(1) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
-		case ZONE_INCLAN3:
-			if(!Server()->GetTopHouse(2))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(2) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
-		case ZONE_INCLAN4:
-			if(!Server()->GetTopHouse(3))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(3) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
-		case ZONE_INCLAN5:
-			if(!Server()->GetTopHouse(4))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(4) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
-		// 公会座椅
-		case ZONE_CHAIRCLAN1:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(0));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(0))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN2:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(1));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(1))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN3:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN4:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN5:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-				m_pPlayer->AccData.m_Exp += Exp;
-				m_pPlayer->AccData.m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		// 普通座椅
-		case ZONE_SEAT1:
-			m_pPlayer->m_ActiveChair = true;
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20;
-				int Money = 600;
-
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-				if(g_Config.m_SvCityStart == 1)
-				{
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-				}
-				else
-				{
-					Exp = 10;
-					Money = 200;
-
-					LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-					LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-				}
-
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_SEAT2:
-			m_pPlayer->m_ActiveChair = true;
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 30;
-				int Money = 800;
-
-				unsigned long int LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData.m_Money + Money;
-			
-				if(g_Config.m_SvCityStart == 1)
-				{
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;					
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-				}
-				else
-				{
-					Exp = 15; // 白房间的座位
-					Money = 400;
-
-					LegalExp = m_pPlayer->AccData.m_Exp + Exp;
-					LegalMoney = m_pPlayer->AccData.m_Money + Money;
-
-					m_pPlayer->AccData.m_Exp += Exp;
-					m_pPlayer->AccData.m_Money += Money;
-					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-				}
-
-				if(m_pPlayer->AccData.m_Exp > LegalExp || m_pPlayer->AccData.m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_GAMEROOM:
-			GameServer()->EnterArea(m_pPlayer->GetCID());
-			break;
-		case ZONE_WHITEROOM:
-			if(!Server()->GetItemCount(m_pPlayer->GetCID(), WHITETICKET))
-			{
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), 200, ("你没有进入白房间的门票，请前往商店购买门票!"), NULL);
-			}
-			else
-			{
-				GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), 200, 100, _("欢迎来到白房间."), NULL);
-			}
-			break;
-		case ZONE_DEATH:
-			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-			break;
-		default:
-			if(m_pPlayer->m_ActiveChair)
-			{
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 106, 20, -1);
-				m_pPlayer->m_ActiveChair = false;
-			}
-			// ------------------- 功能区 & 商店
-			if (PlayerPos == ZONE_SHOP && !InShop)
-			{
-				InShop = true;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 100, INSHOP);
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-				break;
-			}
-			else if (PlayerPos != ZONE_SHOP && InShop)
-			{
-				InShop = false;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-				break;
-			}
-			if (PlayerPos == ZONE_CRAFT && !m_InCrafted)
-			{
-				m_InCrafted = true;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INCRAFT);
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-				break;
-			}
-			else if (PlayerPos != ZONE_CRAFT && m_InCrafted)
-			{
-				m_InCrafted = false;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-				break;
-			}
-			if (PlayerPos == ZONE_QUESTROOM && !m_InQuest)
-			{
-				m_InQuest = true;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INQUEST);
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-				break;
-			}
-			else if (PlayerPos != ZONE_QUESTROOM && m_InQuest)
-			{
-				m_InQuest = false;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-				break;
-			}
-
-			if (PlayerPos == ZONE_WATER && !m_InWater)
-			{
-				GameServer()->CreateSound(m_Pos, 11);
-				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
-				m_InWater = true;
-				break;
-			}
-			else if (PlayerPos != ZONE_WATER && m_InWater)
-			{
-				GameServer()->CreateSound(m_Pos, 11);
-				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
-				m_InWater = false;
-				break;
-			}
-
-			if (PlayerPos == ZONE_BOSS && !InBoss)
-			{
-				if (GameServer()->m_BossStartTick)
-				{
-					GameServer()->EnterBoss(GetPlayer()->GetCID(), GameServer()->m_BossType);
-					break;
-				}
-				InBoss = true;
-				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 200, INCREATEBOSS);
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), CREATEBOSS);
-				break;
-			}
-			else if (PlayerPos != ZONE_BOSS && InBoss)
-			{
-				InBoss = false;
-				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
-				break;
-			}
-			break;
-		}
+		HandleMapZone_Bonus();
 
 		// ------------------- PvP 区域伤害开关
 		if(PlayerPos == ZONE_ANTIPVP && !m_AntiPVP) {
@@ -1468,13 +1111,13 @@ void CCharacter::Tick()
 					switch(m_pPlayer->m_MapMenuItem)
 					{
 						case CMapConverter::MENUCLASS_ASSASINS:
-							NewClass = m_pPlayer->AccData.m_Class = PLAYERCLASS_ASSASINS;
+							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_ASSASINS;
 							break;
 						case CMapConverter::MENUCLASS_BERSERK:
-							NewClass = m_pPlayer->AccData.m_Class = PLAYERCLASS_BERSERK;
+							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_BERSERK;
 							break;
 						case CMapConverter::MENUCLASS_HEALER:
-							NewClass = m_pPlayer->AccData.m_Class = PLAYERCLASS_HEALER;
+							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_HEALER;
 							break;
 					}
 					
@@ -1485,7 +1128,7 @@ void CCharacter::Tick()
 						m_pPlayer->SetClass(NewClass);
 						GameServer()->UpdateStats(m_pPlayer->GetCID());
 						Die(m_pPlayer->GetCID(), WEAPON_WORLD);
-						m_pPlayer->SetClassSkin(m_pPlayer->AccData.m_Class);
+						m_pPlayer->SetClassSkin(m_pPlayer->AccData()->m_Class);
 						GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
 						GameServer()->GiveItem(m_pPlayer->GetCID(), MONEYBAG, 1);
 					}
@@ -1651,7 +1294,7 @@ void CCharacter::Die(int Killer, int Weapon)
 		Msg.m_Victim = m_pPlayer->GetCID();
 		Msg.m_Weapon = Weapon;
 		Msg.m_ModeSpecial = ModeSpecial;
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1, -1);
 	}
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
@@ -1698,7 +1341,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	if(Killer >=0 && Killer < MAX_CLIENTS)
 	{
 		CPlayer* pKillerPlayer = GameServer()->m_apPlayers[Killer];
-		pKillerPlayer->AccData.m_Kill++;
+		pKillerPlayer->AccData()->m_Kill++;
 		
 		if(pKillerPlayer && !pKillerPlayer->IsBot() && !m_pPlayer->IsBot()
 			&& Killer != m_pPlayer->GetCID() && !pKillerPlayer->m_InArea)
@@ -1713,8 +1356,8 @@ void CCharacter::Die(int Killer, int Weapon)
 			
 			if(!Server()->GetItemSettings(Killer, TITLE_TGPCR))
 			{
-				pKillerPlayer->AccData.m_Rel += get;
-				GameServer()->SendChatTarget_Localization(Killer, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pKillerPlayer->AccData.m_Rel, NULL);
+				pKillerPlayer->AccData()->m_Rel += get;
+				GameServer()->SendChatTarget_Localization(Killer, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pKillerPlayer->AccData()->m_Rel, NULL);
 			}
 		}
 		
@@ -1726,13 +1369,13 @@ void CCharacter::Die(int Killer, int Weapon)
 				m_pPlayer->m_Search = false;
 				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name}, 击败玩家 {str:name1}, 并将其打入大牢"), "name", Server()->ClientName(Killer), "name1", Server()->ClientName(m_pPlayer->GetCID()), NULL);
 						
-				m_pPlayer->AccData.m_Jail = true;
-				m_pPlayer->AccData.m_Rel = 0;
+				m_pPlayer->AccData()->m_Jail = true;
+				m_pPlayer->AccData()->m_Rel = 0;
 				GameServer()->UpdateStats(m_pPlayer->GetCID());
 				
 				if(!pKillerPlayer->IsBot())
 				{
-					pKillerPlayer->MoneyAdd(m_pPlayer->AccData.m_Level*1000, false, true);
+					pKillerPlayer->MoneyAdd(m_pPlayer->AccData()->m_Level*1000, false, true);
 					GameServer()->UpdateStats(Killer);
 					GameServer()->ResetVotes(Killer, AUTH);
 				}
@@ -1780,7 +1423,7 @@ int CCharacter::SendToJail(int PlayerID, int JailLength) //手动送某人进监
 	Msg.m_Victim = PlayerID;
 	Msg.m_Weapon = WEAPON_WORLD;
 	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1, -1);
 	
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
@@ -1794,15 +1437,15 @@ int CCharacter::SendToJail(int PlayerID, int JailLength) //手动送某人进监
 	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 	
 	CPlayer* pKillerPlayer = GameServer()->m_apPlayers[PlayerID];
-	pKillerPlayer->AccData.m_Kill++;
+	pKillerPlayer->AccData()->m_Kill++;
 	
 	m_pPlayer->m_Search = false;
 	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被捕了!"), "name", Server()->ClientName(m_pPlayer->GetCID()), NULL);
 					
-	m_pPlayer->AccData.m_Jail = true;
-	m_pPlayer->AccData.m_Rel = 0;
-	m_pPlayer->AccData.m_IsJailed = true;
-	m_pPlayer->AccData.m_JailLength = JailLength;
+	m_pPlayer->AccData()->m_Jail = true;
+	m_pPlayer->AccData()->m_Rel = 0;
+	m_pPlayer->AccData()->m_IsJailed = true;
+	m_pPlayer->AccData()->m_JailLength = JailLength;
 	GameServer()->UpdateStats(m_pPlayer->GetCID());
 	return 0;
 	
@@ -1822,7 +1465,7 @@ int CCharacter::Unjail(int PlayerID) //手动救某人出监狱
 	Msg.m_Victim = PlayerID;
 	Msg.m_Weapon = WEAPON_WORLD;
 	Msg.m_ModeSpecial = ModeSpecial;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1, -1);
 	
 	// a nice sound
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE);
@@ -1838,9 +1481,9 @@ int CCharacter::Unjail(int PlayerID) //手动救某人出监狱
 	m_pPlayer->m_Search = false;
 	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 出监狱了!"), "name", Server()->ClientName(m_pPlayer->GetCID()), NULL);
 					
-	m_pPlayer->AccData.m_Jail = false;
-	m_pPlayer->AccData.m_Rel = 0;
-	m_pPlayer->AccData.m_IsJailed = false;
+	m_pPlayer->AccData()->m_Jail = false;
+	m_pPlayer->AccData()->m_Rel = 0;
+	m_pPlayer->AccData()->m_IsJailed = false;
 	GameServer()->UpdateStats(m_pPlayer->GetCID());
 	return 0;
 	
@@ -1877,7 +1520,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		{
 			// Тюрьма
 			// 监狱
-			if(m_pPlayer->AccData.m_Jail)
+			if(m_pPlayer->AccData()->m_Jail)
 				return true;
 
 			// АнтиПВП вся хуня
@@ -1906,8 +1549,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			// 守卫愤怒值
 			if(m_pPlayer->GetBotType() == BOT_GUARD && !Server()->GetItemSettings(From, TITLE_TGPCR))
 			{
-				pFrom->AccData.m_Rel += 10;
-				GameServer()->SendChatTarget_Localization(From, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pFrom->AccData.m_Rel, NULL);
+				pFrom->AccData()->m_Rel += 10;
+				GameServer()->SendChatTarget_Localization(From, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pFrom->AccData()->m_Rel, NULL);
 			}
 		}
 		// Арена
@@ -1967,9 +1610,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 		}
 		
-		if(m_pPlayer->AccData.m_Class == PLAYERCLASS_HEALER && m_pPlayer->AccUpgrade.m_Pasive2)
+		if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_HEALER && m_pPlayer->AccUpgrade()->m_Pasive2)
 		{
-			auto RandProc = (float)(100-m_pPlayer->AccUpgrade.m_Pasive2*2);
+			auto RandProc = (float)(100-m_pPlayer->AccUpgrade()->m_Pasive2*2);
 			if(random_prob(1.0f/RandProc))
 			{
 				if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT)) 
@@ -1978,12 +1621,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 		}
 		
-		auto getcount = (float)(pFrom->AccData.m_Class == PLAYERCLASS_ASSASINS ? 15-pFrom->AccUpgrade.m_HammerRange : 15.0f);
+		auto getcount = (float)(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASINS ? 15-pFrom->AccUpgrade()->m_HammerRange : 15.0f);
 		if(random_prob(1.0f/getcount))
 		{
-			int CritDamage = Dmg+pFrom->AccUpgrade.m_Damage*2+random_int(0, 50);
-			if(pFrom->AccData.m_Class == PLAYERCLASS_ASSASINS)
-				CritDamage += (CritDamage/100)*pFrom->AccUpgrade.m_Pasive2*3;
+			int CritDamage = Dmg+pFrom->AccUpgrade()->m_Damage*2+random_int(0, 50);
+			if(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASINS)
+				CritDamage += (CritDamage/100)*pFrom->AccUpgrade()->m_Pasive2*3;
 			
 			Dmg = CritDamage;
 			if(pFrom->GetCharacter()->m_ActiveWeapon == WEAPON_SHOTGUN)
@@ -1997,9 +1640,9 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		}
 		else
 		{
-			int DamageProc = Dmg+pFrom->AccUpgrade.m_Damage;
-			if(pFrom->AccData.m_Class == PLAYERCLASS_BERSERK)
-				DamageProc += (DamageProc/100)*pFrom->AccUpgrade.m_Pasive2*3;
+			int DamageProc = Dmg+pFrom->AccUpgrade()->m_Damage;
+			if(pFrom->AccData()->m_Class == PLAYERCLASS_BERSERK)
+				DamageProc += (DamageProc/100)*pFrom->AccUpgrade()->m_Pasive2*3;
 			
 			Dmg = DamageProc;
 			if(pFrom->GetCharacter()->m_ActiveWeapon == WEAPON_SHOTGUN)
@@ -2314,7 +1957,7 @@ void CCharacter::Snap(int SnappingClient)
 
 	// 武器：
 	// 在玩家被冻结时，或者玩家职业为 Assasins(刺客)且切换到锤子武器时，将玩家武器（外观）设置为 Ninja(忍者)
-	if((GetInfWeaponID(m_ActiveWeapon) == INFWEAPON_HAMMER && m_pPlayer && m_pPlayer->AccData.m_Class == PLAYERCLASS_ASSASINS && !m_pPlayer->m_InArea) || m_IsFrozen)
+	if((GetInfWeaponID(m_ActiveWeapon) == INFWEAPON_HAMMER && m_pPlayer && m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS && !m_pPlayer->m_InArea) || m_IsFrozen)
 	{
 		if(m_IsFrozen)
 			pCharacter->m_Emote = EMOTE_BLINK;
@@ -2403,7 +2046,7 @@ void CCharacter::GiveNinjaBuf()
 // 空间属性
 void CCharacter::ClassSpawnAttributes()
 {			
-	if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT))
+	if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT) && !Server()->IsClientLogged(GetPlayer()->GetCID()))
 		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("注意!所有的设置项都在投票选项里面"), NULL);
 
 	if(m_pPlayer->m_InArea)
@@ -2436,11 +2079,11 @@ void CCharacter::ClassSpawnAttributes()
 	{
 		case PLAYERCLASS_HEALER:
 			RemoveAllGun();
-			m_Health = 10+m_pPlayer->AccUpgrade.m_Health*50;
-			if(m_pPlayer->AccUpgrade.m_HammerRange)
+			m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*50;
+			if(m_pPlayer->AccUpgrade()->m_HammerRange)
 			{
-				int Proc = (m_Health / 100)*m_pPlayer->AccUpgrade.m_HammerRange*4;
-				m_Health = 10+m_pPlayer->AccUpgrade.m_Health*50+Proc;
+				int Proc = (m_Health / 100)*m_pPlayer->AccUpgrade()->m_HammerRange*4;
+				m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*50+Proc;
 			}
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_HEALER))
 			{
@@ -2449,7 +2092,7 @@ void CCharacter::ClassSpawnAttributes()
 			break;
 		case PLAYERCLASS_BERSERK:
 			RemoveAllGun();
-			m_Health = 10+m_pPlayer->AccUpgrade.m_Health*40;
+			m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*40;
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_BERSERK))
 			{
 				m_pPlayer->m_aKnownClass[PLAYERCLASS_BERSERK] = true;
@@ -2457,7 +2100,7 @@ void CCharacter::ClassSpawnAttributes()
 			break;
 		case PLAYERCLASS_ASSASINS:
 			RemoveAllGun();
-			m_Health = 5+m_pPlayer->AccUpgrade.m_Health*40;
+			m_Health = 5+m_pPlayer->AccUpgrade()->m_Health*40;
 			if(!m_pPlayer->IsKownClass(PLAYERCLASS_ASSASINS))
 			{
 				m_pPlayer->m_aKnownClass[PLAYERCLASS_ASSASINS] = true;
@@ -2500,11 +2143,11 @@ void CCharacter::ClassSpawnAttributes()
 
 	/*if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEMOON))
 	{
-		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade.m_Speed += 10;
+		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade()->m_Speed += 10;
 	}*/
 	// 新手保护，禁用 PvP
 	m_pPlayer->m_AntiPvpSmall = false;
-	if(m_pPlayer->AccData.m_Level < 20)
+	if(m_pPlayer->AccData()->m_Level < 20)
 	{
 		m_pPlayer->m_AntiPvpSmall = true;
 
@@ -2519,19 +2162,19 @@ void CCharacter::ClassSpawnAttributes()
 		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKEXPMIN), NULL);		
 
 	if(m_pPlayer->IsBot())
-		m_Health = 10+m_pPlayer->AccUpgrade.m_Health*10;
+		m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*10;
 
 	// 佩戴 Ring Boomer 生命值增加 5%
 	if(Server()->GetItemCount(m_pPlayer->GetCID(), RINGBOOMER))
 		m_Health += (m_Health/100)*5*Server()->GetItemCount(m_pPlayer->GetCID(), RINGBOOMER);		
 
 	// 武器属性设置
-	int geta = (int)(5+m_pPlayer->AccUpgrade.m_Ammo);// 弹药数量
-	int getsp = 1000+m_pPlayer->AccUpgrade.m_Speed*20;// 射速
-	int getspg = 1000+m_pPlayer->AccUpgrade.m_Speed*8;// Grenade（火箭炮）射速
+	int geta = (int)(5+m_pPlayer->AccUpgrade()->m_Ammo);// 弹药数量
+	int getsp = 1000+m_pPlayer->AccUpgrade()->m_Speed*20;// 射速
+	int getspg = 1000+m_pPlayer->AccUpgrade()->m_Speed*8;// Grenade（火箭炮）射速
 	int getar = 0;									// 子弹回复速度
-	if(m_pPlayer->AccUpgrade.m_AmmoRegen > 0) 
-		getar= (int)(650-m_pPlayer->AccUpgrade.m_AmmoRegen*2);
+	if(m_pPlayer->AccUpgrade()->m_AmmoRegen > 0) 
+		getar= (int)(650-m_pPlayer->AccUpgrade()->m_AmmoRegen*2);
 		
 	// 按照弹夹数量添加弹药
 	if(Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))
@@ -2906,4 +2549,392 @@ void CCharacter::DeleteAllPickup()
 		if(pPick->m_Owner == m_pPlayer->GetCID())
 			pPick->Reset();
 	}	
+}
+
+void CCharacter::HandleMapZone_Bonus()
+{
+	int PlayerPos = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_Bonus, m_Pos.x, m_Pos.y);
+	switch (PlayerPos)
+	{
+		// 公会大门
+		case ZONE_INCLAN1:
+			if(!Server()->GetTopHouse(0))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+
+			if(!Server()->GetOpenHouse(0) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(0))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+			break;
+		case ZONE_INCLAN2:
+			if(!Server()->GetTopHouse(1))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+
+			if(!Server()->GetOpenHouse(1) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+			break;
+		case ZONE_INCLAN3:
+			if(!Server()->GetTopHouse(2))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+
+			if(!Server()->GetOpenHouse(2) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+			break;
+		case ZONE_INCLAN4:
+			if(!Server()->GetTopHouse(3))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+
+			if(!Server()->GetOpenHouse(3) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+			break;
+		case ZONE_INCLAN5:
+			if(!Server()->GetTopHouse(4))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+
+			if(!Server()->GetOpenHouse(4) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
+			{
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
+			}
+			break;
+		// 公会座椅
+		case ZONE_CHAIRCLAN1:
+			if(!m_ReloadOther)
+			{
+				m_ReloadOther = Server()->TickSpeed();
+
+				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(0));
+				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(0))*50);
+
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
+
+				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
+				{
+					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
+					return;
+				}
+			}
+			break;
+		case ZONE_CHAIRCLAN2:
+			if(!m_ReloadOther)
+			{
+				m_ReloadOther = Server()->TickSpeed();
+
+				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(1));
+				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(1))*50);
+
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
+
+				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
+				{
+					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
+					return;
+				}
+			}
+			break;
+		case ZONE_CHAIRCLAN3:
+			if(!m_ReloadOther)
+			{
+				m_ReloadOther = Server()->TickSpeed();
+
+				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2));
+				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2))*50);
+
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
+
+				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
+				{
+					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
+					return;
+				}
+			}
+			break;
+		case ZONE_CHAIRCLAN4:
+			if(!m_ReloadOther)
+			{
+				m_ReloadOther = Server()->TickSpeed();
+
+				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3));
+				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3))*50);
+
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
+
+				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
+				{
+					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
+					return;
+				}
+			}
+			break;
+		case ZONE_CHAIRCLAN5:
+			if(!m_ReloadOther)
+			{
+				m_ReloadOther = Server()->TickSpeed();
+
+				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4));
+				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4))*50);
+
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+				m_pPlayer->AccData()->m_Exp += Exp;
+				m_pPlayer->AccData()->m_Money += Money;
+
+				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
+				{
+					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
+					return;
+				}
+			}
+			break;
+		// 普通座椅
+		case ZONE_SEAT1:
+			m_pPlayer->m_ActiveChair = true;
+			if(!m_ReloadOther)
+			{
+				m_ReloadOther = Server()->TickSpeed();
+
+				int Exp = 20;
+				int Money = 600;
+
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+				if(g_Config.m_SvCityStart == 1)
+				{
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;
+					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+				}
+				else
+				{
+					Exp = 10;
+					Money = 200;
+
+					LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+					LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;
+					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+				}
+
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
+				{
+					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
+					return;
+				}
+			}
+			break;
+		case ZONE_SEAT2:
+			m_pPlayer->m_ActiveChair = true;
+			if(!m_ReloadOther)
+			{
+				m_ReloadOther = Server()->TickSpeed();
+
+				int Exp = 30;
+				int Money = 800;
+
+				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+			
+				if(g_Config.m_SvCityStart == 1)
+				{
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;					
+					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+				}
+				else
+				{
+					Exp = 15; // 白房间的座位
+					Money = 400;
+
+					LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
+					LegalMoney = m_pPlayer->AccData()->m_Money + Money;
+
+					m_pPlayer->AccData()->m_Exp += Exp;
+					m_pPlayer->AccData()->m_Money += Money;
+					GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
+				}
+
+				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
+				{
+					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
+					return;
+				}
+			}
+			break;
+		case ZONE_GAMEROOM:
+			GameServer()->EnterArea(m_pPlayer->GetCID());
+			break;
+		case ZONE_WHITEROOM:
+			if(!Server()->GetItemCount(m_pPlayer->GetCID(), WHITETICKET))
+			{
+				Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), 200, ("你没有进入白房间的门票，请前往商店购买门票!"), NULL);
+			}
+			else
+			{
+				GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), 200, 100, _("欢迎来到白房间."), NULL);
+			}
+			break;
+		case ZONE_DEATH:
+			Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+			break;
+		default:
+		{
+			if(m_pPlayer->m_ActiveChair)
+			{
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 106, 20, -1);
+				m_pPlayer->m_ActiveChair = false;
+			}
+			// ------------------- 功能区 & 商店
+			if (PlayerPos == ZONE_SHOP && !m_InShop)
+			{
+				m_InShop = true;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 100, INSHOP);
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+				break;
+			}
+			else if (PlayerPos != ZONE_SHOP && m_InShop)
+			{
+				m_InShop = false;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+				break;
+			}
+			if (PlayerPos == ZONE_CRAFT && !m_InCrafted)
+			{
+				m_InCrafted = true;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INCRAFT);
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+				break;
+			}
+			else if (PlayerPos != ZONE_CRAFT && m_InCrafted)
+			{
+				m_InCrafted = false;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+				break;
+			}
+			if (PlayerPos == ZONE_QUESTROOM && !m_InQuest)
+			{
+				m_InQuest = true;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, INQUEST);
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+				break;
+			}
+			else if (PlayerPos != ZONE_QUESTROOM && m_InQuest)
+			{
+				m_InQuest = false;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSHOP);
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+				break;
+			}
+
+			if (PlayerPos == ZONE_WATER && !m_InWater)
+			{
+				GameServer()->CreateSound(m_Pos, 11);
+				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+				m_InWater = true;
+				break;
+			}
+			else if (PlayerPos != ZONE_WATER && m_InWater)
+			{
+				GameServer()->CreateSound(m_Pos, 11);
+				GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
+				m_InWater = false;
+				break;
+			}
+
+			if (PlayerPos == ZONE_BOSS && !m_InBoss)
+			{
+				if (GameServer()->m_BossStartTick)
+				{
+					GameServer()->EnterBoss(GetPlayer()->GetCID(), GameServer()->m_BossType);
+					break;
+				}
+				m_InBoss = true;
+				GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 200, INCREATEBOSS);
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), CREATEBOSS);
+				break;
+			}
+			else if (PlayerPos != ZONE_BOSS && m_InBoss)
+			{
+				m_InBoss = false;
+				GameServer()->ResetVotes(m_pPlayer->GetCID(), AUTH);
+				break;
+			}
+			break;
+		}
+	}
+}
+
+void CCharacter::HandleMapZone_chMap()
+{
+	// WIP.
+	/*int PlayerPos = GameServer()->Collision()->GetZoneValueAt(GameServer()->m_ZoneHandle_chMap, m_Pos.x, m_Pos.y);
+	switch (PlayerPos)
+	{
+		case ZONE_CHMAP:
+		{
+			m_InChangMap = true;
+		}
+
+		default:
+		{
+			m_InChangMap = false;
+		}
+	}*/
 }
