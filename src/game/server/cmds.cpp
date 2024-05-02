@@ -355,7 +355,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			GameServer()->SendChatTarget(ClientID, "你发出了点卷.");
 			GameServer()->SendChatTarget(id, "你的点卷数增加了.");
 			GameServer()->m_apPlayers[id]->AccData()->m_Donate += citem;
-			GameServer()->UpdateStats(id);
 
 			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家%d点卷", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), citem);
@@ -394,7 +393,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->m_apPlayers[id]->AccData()->m_JailLength = JailLength;
 		if (GameServer()->m_apPlayers[id]->GetCharacter())
 			GameServer()->m_apPlayers[id]->GetCharacter()->Die(id, WEAPON_WORLD);
-		GameServer()->UpdateStats(id);
 		GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, ("成功将 {str:name} 关进监狱"), "name", GameServer()->Server()->ClientName(id), NULL);
 	}
 	else if (!strncmp(Msg->m_pMessage, "/unjail", 7) && GameServer()->Server()->IsAuthed(ClientID))
@@ -413,7 +411,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->m_apPlayers[id]->AccData()->m_Jail = false;
 		GameServer()->m_apPlayers[id]->AccData()->m_Rel = 0;
 		GameServer()->m_apPlayers[id]->m_JailTick = 0;
-		GameServer()->UpdateStats(id);
 		GameServer()->m_apPlayers[id]->AccData()->m_JailLength = 0;
 		if (GameServer()->m_apPlayers[id]->GetCharacter())
 			GameServer()->m_apPlayers[id]->GetCharacter()->Die(id, WEAPON_WORLD);

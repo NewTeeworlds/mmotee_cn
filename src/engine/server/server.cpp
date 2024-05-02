@@ -2468,103 +2468,6 @@ public:
 	}
 };
 
-long int CServer::GetStat(int ClientID, Player Type)
-{
-	switch(Type)
-	{
-		case Player::Level: return m_aClients[ClientID].AccData.m_Level; break;
-		case Player::Exp: return m_aClients[ClientID].AccData.m_Exp; break;
-		case Player::Money: return m_aClients[ClientID].AccData.m_Money; break;
-		case Player::Gold: return m_aClients[ClientID].AccData.m_Gold; break;
-		case Player::Donate: return m_aClients[ClientID].AccData.m_Donate; break;
-		case Player::Quest: return m_aClients[ClientID].AccData.m_Quest; break;
-		case Player::Security: return m_aClients[ClientID].AccData.m_Security; break;
-		case Player::Rel: return m_aClients[ClientID].AccData.m_Rel; break;
-		case Player::Jail: return m_aClients[ClientID].AccData.m_Jail; break;
-		case Player::Class: return m_aClients[ClientID].AccData.m_Class; break;
-		case Player::Kill: return m_aClients[ClientID].AccData.m_Kill; break;
-		case Player::AreaWins: return m_aClients[ClientID].AccData.m_WinArea; break;
-		case Player::ClanAdded: return m_aClients[ClientID].AccData.m_ClanAdded; break;
-		case Player::IsJailed: return m_aClients[ClientID].AccData.m_IsJailed; break;
-		case Player::JailLength: return m_aClients[ClientID].AccData.m_JailLength; break;
-		case Player::SHTimes: return m_aClients[ClientID].AccData.m_SummerHealingTimes; break;
-		default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
-	}
-	return 0;
-}
-
-
-void CServer::UpdateStat(int ClientID, Player Type, int Value)
-{
-	if(m_aClients[ClientID].AccData.m_Level > 0)
-	{
-		switch(Type)
-		{
-			case Player::Level: m_aClients[ClientID].AccData.m_Level = Value; break;
-			case Player::Exp: m_aClients[ClientID].AccData.m_Exp = Value; break;
-			case Player::Money: m_aClients[ClientID].AccData.m_Money = Value; break;
-			case Player::Gold: m_aClients[ClientID].AccData.m_Gold = Value; break;
-			case Player::Donate: m_aClients[ClientID].AccData.m_Donate = Value; break;	
-			case Player::Quest: m_aClients[ClientID].AccData.m_Quest = Value; break;
-			case Player::Security: m_aClients[ClientID].AccData.m_Security = Value; break;
-			case Player::Rel: m_aClients[ClientID].AccData.m_Rel = Value; break;
-			case Player::Jail: m_aClients[ClientID].AccData.m_Jail = Value; break;
-			case Player::Class: m_aClients[ClientID].AccData.m_Class = Value; break;
-			case Player::Kill: m_aClients[ClientID].AccData.m_Kill = Value; break;
-			case Player::AreaWins: m_aClients[ClientID].AccData.m_WinArea = Value; break;
-			case Player::ClanAdded: m_aClients[ClientID].AccData.m_ClanAdded = Value; break;
-			case Player::IsJailed: m_aClients[ClientID].AccData.m_IsJailed = Value; break;
-			case Player::JailLength: m_aClients[ClientID].AccData.m_JailLength = Value; break;
-			case Player::SHTimes: m_aClients[ClientID].AccData.m_SummerHealingTimes = Value; break;
-			default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
-		}
-	}
-}
-
-int CServer::GetUpgrade(int ClientID, Player Type)
-{
-	switch(Type)
-	{
-		case Player::UpgradePoint: return m_aClients[ClientID].AccUpgrade.m_Upgrade; break;
-		case Player::SkillPoint: return m_aClients[ClientID].AccUpgrade.m_SkillPoint; break;
-		case Player::Speed: return m_aClients[ClientID].AccUpgrade.m_Speed; break;
-		case Player::Damage: return m_aClients[ClientID].AccUpgrade.m_Damage; break;
-		case Player::Health: return m_aClients[ClientID].AccUpgrade.m_Health; break;
-		case Player::HealthRegen: return m_aClients[ClientID].AccUpgrade.m_HPRegen; break;
-		case Player::AmmoRegen: return m_aClients[ClientID].AccUpgrade.m_AmmoRegen; break;
-		case Player::Ammo: return m_aClients[ClientID].AccUpgrade.m_Ammo; break;
-		case Player::Spray: return m_aClients[ClientID].AccUpgrade.m_Spray; break;
-		case Player::Mana: return m_aClients[ClientID].AccUpgrade.m_Mana; break;
-		case Player::Skill1: return m_aClients[ClientID].AccUpgrade.m_HammerRange; break;
-		case Player::Skill2: return m_aClients[ClientID].AccUpgrade.m_Pasive2; break;
-		default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
-	}
-	return 0;
-}
-
-void CServer::UpdateUpgrade(int ClientID, Player Type, int Vaule)
-{
-	if(m_aClients[ClientID].AccData.m_Level > 0)
-	{
-		switch(Type)
-		{
-			case Player::UpgradePoint: m_aClients[ClientID].AccUpgrade.m_Upgrade = Vaule; break;
-			case Player::SkillPoint: m_aClients[ClientID].AccUpgrade.m_SkillPoint = Vaule; break;
-			case Player::Speed: m_aClients[ClientID].AccUpgrade.m_Speed = Vaule; break;
-			case Player::Damage: m_aClients[ClientID].AccUpgrade.m_Damage = Vaule; break;
-			case Player::Health: m_aClients[ClientID].AccUpgrade.m_Health = Vaule; break;
-			case Player::HealthRegen: m_aClients[ClientID].AccUpgrade.m_HPRegen = Vaule; break;
-			case Player::AmmoRegen: m_aClients[ClientID].AccUpgrade.m_AmmoRegen = Vaule; break;
-			case Player::Ammo: m_aClients[ClientID].AccUpgrade.m_Ammo = Vaule; break;
-			case Player::Spray: m_aClients[ClientID].AccUpgrade.m_Spray = Vaule; break;
-			case Player::Mana: m_aClients[ClientID].AccUpgrade.m_Mana = Vaule; break;
-			case Player::Skill1: m_aClients[ClientID].AccUpgrade.m_HammerRange = Vaule; break;
-			case Player::Skill2: m_aClients[ClientID].AccUpgrade.m_Pasive2 = Vaule; break;
-			default: dbg_msg("sys", "Invalid value %d in %s:%d", Type, __FILE__, __LINE__); break;
-		}
-	}
-}
-
 ///////////////////////////////////////////////////////////// ИНВЕНТАРЬ
 //#####################################################################
 const char *CServer::GetItemName(int ClientID, int ItemID, bool ntlang)
@@ -5830,7 +5733,10 @@ int CServer::GetClientMapID(int CID)
 
 bool CServer::GetClientChangeMap(int CID)
 {
-	return m_aClients[CID].m_IsChangeMap;
+	if(CID < 0 || CID >= MAX_CLIENTS)
+		return false;
+
+	return m_aClients[CID].m_IsChangeMap && m_aClients[CID].m_State >= CClient::STATE_CONNECTING && m_aClients[CID].m_State < CClient::STATE_INGAME;
 }
 
 SAccData *CServer::GetAccData(int ClientID)

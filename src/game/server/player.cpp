@@ -793,10 +793,15 @@ void CPlayer::Snap(int SnappingClient)
 	else
 		StrToInts(&pClientInfo->m_Name0, 4, Server()->ClientName(m_ClientID));
 
-	if (Server()->IsClientLogged(m_ClientID))
-		StrToInts(&pClientInfo->m_Clan0, 3, m_aTitle);
-	else
-		StrToInts(&pClientInfo->m_Clan0, 3, Server()->ClientClan(m_ClientID));
+	char aClan[32];
+	str_copy(aClan, Server()->ClientClan(m_ClientID), sizeof(aClan));
+
+	if(Server()->GetClientChangeMap(GetCID()))
+		str_copy(aClan, "换图ing", sizeof(aClan));
+	else if(Server()->IsClientLogged(GetCID()))
+		str_copy(aClan, m_aTitle, sizeof(aClan));
+
+	StrToInts(&pClientInfo->m_Clan0, 3, aClan);
 
 	pClientInfo->m_Country = Server()->ClientCountry(m_ClientID);
 

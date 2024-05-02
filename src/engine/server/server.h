@@ -485,12 +485,6 @@ public:
 
 	virtual int* GetIdMap(int ClientID);
 	virtual void SetCustClt(int ClientID);
-	
-	//virtual int GetStat(int ClientID, int Type);
-	virtual long int GetStat(int ClientID, Player Type);
-	virtual int GetUpgrade(int ClientID, Player Type);
-	virtual void UpdateStat(int ClientID, Player Type, int Value);
-	virtual void UpdateUpgrade(int ClientID, Player Type, int Size);
 
 	virtual int GetTimeShiftUnit() const { return m_TimeShiftUnit; } //In ms
 

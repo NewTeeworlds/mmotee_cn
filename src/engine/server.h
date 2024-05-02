@@ -572,12 +572,6 @@ public:
 	
 	virtual int GetSecurity(int ClientID) = 0;
 	virtual void SetSecurity(int ClientID, int n) = 0;
-	
-	//virtual int GetStat(int ClientID, int Type) = 0;
-	virtual long int GetStat(int ClientID, Player Type) = 0;
-	virtual int GetUpgrade(int ClientID, Player Type) = 0;
-	virtual void UpdateStat(int ClientID, Player Type, int Value) = 0;
-	virtual void UpdateUpgrade(int ClientID, Player Type, int Size) = 0;
 
 	virtual bool IsClientLogged(int ClientID) = 0;
 	virtual int GetClanID(int ClientID) = 0;

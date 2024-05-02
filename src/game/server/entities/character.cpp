@@ -2407,7 +2407,7 @@ void CCharacter::GiveNinjaBuf()
 // 空间属性
 void CCharacter::ClassSpawnAttributes()
 {			
-	if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT))
+	if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT) && !Server()->IsClientLogged(GetPlayer()->GetCID()))
 		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("注意!所有的设置项都在投票选项里面"), NULL);
 
 	if(m_pPlayer->m_InArea)

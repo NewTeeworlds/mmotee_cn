@@ -262,13 +262,8 @@ public:
 
 	// Обновление аккаунта
 	// 升级
-	void GetStat(int ClientID);
-	void GetUpgrade(int ClientID);
-	void UpdateStat(int ClientID);
 	virtual void UpdateStats(int ClientID);
 	virtual void UpdateUpgrades(int ClientID);
-	void UpdateUpgrade(int ClientID);
-
 	enum
 	{
 		CHAT_ALL = -2,
