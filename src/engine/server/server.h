@@ -77,7 +77,7 @@ class CServer : public IServer
 private:
 	int m_TimeShiftUnit;
 public:
-	class IGameServer *GameServer(int MapID = 0) { return m_vpGameServer[MapID]; }
+	virtual class IGameServer *GameServer(int MapID = 0) { return m_vpGameServer[MapID]; }
 	class IConsole *Console() { return m_pConsole; }
 	class IStorage *Storage() { return m_pStorage; }
 

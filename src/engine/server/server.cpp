@@ -786,7 +786,13 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 		pThis->m_aClients[ClientID].m_Quitting = true;
 
 		for (int i = 0; i < pThis->m_NumGameServer; i++)
+		{
+			dbg_msg("sdadsa","%d", i);
+			dbg_msg("sdadsa","%d", i);
+			dbg_msg("sdadsa","%d", i);
+			dbg_msg("sdadsa","%d", i);
 			pThis->GameServer(i)->OnClientDrop(ClientID, Type, pReason);
+		}
 	}
 
 	char aAddrStr[NETADDR_MAXSTRSIZE];

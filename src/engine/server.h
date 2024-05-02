@@ -360,6 +360,8 @@ public:
 	class CLocalization* m_pLocalization;
 	virtual int GetTimeShiftUnit() const = 0; //In ms
 
+	virtual class IGameServer* GameServer(int MapID = 0) = 0;
+
 public:
 	enum AuthType
 	{ 

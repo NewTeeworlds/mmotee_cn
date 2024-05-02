@@ -870,48 +870,7 @@ void CPlayer::FakeSnap(int SnappingClient)
 
 void CPlayer::OnDisconnect(int Type, const char *pReason)
 {
-	GameServer()->ClearVotes(m_ClientID);
 	KillCharacter();
-	// Server()->SyncOffline(m_ClientID);
-	// if(Server()->ClientIngame(m_ClientID))
-	//	GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏"), "PlayerName", Server()->ClientName(m_ClientID), NULL);
-
-	if (Server()->ClientIngame(m_ClientID) || !Server()->GetClientChangeMap(GetCID()))
-	{
-		if (Type == CLIENTDROPTYPE_BAN)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 被封禁了 ({str:Reason})"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  "Reason", pReason,
-													  NULL);
-		}
-		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(m_ClientID)) != 0)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 被踢出了 ({str:Reason})"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  "Reason", pReason,
-													  NULL);
-		}
-		else if (pReason && *pReason)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏 ({str:Reason})"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  "Reason", pReason,
-													  NULL);
-		}
-		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(m_ClientID)) == 0)
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 安心地去了"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  NULL);
-		}
-		else
-		{
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏"),
-													  "PlayerName", Server()->ClientName(m_ClientID),
-													  NULL);
-		}
-	}
 }
 
 void CPlayer::OnPredictedInput(CNetObj_PlayerInput *NewInput)
@@ -968,13 +927,12 @@ CCharacter *CPlayer::GetCharacter()
 
 void CPlayer::KillCharacter(int Weapon)
 {
-	if (m_pCharacter)
+	if(m_pCharacter)
 	{
-		if (m_ClientID != 63)
-			m_pCharacter->Die(m_ClientID, Weapon);
+		m_pCharacter->Die(m_ClientID, Weapon);
 
 		delete m_pCharacter;
-		m_pCharacter = 0;
+		m_pCharacter = nullptr;
 	}
 }
 

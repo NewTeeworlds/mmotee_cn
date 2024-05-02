@@ -14,6 +14,7 @@
 #include <game/gamecore.h>
 #include "gamemodes/mod.h"
 #include <game/server/entities/loltext.h>
+#include <engine/shared/network.h>
 
 #include "playerdata.h"
 
@@ -72,7 +73,7 @@ void CGameContext::ClearVotes(int ClientID)
 
 	// send vote options
 	CNetMsg_Sv_VoteClearOptions ClearMsg;
-	Server()->SendPackMsg(&ClearMsg, MSGFLAG_VITAL, ClientID, m_apPlayers[ClientID]->GetMapID());
+	Server()->SendPackMsg(&ClearMsg, MSGFLAG_VITAL, ClientID, -1);
 }
 
 void CGameContext::Clear()
@@ -280,7 +281,7 @@ void CGameContext::SendChatTarget(int To, const char *pText)
 	Msg.m_Team = 0;
 	Msg.m_ClientID = -1;
 	Msg.m_pMessage = pText;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To, m_apPlayers[To]->GetMapID());
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To, -1);
 }
 
 void CGameContext::SendChatTarget_Localization(int To, int Category, const char *pText, ...)
@@ -1193,9 +1194,50 @@ void CGameContext::OnClientDrop(int ClientID, int Type, const char *pReason)
 	if (g_Config.m_SvLoginControl)
 		Server()->SyncOffline(ClientID);
 
-	m_apPlayers[ClientID]->OnDisconnect(Type, pReason);
-	delete m_apPlayers[ClientID];
-	m_apPlayers[ClientID] = 0;
+	ClearVotes(ClientID);
+	if (Server()->ClientIngame(ClientID) || !Server()->GetClientChangeMap(ClientID))
+	{
+		if (Type == CLIENTDROPTYPE_BAN)
+		{
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 被封禁了 ({str:Reason})"),
+													  "PlayerName", Server()->ClientName(ClientID),
+													  "Reason", pReason,
+													  NULL);
+		}
+		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(ClientID)) != 0)
+		{
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 被踢出了 ({str:Reason})"),
+													  "PlayerName", Server()->ClientName(ClientID),
+													  "Reason", pReason,
+													  NULL);
+		}
+		else if (pReason && *pReason)
+		{
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏 ({str:Reason})"),
+													  "PlayerName", Server()->ClientName(ClientID),
+													  "Reason", pReason,
+													  NULL);
+		}
+		else if (Type == CLIENTDROPTYPE_KICK && str_comp("Slime", Server()->ClientName(ClientID)) == 0)
+		{
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 安心地去了"),
+													  "PlayerName", Server()->ClientName(ClientID),
+													  NULL);
+		}
+		else
+		{
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:PlayerName} 离开了游戏"),
+													  "PlayerName", Server()->ClientName(ClientID),
+													  NULL);
+		}
+	}
+
+	if(m_apPlayers[ClientID])
+	{
+		m_apPlayers[ClientID]->OnDisconnect(Type, pReason);
+		delete m_apPlayers[ClientID];
+		m_apPlayers[ClientID] = nullptr;
+	}
 
 	// update spectator modes
 	for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -5578,11 +5620,12 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 
 	if (!m_apPlayers[BOSSID])
 	{
-		m_apPlayers[BOSSID] = new (BOSSID) CPlayer(this, BOSSID, TEAM_RED);
+		const int AllocMemoryCell = BOSSID + m_MapID * MAX_CLIENTS;
+		m_apPlayers[BOSSID] = new (AllocMemoryCell) CPlayer(this, BOSSID, TEAM_RED);
 		m_apPlayers[BOSSID]->SetBotType(BossType);
 		m_apPlayers[BOSSID]->SetBotSubType(g_Config.m_SvCityStart);
-
-		Server()->InitClientBot(BOSSID, m_MapID);
+		m_apPlayers[BOSSID]->m_MapID = m_MapID;
+		Server()->InitClientBot(BOSSID, -1);
 	}
 	else
 	{
