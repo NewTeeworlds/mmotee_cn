@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////
 CEventHandler::CEventHandler()
 {
-	m_pGameServer = 0;
+	m_pGameServer = nullptr;
 	Clear();
 }
 
@@ -20,9 +20,9 @@ void CEventHandler::SetGameServer(CGameContext *pGameServer)
 void *CEventHandler::Create(int Type, int Size, int64_t Mask)
 {
 	if(m_NumEvents == MAX_EVENTS)
-		return 0;
+		return nullptr;
 	if(m_CurrentOffset+Size >= MAX_DATASIZE)
-		return 0;
+		return nullptr;
 
 	void *p = &m_aData[m_CurrentOffset];
 	m_aOffsets[m_NumEvents] = m_CurrentOffset;
@@ -44,12 +44,15 @@ void CEventHandler::Snap(int SnappingClient)
 {
 	for(int i = 0; i < m_NumEvents; i++)
 	{
+		//if(m_aTypes[i] > NETEVENTTYPE_DAMAGEIND && !GS()->IsMmoClient(SnappingClient))
+		//	continue;
+
 		if(SnappingClient == -1 || CmaskIsSet(m_aClientMasks[i], SnappingClient))
 		{
 			CNetEvent_Common *ev = (CNetEvent_Common *)&m_aData[m_aOffsets[i]];
-			if(SnappingClient == -1 || distance(GameServer()->m_apPlayers[SnappingClient]->m_ViewPos, vec2(ev->m_X, ev->m_Y)) < 1500.0f)
+			if(SnappingClient == -1 || distance(GS()->m_apPlayers[SnappingClient]->m_ViewPos, vec2(ev->m_X, ev->m_Y)) < 1500.0f)
 			{
-				void *d = GameServer()->Server()->SnapNewItem(m_aTypes[i], i, m_aSizes[i]);
+				void *d = GS()->Server()->SnapNewItem(m_aTypes[i], i, m_aSizes[i]);
 				if(d)
 					mem_copy(d, &m_aData[m_aOffsets[i]], m_aSizes[i]);
 			}

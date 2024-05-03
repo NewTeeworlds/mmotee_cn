@@ -47,23 +47,7 @@ void CSnapFullPickup::Tick()
 	{
 		m_LoadingTick--;
 		if (m_LoadingTick <= 1)
-		{
-			/*if(m_LoadingTick == 1)
-			{
-				for(CCharacter *p = (CCharacter*) GameWorld()->FindFirst(ENTTYPE_CHARACTER); p; p = (CCharacter *)p->TypeNext())
-				{
-					if(p->GetPlayer() && p)
-					{
-						if(p->GetPlayer()->IsBot() && distance(p->m_Pos, m_Pos) < 100 && !GameServer()->Collision()->IntersectLine(m_Pos, p->m_Pos, 0x0, &p->m_Pos))
-						{
-							GameServer()->SendEmoticon(p->GetPlayer()->GetCID(), EMOTICON_GHOST);
-							GameServer()->CreateExplosion(vec2(p->m_Pos.x,p->m_Pos.y+0.1f), m_Owner, WEAPON_GRENADE, false);
-						}
-					}
-				}
-			}*/
 			m_boolreback = true;
-		}
 	}
 	if (m_Changing && m_boolreback)
 	{

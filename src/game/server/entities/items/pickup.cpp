@@ -294,7 +294,7 @@ void CPickup::StartFarm(int ClientID)
 				GameServer()->GiveItem(ClientID, STANNUM, 1);
 
 			// 加经验
-			GameServer()->m_apPlayers[ClientID]->AccData.m_Exp += 10+LevelItem;
+			GameServer()->m_apPlayers[ClientID]->AccData()->m_Exp += 10+LevelItem;
 			GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+10 +{int:bonus}点专长经验"), "bonus", &LevelItem, NULL);
 		}
 	}
@@ -347,7 +347,7 @@ void CPickup::StartFarm(int ClientID)
 			GameServer()->GiveItem(ClientID, WOOD, Temp);
 		
 			// 加经验
-			GameServer()->m_apPlayers[ClientID]->AccData.m_Exp += 10;
+			GameServer()->m_apPlayers[ClientID]->AccData()->m_Exp += 10;
 			GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+10 +并不存在的专长经验"), NULL);
 		}
 	}
@@ -400,7 +400,7 @@ void CPickup::MaterFarm(int ClientID, int MaterialID)
 		GameServer()->GiveItem(ClientID, LOADEREXP, 10);
 
 		// 加经验
-		GameServer()->m_apPlayers[ClientID]->AccData.m_Exp += 20+LevelItem;
+		GameServer()->m_apPlayers[ClientID]->AccData()->m_Exp += 20+LevelItem;
 		GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+20 +{int:bonus}点专长经验"), "bonus", &LevelItem, NULL);
 
 		Picking(5);

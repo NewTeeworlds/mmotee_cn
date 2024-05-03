@@ -13,6 +13,8 @@
 #include "engine/server/sql_server.h"
 /* DDNET MODIFICATION END *********************************************/
 
+#include <game/server/playerdata.h>
+
 class CSnapIDPool
 {
 	enum
@@ -66,16 +68,16 @@ public:
 
 class CServer : public IServer
 {
-	class IGameServer *m_pGameServer;
 	class IConsole *m_pConsole;
 	class IStorage *m_pStorage;
 	CSqlServer* m_apSqlReadServers[MAX_SQLSERVERS];
 	CSqlServer* m_apSqlWriteServers[MAX_SQLSERVERS];
+	std::map<int, IGameServer *> m_vpGameServer;
 
 private:
 	int m_TimeShiftUnit;
 public:
-	class IGameServer *GameServer() { return m_pGameServer; }
+	virtual class IGameServer *GameServer(int MapID = 0) { return m_vpGameServer[MapID]; }
 	class IConsole *Console() { return m_pConsole; }
 	class IStorage *Storage() { return m_pStorage; }
 
@@ -145,52 +147,22 @@ public:
 
 		//Login
 		int m_LogInstance;
-		int m_UserID;
 		int m_UserStatusID;
-		int m_ClanID;
-		int m_Level;
-		long int m_Exp;
-		int m_Money;
-		unsigned long int m_Gold;
-		int m_Donate;
-		int m_Rel;
-		bool m_Jail;
-		int m_Class;
-		int m_Quest;
-		int m_Kill;
-		int m_WinArea;
-		bool m_Security;
-		char m_Clan[64];
-		unsigned long int m_ClanAdded;
-		
-		bool m_IsJailed;
-		int m_JailLength;
-		int m_SummerHealingTimes;
-		int m_LoginID;
 
 		// int m_ItemCount[7];
 		std::array<int, 16> m_ItemCount;
 
-		// All
-		int Upgrade;
-		int SkillPoint;
-		
-		int m_HammerRange;
-		int m_Pasive2;
-		
-		//upgrade
-		int Health;
-		int Damage;
-		int Speed;
-		int HPRegen;
-		int AmmoRegen;
-		int Ammo;
-		int Spray;
-		int Mana;
+		SAccData AccData;
+		SAccUpgrade AccUpgrade;
 
 		char m_aUsername[MAX_NAME_LENGTH];
 		int m_SelectItem;
 		bool m_CustClt;
+
+		int m_MapID;
+		int m_OldMapID;
+		bool m_IsChangeMap;
+		bool m_Quitting;
 	};
 
 	struct _m_stClan
@@ -301,7 +273,7 @@ public:
 	virtual int GetMailRewardDell(int ClientID, int ID);
 
 	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType);
-	virtual void InitClientBot(int ClientID);
+	virtual void InitClientBot(int ClientID, int MapID);
 
 	CClient m_aClients[MAX_CLIENTS];
 	int IdMap[MAX_CLIENTS * VANILLA_MAX_CLIENTS];
@@ -313,7 +285,7 @@ public:
 	CEcon m_Econ;
 	CServerBan m_ServerBan;
 
-	IEngineMap *m_pMap;
+	std::vector<IEngineMap*> m_vpMap;
 
 	int64 m_GameStartTime;
 	int m_RunServer;
@@ -323,14 +295,18 @@ public:
 	int m_PrintCBIndex;
 
 	int64 m_Lastheartbeat;
-	char m_aCurrentMap[64];
-	
-	unsigned m_CurrentMapCrc;
-	unsigned char *m_pCurrentMapData;
-	unsigned int m_CurrentMapSize;
+
+	struct CMapData
+	{
+		char m_aCurrentMap[64];
+		unsigned m_CurrentMapCrc;
+		unsigned char *m_pCurrentMapData;
+		int m_CurrentMapSize;
+	};
+
+	std::vector<CMapData> m_vMapData;
 
 	CRegister m_Register;
-	CMapChecker m_MapChecker;
 
 	CServer();
 	virtual ~CServer();
@@ -358,18 +334,18 @@ public:
 	bool ClientIngame(int ClientID);
 	int MaxClients() const;
 
-	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
-	int SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System);
+	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID, int MapID);
+	int SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System, int MapID);
 
-	void DoSnapshot();
+	void DoSnapshot(int MapID);
 
 	static int NewClientCallback(int ClientID, void *pUser);
 	static int DelClientCallback(int ClientID, int Type, const char *pReason, void *pUser);
 
 	static int ClientRejoinCallback(int ClientID, void *pUser);
 
-	void SendMap(int ClientID);
-	void SendMapData(int ClientID, int Chunk);
+	void SendMap(int ClientID, int MapID);
+	void SendMapData(int ClientID, int Chunk, int MapID);
 	
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
@@ -509,17 +485,19 @@ public:
 
 	virtual int* GetIdMap(int ClientID);
 	virtual void SetCustClt(int ClientID);
-	
-	//virtual int GetStat(int ClientID, int Type);
-	virtual long int GetStat(int ClientID, Player Type);
-	virtual int GetUpgrade(int ClientID, Player Type);
-	virtual void UpdateStat(int ClientID, Player Type, int Value);
-	virtual void UpdateUpgrade(int ClientID, Player Type, int Size);
 
 	virtual int GetTimeShiftUnit() const { return m_TimeShiftUnit; } //In ms
 
 	virtual void LogWarning(const char Warning[256]);
 	virtual void GiveDonate(const char Username[64], int Donate, int WhoDid);
+
+	int m_NumGameServer;
+	virtual void ChangeClientMap(int CID, int MapID);
+	virtual int GetClientMapID(int ClientID);
+	virtual bool GetClientChangeMap(int ClientID);
+
+	virtual SAccData *GetAccData(int ClientID);
+	virtual SAccUpgrade *GetAccUpgrade(int ClientID);
 };
 
 #endif

@@ -11,35 +11,6 @@
 
 enum
 {
-	//Never, never, never, ..., NEVER change these values
-	//otherwise, the statistics in the database will be corrupted
-	SQL_SCORETYPE_ROUND_SCORE=0,
-	
-	SQL_SCORETYPE_ENGINEER_SCORE=100,
-	SQL_SCORETYPE_SOLDIER_SCORE=101,
-	SQL_SCORETYPE_SCIENTIST_SCORE=102,
-	SQL_SCORETYPE_MEDIC_SCORE=103,
-	SQL_SCORETYPE_NINJA_SCORE=104,
-	SQL_SCORETYPE_MERCENARY_SCORE=105,
-	SQL_SCORETYPE_SNIPER_SCORE=106,
-	SQL_SCORETYPE_HERO_SCORE=107,
-	SQL_SCORETYPE_BIOLOGIST_SCORE=108,
-	
-	SQL_SCORETYPE_SMOKER_SCORE=200,
-	SQL_SCORETYPE_HUNTER_SCORE=201,
-	SQL_SCORETYPE_BOOMER_SCORE=202,
-	SQL_SCORETYPE_GHOST_SCORE=203,
-	SQL_SCORETYPE_SPIDER_SCORE=204,
-	SQL_SCORETYPE_UNDEAD_SCORE=205,
-	SQL_SCORETYPE_WITCH_SCORE=206,
-	SQL_SCORETYPE_GHOUL_SCORE=207,
-	SQL_SCORETYPE_SLUG_SCORE=208,
-	
-	SQL_SCORE_NUMROUND=32,
-};
-
-enum
-{
 	SQL_USERLEVEL_NORMAL = 0,
 	SQL_USERLEVEL_MOD = 1,
 	SQL_USERLEVEL_ADMIN = 2,
@@ -48,8 +19,6 @@ enum
 class CSqlServer
 {
 public:
-	//禁用内建 SetupDB, 使用数据库模板 template-cn.sql
-	//CSqlServer(const char* pDatabase, const char* pPrefix, const char* pUser, const char* pPass, const char* pIp, int Port, bool ReadOnly = true, bool SetUpDb = false);
 	CSqlServer(const char* pDatabase, const char* pPrefix, const char* pUser, const char* pPass, const char* pIp, int Port, bool ReadOnly = true);
 	~CSqlServer();
 

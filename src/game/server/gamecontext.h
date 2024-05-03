@@ -122,7 +122,7 @@ class CGameContext : public IGameServer
 	IServer *m_pServer;
 	IStorage *m_pStorage;
 	class IConsole *m_pConsole;
-	CLayers m_Layers;
+	CLayers *m_pLayers;
 	CCollision m_Collision;
 	CNetObjHandler m_NetObjHandler;
 	CTuningParams m_Tuning;
@@ -149,7 +149,7 @@ public:
 	class IConsole *Console() { return m_pConsole; }
 	CCollision *Collision() { return &m_Collision; }
 	CTuningParams *Tuning() { return &m_Tuning; }
-	virtual class CLayers *Layers() { return &m_Layers; }
+	virtual class CLayers *Layers() { return m_pLayers; }
 
 	CGameContext();
 	~CGameContext();
@@ -262,13 +262,8 @@ public:
 
 	// Обновление аккаунта
 	// 升级
-	void GetStat(int ClientID);
-	void GetUpgrade(int ClientID);
-	void UpdateStat(int ClientID);
 	virtual void UpdateStats(int ClientID);
 	virtual void UpdateUpgrades(int ClientID);
-	void UpdateUpgrade(int ClientID);
-
 	enum
 	{
 		CHAT_ALL = -2,
@@ -315,7 +310,7 @@ public:
 	void CheckPureTuning();
 	void SendTuningParams(int ClientID);
 
-	virtual void OnInit();
+	virtual void OnInit(int MapID);
 	virtual void OnConsoleInit();
 	virtual void OnShutdown();
 
@@ -345,9 +340,12 @@ public:
 	int m_ZoneHandle_Damage;
 	int m_ZoneHandle_Teleport;
 	int m_ZoneHandle_Bonus;
+	int m_ZoneHandle_chMap;
 	int m_aInviteClanID[MAX_PLAYERS];
 	int m_aInviteTick[MAX_PLAYERS];
 
+	void PrepareClientChangeMap(int ClientID) override;
+	int GetMapID() { return m_MapID; }
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState
@@ -364,6 +362,8 @@ private:
 		char m_aTimedMessage[1024];
 	};
 	CBroadcastState m_aBroadcastStates[MAX_PLAYERS];
+
+	int m_MapID;
 };
 
 inline int64_t CmaskAll() { return -1LL; }

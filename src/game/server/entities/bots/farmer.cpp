@@ -121,15 +121,15 @@ void CNpcFarmer::TickBotAI()
 			if(g_Config.m_SvCityStart != 1 && Collide)
 				continue;
 			
-			if(Dist > 300.0f && pPlayer->GetCharacter()->InWork)
+			if(Dist > 300.0f && pPlayer->GetCharacter()->m_InWork)
 			{
-				pPlayer->GetCharacter()->InWork = false;
+				pPlayer->GetCharacter()->m_InWork = false;
 				GameServer()->ResetVotes(i, AUTH);
 			}
 			
-			if(Dist <= 300.0f && !pPlayer->GetCharacter()->InWork)
+			if(Dist <= 300.0f && !pPlayer->GetCharacter()->m_InWork)
 			{
-				pPlayer->GetCharacter()->InWork = true;
+				pPlayer->GetCharacter()->m_InWork = true;
 				GameServer()->ResetVotes(i, AUTH);
 			}
 

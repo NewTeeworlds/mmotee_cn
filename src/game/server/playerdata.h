@@ -3,6 +3,7 @@
 
 struct SAccData
 {
+    int m_UserID;
     int m_Level;
     unsigned long int m_Exp;
     int m_Class = 0;
@@ -18,6 +19,10 @@ struct SAccData
     bool m_IsJailed;          // 是否被送进监狱
     int m_JailLength;         // 手动设置监禁时长
     int m_SummerHealingTimes; // Skill Summer Healing 合成保底
+
+    int m_ClanID;
+	bool m_Security;
+	char m_Clan[64];
 };
 
 struct SAccUpgrade

@@ -207,9 +207,10 @@ public:
 	int m_NinjaStrengthBuff;
 	int m_NinjaAmmoBuff;
 	int m_RefreshTime;
-	bool InShop;
-	bool InWork;
-	bool InBoss;
+	bool m_InShop;
+	bool m_InWork;
+	bool m_InBoss;
+	bool m_InChangMap;
 
 public:
 	void DestroyChildEntities();
@@ -237,6 +238,8 @@ public:
 	void DeleteAllPickup();
 	vec2 LockBotPos;
 /* INFECTION MODIFICATION END *****************************************/
+	void HandleMapZone_Bonus();
+	void HandleMapZone_chMap();
 };
 
 #endif

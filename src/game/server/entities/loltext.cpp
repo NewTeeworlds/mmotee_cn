@@ -86,8 +86,8 @@ void CLoltext::Create(CGameWorld *pGameWorld, CEntity *pParent, vec2 Pos, vec2 V
 		if (c != ' ' && !HasRepr(c))
 			continue;
 
-		for(int y = 0; y < 5/*XXX*/; ++y)
-			for(int x = 0; x < 3/*XXX*/; ++x)
+		for(int y = 0; y < 5; ++y)
+			for(int x = 0; x < 3; ++x)
 				if (s_aaaChars[(unsigned)c][y][x])
 					new CLolPlasma(pGameWorld, pParent, CurPos + vec2(x*g_Config.m_SvLoltextHspace, y*g_Config.m_SvLoltextVspace), Vel, Lifespan);
 		CurPos.x += 4*g_Config.m_SvLoltextHspace;

@@ -43,12 +43,7 @@ bool CBossPig::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 
     return false;
 }
-/*
-void CBossPig::PlaySound()
-{
 
-}
-*/
 void CBossPig::RunAction()
 {
     if (m_BotClientIDFix != -1 && GameServer()->m_apPlayers[m_BotClientIDFix])
@@ -104,7 +99,7 @@ void CBossPig::TickBotAI()
             continue;
 
         int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
-        if (Collide && pPlayer->AccData.m_Class != PLAYERCLASS_HEALER)
+        if (Collide && pPlayer->AccData()->m_Class != PLAYERCLASS_HEALER)
             continue;
 
         int Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);
