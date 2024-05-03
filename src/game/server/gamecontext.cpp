@@ -3573,9 +3573,6 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	break;
 	}
 
-	for(int i = 0; i < CraftLength; i += 2)
-		Server()->RemItem(ClientID, CraftItems[i], CraftItems[i+1], -1);
-
 	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 合成了物品 {str:item}x{int:coun}"),
 								"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
 	GiveItem(ClientID, ItemID, Count, 0);

@@ -2115,7 +2115,7 @@ void CCharacter::ClassSpawnAttributes()
 	if (Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEDNTHP))
 		m_Health *= 70;
 
-	if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLE_PPP))
+	if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEPPP))
 	{
 		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade()->m_Speed += 10;
 	}
