@@ -3073,9 +3073,6 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 
 	m_apPlayers[ClientID]->m_LastChangeInfo = Server()->Tick();
 
-	int CraftItems[1] = {0};
-	char Need[256];
-
 	switch (ItemID)
 	{
 	default:
@@ -3576,17 +3573,6 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	break;
 	}
 
-	if(!CraftItems[0])
-		return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("合成错误"), NULL);
-	
-	int CraftLength = sizeof(CraftItems) / sizeof(CraftItems[0]);
-	for(int i = 0; i < CraftLength; i += 2)
-	{
-		int ItemName = CraftItems[i];
-		int ItemNeed = CraftItems[i+1];
-		if(Server()->GetItemCount(ClientID, ItemName) < Count * ItemNeed)
-			return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成，你缺少 {str:need}x{int:count}"), "need", ItemName, "count", ItemNeed);
-	}
 	for(int i = 0; i < CraftLength; i += 2)
 		Server()->RemItem(ClientID, CraftItems[i], CraftItems[i+1], -1);
 
