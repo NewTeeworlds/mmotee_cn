@@ -187,7 +187,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, DRAGONPIX, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, DRAGONPIX);
-			Temp += 40;	
+			Temp += 55;	
 		}
 		if(Server()->GetItemCount(ClientID, DIAMONDPIX))
 		{
@@ -290,7 +290,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			GameServer()->GiveItem(ClientID, MINEREXP, 1);
 			
-			if(random_prob(0.015f))
+			if(random_prob((Server()->GetItemCount(ClientID, MINECORE) + 1) * 0.01f))
 				GameServer()->GiveItem(ClientID, STANNUM, 1);
 
 			// 加经验
