@@ -3069,6 +3069,9 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 
 	m_apPlayers[ClientID]->m_LastChangeInfo = Server()->Tick();
 
+	int CraftItems[1] = {0};
+	char Need[256];
+
 	switch (ItemID)
 	{
 	default:
@@ -3093,7 +3096,6 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 		Server()->RemItem(ClientID, AEVIL, Count, -1);
 		Server()->RemItem(ClientID, ASUPRRISE, Count, -1);
 		Server()->RemItem(ClientID, ABLINK, Count, -1);
-		Server()->RemItem(ClientID, APAIN, Count, -1);
 		Server()->RemItem(ClientID, APAIN, Count, -1);
 	}
 	break;
@@ -3569,6 +3571,21 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	}
 	break;
 	}
+
+	if(!CraftItems[0])
+		return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("合成错误"), NULL);
+	
+	int CraftLength = sizeof(CraftItems) / sizeof(CraftItems[0]);
+	for(int i = 0; i < CraftLength; i += 2)
+	{
+		int ItemName = CraftItems[i];
+		int ItemNeed = CraftItems[i+1];
+		if(Server()->GetItemCount(ClientID, ItemName) < Count * ItemNeed)
+			return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成，你缺少 {str:need}x{int:count}"), "need", ItemName, "count", ItemNeed);
+	}
+	for(int i = 0; i < CraftLength; i += 2)
+		Server()->RemItem(ClientID, CraftItems[i], CraftItems[i+1], -1);
+
 	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 合成了物品 {str:item}x{int:coun}"),
 								"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
 	GiveItem(ClientID, ItemID, Count, 0);
