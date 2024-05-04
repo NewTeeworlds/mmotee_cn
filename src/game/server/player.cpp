@@ -1094,7 +1094,7 @@ void CPlayer::TryRespawn()
 	else
 	{
 		m_pCharacter = new (AllocMemoryCell) CCharacter(&GameServer()->m_World);
-		if(Server()->GetItemSettings(GetCID(), TITLE_GUARD))
+		if(Server()->GetItemSettings(GetCID(), TITLEGUARD))
 		{
 			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
 			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 50);
@@ -1243,29 +1243,29 @@ const char *CPlayer::TitleGot()
 		return "沐浴阳";
 	else if (Server()->GetItemSettings(m_ClientID, TITLEENCHANT))
 		return "魔法师";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_DONATE_BAOJI50))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEDNTCRIT))
 		return "GG爆";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_DONATE_SHENGMIN70))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEDNTHP))
 		return "TANK!";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_SPECIAL_TEEFUN))
+	else if(Server()->GetItemSettings(m_ClientID, TITLETEEFUN))
 		return "TeeFun";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_WORKERF))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEWORKF))
 		return "工人爷";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_WORKERM))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEWORKM))
 		return "工人奶";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_FRAMERF))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEFARMF))
 		return "农民爷";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_FRAMERM))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEFARMM))
 		return "农民奶";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_MANUAL))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEHANDCRAFT))
 		return "手工业";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_PPP))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEPPP))
 		return "GS合营";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_TGPCR))
+	else if(Server()->GetItemSettings(m_ClientID, TITLECR))
 		return "文革";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_GLF))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEGLF))
 		return "大跃进";
-	else if(Server()->GetItemSettings(m_ClientID, TITLE_PC))
+	else if(Server()->GetItemSettings(m_ClientID, TITLEPC))
 		return "公社";
 	//else if(Server()->GetItemSettings(m_ClientID, TITLEMOON))
 	//	return "~〇~ Moon ~〇~";	
