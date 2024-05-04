@@ -187,7 +187,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			Server()->SetItemSettingsCount(ClientID, DRAGONPIX, Dropable-1);
 			ItemName = Server()->GetItemName(ClientID, DRAGONPIX);
-			Temp += 55;	
+			Temp += random_int(45,60);	
 		}
 		if(Server()->GetItemCount(ClientID, DIAMONDPIX))
 		{
