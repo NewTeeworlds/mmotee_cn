@@ -4820,7 +4820,7 @@ void CGameContext::StartArea(int WaitTime, int Type, int ClientID)
 		return SendBroadcast_Localization(ClientID, 250, 150, _("小游戏{str:name}即将开始,请进入房间"), "name", (m_AreaType - 1) ? "激光献祭" : "激光瞬杀", NULL);
 
 	if (!m_AreaStartTick && m_AreaEndGame > 0)
-		return SendBroadcast_Localization(ClientID, 250, 150, _("小游戏进行中. 请稍候其结束"));
+		return SendBroadcast_Localization(ClientID, 250, 150, _("小游戏进行中.请等待其结束"));
 
 	if (m_apPlayers[ClientID]->m_InBossed)
 		return SendBroadcast_Localization(ClientID, 250, 150, _("请先完成 Boss 战"));
