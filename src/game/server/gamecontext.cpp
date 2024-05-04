@@ -3500,40 +3500,40 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	break;
 	case COREBASE:
 	{
-		if (Server()->GetItemCount(ClientID, STANNUM) < 100 || Server()->GetItemCount(ClientID, IRON) < 500)
+		if (Server()->GetItemCount(ClientID, STANNUM) < 20 || Server()->GetItemCount(ClientID, IRON) < 100)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "锡矿x100, 精铁x500", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "锡矿x20, 精铁x100", NULL);
 			return;
 		}
-		Server()->RemItem(ClientID, STANNUM, 100, -1);
-		Server()->RemItem(ClientID, IRON, 500, -1);
+		Server()->RemItem(ClientID, STANNUM, 20, -1);
+		Server()->RemItem(ClientID, IRON, 100, -1);
 	}
 	break;
 	case WOODCORE:
 	{
 		Count = 1;
-		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, WOOD) < 500 || Server()->GetItemCount(ClientID, GOLDTICKET) < 150)
+		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, WOOD) < 200 || Server()->GetItemCount(ClientID, GOLDTICKET) < 50)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 木头x500, 金券x150", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 木头x200, 金券x50", NULL);
 			return;
 		}
 		Server()->RemItem(ClientID, COREBASE, 1, -1);
-		Server()->RemItem(ClientID, WOOD, 500, -1);
-		Server()->RemItem(ClientID, GOLDTICKET, 150, -1);
+		Server()->RemItem(ClientID, WOOD, 200, -1);
+		Server()->RemItem(ClientID, GOLDTICKET, 50, -1);
 	}
 	break;
 	case MINECORE:
 	{
 		Count = 1;
-		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, GOLDTICKET) < 150)
+		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, DRAGONORE) < 200 || Server()->GetItemCount(ClientID, GOLDTICKET) < 50)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 龙矿x500, 金券x150", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 龙矿x200, 金券x50", NULL);
 			return;
 		}
 		
 		Server()->RemItem(ClientID, COREBASE, 1, -1);
-		Server()->RemItem(ClientID, DRAGONORE, 500, -1);
-		Server()->RemItem(ClientID, GOLDTICKET, 200, -1);
+		Server()->RemItem(ClientID, DRAGONORE, 200, -1);
+		Server()->RemItem(ClientID, GOLDTICKET, 50, -1);
 	}
 	break;
 	case STCLASIC:
