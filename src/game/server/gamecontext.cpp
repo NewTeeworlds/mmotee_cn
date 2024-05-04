@@ -1131,6 +1131,9 @@ void CGameContext::OnClientConnected(int ClientID)
 		m_apPlayers[ClientID] = new (AllocMemoryCell) CPlayer(this, ClientID, StartTeam);
 	}
 
+	if(ClientID < MAX_PLAYERS)
+		Server()->SyncPlayer(ClientID, m_apPlayers[ClientID]);
+
 #ifdef CONF_DEBUG
 	if (g_Config.m_DbgDummies)
 	{
@@ -5674,6 +5677,11 @@ void CGameContext::PrepareClientChangeMap(int ClientID)
 		delete m_apPlayers[ClientID];
 		m_apPlayers[ClientID] = nullptr;
 	}
-	const int AllocMemoryCell = ClientID + m_MapID * MAX_CLIENTS;
-	m_apPlayers[ClientID] = new (AllocMemoryCell) CPlayer(this, ClientID, TEAM_RED);
+}
+
+void CGameContext::SyncPlayer(int ClientID, CPlayer *pPlayer)
+{
+	if(m_apPlayers[ClientID])
+		return;
+	m_apPlayers[ClientID] = pPlayer;
 }

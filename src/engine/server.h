@@ -645,6 +645,8 @@ public:
 
 	virtual SAccData *GetAccData(int ClientID) = 0;
 	virtual SAccUpgrade *GetAccUpgrade(int ClientID) = 0;
+
+	virtual void SyncPlayer(int ClientID, class CPlayer *pPlayer) = 0;
 }; 
 
 class IGameServer : public IInterface
@@ -694,6 +696,8 @@ public:
 /* INFECTION MODIFICATION END *****************************************/
 
 	virtual void PrepareClientChangeMap(int ClientID) = 0;
+
+	virtual void SyncPlayer(int ClientID, class CPlayer *pPlayer) = 0;
 };
 
 extern IGameServer *CreateGameServer();
