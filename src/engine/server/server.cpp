@@ -298,6 +298,8 @@ void CServer::CClient::Reset(bool ResetScore)
 	{
 		m_WaitingTime = 0;
 		m_LogInstance = -1;
+		mem_zero(&AccData, sizeof(AccData));
+		mem_zero(&AccUpgrade, sizeof(AccUpgrade));
 		AccData.m_UserID = -1;
 
 		m_AntiPing = 0;
@@ -648,6 +650,10 @@ void CServer::DoSnapshot(int MapID)
 			continue;
 
 		{
+			m_SnapshotBuilder.Init();
+
+			GameServer(MapID)->OnSnap(i);
+
 			char aData[CSnapshot::MAX_SIZE] = { 0 };
 			CSnapshot *pData = (CSnapshot*)aData;	// Fix compiler warning for strict-aliasing
 			char aDeltaData[CSnapshot::MAX_SIZE] = { 0 };
@@ -659,10 +665,6 @@ void CServer::DoSnapshot(int MapID)
 			int DeltashotSize;
 			int DeltaTick = -1;
 			int DeltaSize;
-
-			m_SnapshotBuilder.Init();
-
-			GameServer(MapID)->OnSnap(i);
 
 			// finish snapshot
 			SnapshotSize = m_SnapshotBuilder.Finish(pData);
@@ -2199,7 +2201,7 @@ const char *CServer::GetClanName(int ClanID)
 		return "";
 }
 
-void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
+void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType, int CityStart)
 {
 	switch (BotType)
 	{
@@ -2247,23 +2249,23 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType)
 		const char *Name = "Nope";
 		if (BotSubType == 0)
 		{
-			if (!g_Config.m_SvCityStart)
+			if (!CityStart)
 				Name = "NPC:J.Johan";
-			else if (g_Config.m_SvCityStart == 1)
+			else if (CityStart == 1)
 				Name = "NPC:Grem";
 		}
 		else if (BotSubType == 1)
 		{
-			if (!g_Config.m_SvCityStart)
+			if (!CityStart)
 				Name = "NPC:Lusi";
-			else if (g_Config.m_SvCityStart == 1)
+			else if (CityStart == 1)
 				Name = "NPC:Afra";
 		}
 		else
 		{
-			if (!g_Config.m_SvCityStart)
+			if (!CityStart)
 				Name = "NPC:Miki";
-			else if (g_Config.m_SvCityStart == 1)
+			else if (CityStart == 1)
 				Name = "NPC:Saki";
 		}
 		str_copy(m_aClients[ClientID].m_aName, Name, MAX_NAME_LENGTH);
@@ -2523,6 +2525,8 @@ void CServer::ChangeClientMap(int ClientID, int MapID)
 
 int CServer::GetClientMapID(int CID)
 {
+	if(CID < 0 || CID >= MAX_CLIENTS || m_aClients[CID].m_State < CClient::STATE_READY)
+		return DEFAULT_MAP_ID;
 	return m_aClients[CID].m_MapID;
 }
 

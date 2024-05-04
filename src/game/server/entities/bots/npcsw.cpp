@@ -81,7 +81,7 @@ void CNpcWSold::TickBotAI()
         m_BotTimeLastSound = Server()->Tick();
     }
     
-    EmoteNormal = g_Config.m_SvCityStart == 1 ? EMOTE_ANGRY: EMOTE_HAPPY;
+    EmoteNormal = GameServer()->m_CityStart == 1 ? EMOTE_ANGRY: EMOTE_HAPPY;
 
     // ОЧИСТКА ДЕЙСТВИЙ
 	m_Input.m_Hook = 0;

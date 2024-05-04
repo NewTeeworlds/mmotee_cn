@@ -644,7 +644,7 @@ void CPlayer::HandleTuningParams()
 			int *pParams = (int *)&m_NextTuningParams;
 			for (unsigned i = 0; i < sizeof(m_NextTuningParams) / sizeof(int); i++)
 				Msg.AddInt(pParams[i]);
-			Server()->SendMsg(&Msg, MSGFLAG_VITAL, GetCID(), GetMapID());
+			Server()->SendMsg(&Msg, MSGFLAG_VITAL, GetCID(), -1);
 		}
 		m_PrevTuningParams = m_NextTuningParams;
 	}
@@ -970,7 +970,7 @@ void CPlayer::TryRespawn()
 		case BOT_L1MONSTER:
 			m_pCharacter = new (AllocMemoryCell) CMonster(&GameServer()->m_World);
 
-			if (g_Config.m_SvCityStart == 1)
+			if (GameServer()->m_CityStart == 1)
 			{
 				AccData()->m_Level = m_BigBot ? 280 + random_int(0, 3) : 250;
 				AccUpgrade()->m_Health = 100 + AccData()->m_Level * 20;
@@ -991,7 +991,7 @@ void CPlayer::TryRespawn()
 		case BOT_L2MONSTER:
 			m_pCharacter = new (AllocMemoryCell) CKwah(&GameServer()->m_World);
 
-			if (g_Config.m_SvCityStart == 1)
+			if (GameServer()->m_CityStart == 1)
 			{
 				AccData()->m_Level = m_BigBot ? 370 + random_int(0, 3) : 350 + random_int(0, 3);
 				AccUpgrade()->m_Health = 100 + AccData()->m_Level * 2;
@@ -1007,7 +1007,7 @@ void CPlayer::TryRespawn()
 		case BOT_L3MONSTER:
 			m_pCharacter = new (AllocMemoryCell) CBoomer(&GameServer()->m_World);
 
-			if (g_Config.m_SvCityStart == 1)
+			if (GameServer()->m_CityStart == 1)
 			{
 				AccData()->m_Level = m_BigBot ? 510 + random_int(0, 3) : 490 + random_int(0, 15);
 				AccUpgrade()->m_Health = 100 + (int)(AccData()->m_Level * 2);
@@ -1080,7 +1080,7 @@ void CPlayer::TryRespawn()
 
 			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
 			AccUpgrade()->m_Damage = 100;
-			if (g_Config.m_SvCityStart == 1)
+			if (GameServer()->m_CityStart == 1)
 				AccUpgrade()->m_Damage = 400;
 			break;
 		default: 

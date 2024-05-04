@@ -118,7 +118,7 @@ void CNpcFarmer::TickBotAI()
 		if (Dist < 400.0f)
 		{
 			int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
-			if(g_Config.m_SvCityStart != 1 && Collide)
+			if(GameServer()->m_CityStart != 1 && Collide)
 				continue;
 			
 			if(Dist > 300.0f && pPlayer->GetCharacter()->m_InWork)
