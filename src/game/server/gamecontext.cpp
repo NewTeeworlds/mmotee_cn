@@ -1202,6 +1202,9 @@ void CGameContext::OnClientDrop(int ClientID, int Type, const char *pReason)
 		m_apPlayers[ClientID]->OnDisconnect(Type, pReason);
 		delete m_apPlayers[ClientID];
 		m_apPlayers[ClientID] = nullptr;
+
+		if(ClientID < MAX_PLAYERS)
+			Server()->SyncPlayer(ClientID, nullptr);
 	}
 
 	// update spectator modes
@@ -5736,6 +5739,8 @@ void CGameContext::PrepareClientChangeMap(int ClientID)
 		m_apPlayers[ClientID]->KillCharacter(WEAPON_WORLD);
 		delete m_apPlayers[ClientID];
 		m_apPlayers[ClientID] = nullptr;
+
+		Server()->SyncPlayer(ClientID, nullptr);
 	}
 }
 
