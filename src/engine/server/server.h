@@ -272,7 +272,7 @@ public:
 	virtual int GetRewardMail(int ClientID, int ID, int Type);
 	virtual int GetMailRewardDell(int ClientID, int ID);
 
-	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType);
+	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType, int CityStart);
 	virtual void InitClientBot(int ClientID, int MapID);
 
 	CClient m_aClients[MAX_CLIENTS];

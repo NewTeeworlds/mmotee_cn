@@ -601,7 +601,7 @@ void CCharacter::FireWeapon()
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime*2), 20, Explode, 10, -1, WEAPON_SHOTGUN);
 				}
 			}
-			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), GetPlayer()->GetMapID());
+			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), -1);
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
 		} break;
 
@@ -649,7 +649,7 @@ void CCharacter::FireWeapon()
 						(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime), 
 						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
 				}
-				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), GetPlayer()->GetMapID());
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), -1);
 			}
 			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 		} break;
@@ -1716,7 +1716,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 			if(m_pPlayer->GetBotType() == BOT_L1MONSTER)
 			{
-				if(!g_Config.m_SvCityStart)
+				if(!GameServer()->m_CityStart)
 				{
 					CreateDropRandom(AHAPPY, 1, 2000, From, Force/(50+randforce));
 					CreateDropRandom(AEVIL, 1, 2000, From, Force/(50+randforce));
@@ -1726,7 +1726,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					CreateDropRandom(PIGPORNO, 1, 40, From, Force/(50+randforce));
 					CreateDropRandom(LEATHER, 1, 60, From, Force/(50+randforce));
 				}
-				else if(g_Config.m_SvCityStart == 1)
+				else if(GameServer()->m_CityStart == 1)
 				{
 					CreateDropRandom(ZOMBIEBRAIN, 1, 40, From, Force/(50+randforce));
 					CreateDropRandom(ZOMBIEEYE, 1, 40, From, Force/(50+randforce));
@@ -1735,12 +1735,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L2MONSTER)
 			{
-				if(!g_Config.m_SvCityStart)
+				if(!GameServer()->m_CityStart)
 				{
 					CreateDropRandom(KWAHGANDON, 1, 44, From, Force/(50+randforce));
 					CreateDropRandom(FOOTKWAH, 1, 44, From, Force/(40+randforce));
 				}
-				else if(g_Config.m_SvCityStart == 1)
+				else if(GameServer()->m_CityStart == 1)
 				{
 					CreateDropRandom(SKELETSBONE, 1, 45, From, Force/(50+randforce));
 					CreateDropRandom(SKELETSKULL, 1, 45, From, Force/(50+randforce));
@@ -1748,11 +1748,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L3MONSTER)
 			{
-				if(!g_Config.m_SvCityStart)
+				if(!GameServer()->m_CityStart)
 				{
 					CreateDropRandom(HEADBOOMER, 1, 42, From, Force/(50+randforce));
 				}
-				else if(g_Config.m_SvCityStart == 1)
+				else if(GameServer()->m_CityStart == 1)
 				{
 					CreateDropRandom(NIMFHEART, 1, 40, From, Force/(50+randforce));
 					CreateDropRandom(NIMFEARS, 1, 40, From, Force/(50+randforce));
@@ -2725,7 +2725,7 @@ void CCharacter::HandleMapZone_Bonus()
 				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
 				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 
-				if(g_Config.m_SvCityStart == 1)
+				if(GameServer()->m_CityStart == 1)
 				{
 					m_pPlayer->AccData()->m_Exp += Exp;
 					m_pPlayer->AccData()->m_Money += Money;
@@ -2763,7 +2763,7 @@ void CCharacter::HandleMapZone_Bonus()
 				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
 				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
 			
-				if(g_Config.m_SvCityStart == 1)
+				if(GameServer()->m_CityStart == 1)
 				{
 					m_pPlayer->AccData()->m_Exp += Exp;
 					m_pPlayer->AccData()->m_Money += Money;					

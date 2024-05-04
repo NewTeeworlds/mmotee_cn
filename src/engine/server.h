@@ -448,7 +448,7 @@ public:
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID, int MapID) = 0;
 
 	template<class T>
-	int SendPackMsg(T *pMsg, int Flags, int ClientID, int MapID)
+	int SendPackMsg(T *pMsg, int Flags, int ClientID, int MapID = -1)
 	{
 		int result = 0;
 		T tmp;
@@ -634,7 +634,7 @@ public:
 	virtual const char *AdminName(int ClanID) = 0;
 	virtual const char *GetClanName(int ClanID) = 0;
 
-	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType) = 0;
+	virtual void ResetBotInfo(int ClientID, int BotType, int BotSubType, int CityStart) = 0;
 	virtual void InitClientBot(int ClientID, int MapID) = 0;
 
 	virtual int* GetIdMap(int ClientID) = 0;

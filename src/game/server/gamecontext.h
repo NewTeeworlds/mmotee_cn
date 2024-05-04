@@ -346,6 +346,8 @@ public:
 
 	void PrepareClientChangeMap(int ClientID) override;
 	int GetMapID() { return m_MapID; }
+
+	int m_CityStart;
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState

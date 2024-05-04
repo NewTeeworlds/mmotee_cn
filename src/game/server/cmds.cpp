@@ -78,7 +78,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if (!strncmp(Msg->m_pMessage, "/register", 9))
 	{
 		LastChat();
-		if (g_Config.m_SvCityStart > 0)
+		if (GameServer()->m_CityStart > 0)
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("请在 1-250 服务器上注册"), NULL);
 
 		char Username[256], Password[256];
@@ -145,7 +145,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 						Msg.m_pDescription = 0;
 
 						Msg.m_pDescription = GameServer()->Server()->Localization()->Localize(m_pPlayer->GetLanguage(), _("是否加入公会?"));
-						GameServer()->Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i, GameServer()->m_apPlayers[i]->GetMapID());
+						GameServer()->Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i, -1);
 
 						GameServer()->m_aInviteTick[i] = 10 * GameServer()->Server()->TickSpeed();
 						GameServer()->SendBroadcast_Localization(i, BROADCAST_PRIORITY_INTERFACE, 600, _("玩家 {str:name} 邀请你加入 {str:cname} 公会!"), "name", GameServer()->Server()->ClientName(ClientID), "cname", GameServer()->Server()->ClientClan(ClientID), NULL);
