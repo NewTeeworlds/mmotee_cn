@@ -1202,6 +1202,9 @@ void CGameContext::OnClientDrop(int ClientID, int Type, const char *pReason)
 		m_apPlayers[ClientID]->OnDisconnect(Type, pReason);
 		delete m_apPlayers[ClientID];
 		m_apPlayers[ClientID] = nullptr;
+
+		if(ClientID < MAX_PLAYERS)
+			Server()->SyncPlayer(ClientID, nullptr);
 	}
 
 	// update spectator modes
