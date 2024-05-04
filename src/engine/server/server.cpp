@@ -1053,7 +1053,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 
 					const int MapID = m_aClients[ClientID].m_MapID;
 					for (int i = 0; i < m_NumGameServer; i++)
-						GameServer(MapID)->PrepareClientChangeMap(ClientID);
+						GameServer(i)->PrepareClientChangeMap(ClientID);
 					GameServer(MapID)->OnClientConnected(ClientID);
 				}
 
