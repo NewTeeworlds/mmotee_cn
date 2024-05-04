@@ -1076,6 +1076,17 @@ void CGameContext::OnTick()
 	AreaTick();
 	BossTick();
 
+#ifdef CONF_DEBUG
+	if (g_Config.m_DbgDummies)
+	{
+		for (int i = 0; i < g_Config.m_DbgDummies; i++)
+		{
+			CNetObj_PlayerInput Input = {0};
+			Input.m_Direction = (i & 1) ? -1 : 1;
+			m_apPlayers[MAX_CLIENTS - i - 1]->OnPredictedInput(&Input);
+		}
+	}
+#endif
 }
 
 // Server hooks
@@ -1122,6 +1133,14 @@ void CGameContext::OnClientConnected(int ClientID)
 
 	if(ClientID < MAX_PLAYERS)
 		Server()->SyncPlayer(ClientID, m_apPlayers[ClientID]);
+
+#ifdef CONF_DEBUG
+	if (g_Config.m_DbgDummies)
+	{
+		if (ClientID >= MAX_CLIENTS - g_Config.m_DbgDummies)
+			return;
+	}
+#endif
 
 	// send motd
 	CNetMsg_Sv_Motd Msg;
@@ -3485,12 +3504,12 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	case GUARD_HAMMER:
 	{
 		Count = 1;
-		if (Server()->GetItemCount(ClientID, GUARD_HAMMER_FRAG) < 100)
+		if (Server()->GetItemCount(ClientID, GUARD_HAMMER_FRAG) < 10)
 		{
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "守卫锤子碎片x10", NULL);
 			return;
 		}
-		Server()->RemItem(ClientID, GUARD_HAMMER_FRAG, 100, -1);
+		Server()->RemItem(ClientID, GUARD_HAMMER_FRAG, 10, -1);
 		float RandomProba = 0.94f;
 		if(Server()->GetItemSettings(ClientID, TITLE_MANUAL))
 			RandomProba -= 0.2f;
@@ -3903,7 +3922,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "锤子"));
 		CreateNewShop(ClientID, HAMMERAUTO, 1, 0, 0);
 		CreateNewShop(ClientID, LAMPHAMMER, 1, 0, 0);
-		CreateNewShop(ClientID, GUARD_HAMMER, 1, 0, 0);
 		AddVote("", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "手枪"));
 		CreateNewShop(ClientID, GUNAUTO, 1, 0, 0);
@@ -5658,6 +5676,8 @@ void CGameContext::PrepareClientChangeMap(int ClientID)
 		m_apPlayers[ClientID]->KillCharacter(WEAPON_WORLD);
 		delete m_apPlayers[ClientID];
 		m_apPlayers[ClientID] = nullptr;
+
+		Server()->SyncPlayer(ClientID, nullptr);
 	}
 }
 
