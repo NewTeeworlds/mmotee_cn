@@ -3506,24 +3506,27 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	case WOODCORE:
 	{
 		Count = 1;
-		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, WOOD) < 800)
+		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, WOOD) < 500 || Server()->GetItemCount(ClientID, GOLDTICKET) < 150)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 木头x800", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 木头x500, 金券x150", NULL);
 			return;
 		}
 		Server()->RemItem(ClientID, COREBASE, 1, -1);
-		Server()->RemItem(ClientID, WOOD, 800, -1);
+		Server()->RemItem(ClientID, WOOD, 500, -1);
+		Server()->RemItem(ClientID, GOLDTICKET, 150, -1);
 	}
 	break;
 	case MINECORE:
 	{
 		Count = 1;
-		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, GOLDTICKET) < 200)
+		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, GOLDTICKET) < 150)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 金券x200", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 龙矿x500, 金券x150", NULL);
 			return;
 		}
+		
 		Server()->RemItem(ClientID, COREBASE, 1, -1);
+		Server()->RemItem(ClientID, DRAGONORE, 500, -1);
 		Server()->RemItem(ClientID, GOLDTICKET, 200, -1);
 	}
 	break;
@@ -4648,8 +4651,11 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddNewCraftVote(ClientID, "耳环蓝图x1, Kwah的脚x100", EARRINGSKWAH);
 				AddNewCraftVote(ClientID, "灵魂碎片x25", CUSTOMSKIN);
 				AddNewCraftVote(ClientID, "灵魂碎片x50", CUSTOMCOLOR);
-				AddNewCraftVote(ClientID, "土豆x60,番茄x60,萝卜x60", JUMPIMPULS);
+				AddNewCraftVote(ClientID, "土豆x60, 番茄x60, 萝卜x60", JUMPIMPULS);
 				AddNewCraftVote(ClientID, "守卫锤子碎片x10", GUARDHAMMER);
+				AddNewCraftVote(ClientID, "锡矿x100, 精铁x500", COREBASE);
+				AddNewCraftVote(ClientID, "核心基座x1, 木头x500, 金券x150", WOODCORE);
+				AddNewCraftVote(ClientID, "核心基座x1, 龙矿x500, 金券x150", MINECORE);
 			}
 			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 3)
 			{
@@ -4667,8 +4673,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddNewCraftVote(ClientID, "木头x40, 铁矿x60", IRONPIX);
 				AddNewCraftVote(ClientID, "木头x50, 金矿x80", GOLDPIX);
 				AddNewCraftVote(ClientID, "木头x50, 钻石矿x100", DIAMONDPIX);
-				AddNewCraftVote(ClientID, "木头x200, 龙矿x1000", DRAGONAXE);
-				AddNewCraftVote(ClientID, "木头x200, 龙矿x1000", DRAGONHOE);
+				AddNewCraftVote(ClientID, "木头x65, 龙矿x150", DRAGONPIX);
+				AddNewCraftVote(ClientID, "木头x65, 龙矿x150", DRAGONAXE);
+				AddNewCraftVote(ClientID, "木头x65, 龙矿x150", DRAGONHOE);
 			}
 			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 6)
 			{
