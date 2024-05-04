@@ -5681,7 +5681,5 @@ void CGameContext::PrepareClientChangeMap(int ClientID)
 
 void CGameContext::SyncPlayer(int ClientID, CPlayer *pPlayer)
 {
-	if(m_apPlayers[ClientID])
-		return;
 	m_apPlayers[ClientID] = pPlayer;
 }
