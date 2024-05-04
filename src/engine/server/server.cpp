@@ -3270,3 +3270,11 @@ void CServer::InitClientDB(int ClientID)
 	CSqlJob* pJob = new CSqlJob_Server_InitClient(this, ClientID);
 	pJob->Start();
 }
+
+void CServer::SyncPlayer(int ClientID, class CPlayer *pPlayer)
+{
+	for(auto& pGameServer : m_vpGameServer)
+	{
+		pGameServer.second->SyncPlayer(ClientID, pPlayer);
+	}
+}

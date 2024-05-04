@@ -498,6 +498,8 @@ public:
 
 	virtual SAccData *GetAccData(int ClientID);
 	virtual SAccUpgrade *GetAccUpgrade(int ClientID);
+
+	virtual void SyncPlayer(int ClientID, class CPlayer *pPlayer);
 };
 
 #endif

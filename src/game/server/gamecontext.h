@@ -347,6 +347,8 @@ public:
 	void PrepareClientChangeMap(int ClientID) override;
 	int GetMapID() { return m_MapID; }
 
+	virtual void SyncPlayer(int ClientID, class CPlayer *pPlayer);
+
 	int m_CityStart;
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
