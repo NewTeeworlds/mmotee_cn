@@ -3050,10 +3050,10 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 		Settings = 985 * Count;
 		break;
 	case DRAGONAXE:
-		Settings = 10000 * Count;
+		Settings = 985 * Count;
 		break;
 	case DRAGONHOE:
-		Settings = 8000 * Count;
+		Settings = 985 * Count;
 		break;
 	default:
 		break;
