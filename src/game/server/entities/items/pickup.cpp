@@ -278,7 +278,7 @@ void CPickup::StartFarm(int ClientID)
 			{
 				int DragonExtra = Server()->GetItemCount(ClientID, MINECORE);
 				GameServer()->GiveItem(ClientID, DRAGONORE, DragonExtra);
-				GameServer()->SendChatTarget_Localization(ClientID, -1, _("[{str:name}] 获得{int:dragon}个龙矿"), "name", Server()->GetItemName(ClientID, MINECORE), "dragon", DragonExtra, NULL);
+				GameServer()->SendChatTarget_Localization(ClientID, -1, _("[{str:name}] 获得{int:dragon}个龙矿"), "name", Server()->GetItemName(ClientID, MINECORE), "dragon", &DragonExtra, NULL);
 			}
 
 			switch(random_int(0, ItemDrop))
