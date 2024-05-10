@@ -149,9 +149,20 @@ public:
 		int m_LogInstance;
 		int m_UserStatusID;
 
-		// int m_ItemCount[7];
-		std::array<int, 16> m_ItemCount;
+		std::array<int, 18> m_ItemCount; // KIDDING ME?????
+		/*
+		m_ItemCount fuck me out!!!!!!!
+		it was 
+			std::array<int, 16> m_ItemCount;
+		if you do
+			m_pServer->m_aClients[m_ClientID].m_ItemCount[ItemType]++;
+				and ItemType >= 16
+		it will do
+			m_UserID++;
+		FUCK HOW???
+		*/
 
+		int m_UserID;
 		SAccData AccData;
 		SAccUpgrade AccUpgrade;
 

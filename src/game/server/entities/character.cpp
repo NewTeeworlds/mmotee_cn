@@ -1595,8 +1595,13 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	
 	if(From >= 0 && pFrom && pFrom->GetCharacter())
 	{
-		if(Server()->GetItemSettings(From, GUARD_HAMMER) && Weapon == WEAPON_HAMMER && random_prob(0.20f))
-			Dmg += m_Health/15;
+		if(Server()->GetItemSettings(From, GUARD_HAMMER) && Weapon == WEAPON_HAMMER)
+		{
+			if(m_pPlayer->m_Search)
+				Dmg = m_Health;
+			else if(random_prob(0.50f))
+				Dmg += m_Health/20;
+		}
 
 		//TODO
 		if(Server()->GetItemCount(From, FREEAZER))

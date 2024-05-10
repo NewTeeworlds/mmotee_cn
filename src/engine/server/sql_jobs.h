@@ -198,7 +198,7 @@ public:
 				"SELECT * FROM %s_Mail "
 				"WHERE IDOwner = '%d' LIMIT 20;"
 				, pSqlServer->GetPrefix()
-				, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+				, m_pServer->m_aClients[m_ClientID].m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 			while(pSqlServer->GetResults()->next())
 			{
@@ -336,7 +336,7 @@ public:
 	{
 		m_pServer = pServer;
 		m_ClientID = ClientID;
-		m_IDOwner = m_pServer->m_aClients[m_ClientID].AccData.m_UserID;
+		m_IDOwner = m_pServer->m_aClients[m_ClientID].m_UserID;
 	}
 
 	virtual bool Job(CSqlServer* pSqlServer)
@@ -546,7 +546,7 @@ public:
 			else
 			{
 				char aBuf[128];
-				str_format(aBuf, sizeof(aBuf), "SELECT item_count FROM %s_uItems WHERE item_owner = '%d' AND il_id = '%d';", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
+				str_format(aBuf, sizeof(aBuf), "SELECT item_count FROM %s_uItems WHERE item_owner = '%d' AND il_id = '%d';", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
 				pSqlServer->executeSqlQuery(aBuf);
 
 				if(pSqlServer->GetResults()->next())
@@ -595,7 +595,7 @@ public:
 					"SET item_count = item_count + '%d', item_settings = item_settings + '%d' "
 					"WHERE item_owner = '%d' AND il_id = '%d';"
 					, pSqlServer->GetPrefix()
-					, m_Count, m_Settings, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
+					, m_Count, m_Settings, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
 				pSqlServer->executeSql(aBuf);
 				
 				m_pServer->m_stInv[m_ClientID][m_ItemID].i_count += m_Count;
@@ -607,7 +607,7 @@ public:
 				"(il_id, item_owner, item_count, item_type, item_settings, item_enchant) "
 				"VALUES ('%d', '%d', '%d', '%d', '%d', '%d');"
 				, pSqlServer->GetPrefix()
-				, m_ItemID, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_Count, m_pServer->m_stInv[m_ClientID][m_ItemID].i_type, m_Settings, m_Enchant);	
+				, m_ItemID, m_pServer->m_aClients[m_ClientID].m_UserID, m_Count, m_pServer->m_stInv[m_ClientID][m_ItemID].i_type, m_Settings, m_Enchant);	
 			pSqlServer->executeSql(aBuf);
 
 			m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings = m_Settings;
@@ -657,7 +657,7 @@ public:
 				"SELECT item_count FROM %s_uItems "
 				"WHERE item_owner = '%d' AND il_id = '%d';",
 				pSqlServer->GetPrefix(),
-				m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
+				m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			if(pSqlServer->GetResults()->next())
@@ -672,7 +672,7 @@ public:
 						"SET item_count = item_count - '%d' "
 						"WHERE item_owner = '%d' AND il_id = '%d';"
 						, pSqlServer->GetPrefix()
-						, m_Count, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
+						, m_Count, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
 					pSqlServer->executeSql(aBuf);	
 					m_pServer->m_stInv[m_ClientID][m_ItemID].i_count -= m_Count;
 				}
@@ -682,7 +682,7 @@ public:
 						"DELETE FROM %s_uItems " 
 						"WHERE item_owner = '%d' AND il_id = '%d';"
 						, pSqlServer->GetPrefix()
-						, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);	
+						, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);	
 					pSqlServer->executeSql(aBuf);			
 					m_pServer->m_stInv[m_ClientID][m_ItemID].i_count = 0;
 					m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings = 0;
@@ -733,7 +733,7 @@ public:
 					"SET item_settings = '%d', item_enchant = '%d' "
 					"WHERE item_owner = '%d' AND il_id = '%d';"
 					, pSqlServer->GetPrefix()
-					, m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings, m_pServer->m_stInv[m_ClientID][m_ItemID].i_enchant, m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_ItemID);
+					, m_pServer->m_stInv[m_ClientID][m_ItemID].i_settings, m_pServer->m_stInv[m_ClientID][m_ItemID].i_enchant, m_pServer->m_aClients[m_ClientID].m_UserID, m_ItemID);
 				pSqlServer->executeSql(aBuf);
 			}
 			return true;
@@ -778,12 +778,12 @@ public:
 					"SELECT il_id, item_type FROM %s_uItems "
 					"WHERE item_owner = '%d' AND item_type != '10, 12, 15, 16, 17';",
 					pSqlServer->GetPrefix(),
-					m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_Type);
+					m_pServer->m_aClients[m_ClientID].m_UserID);
 				pSqlServer->executeSqlQuery(aBuf);
 
 				for(int i = 0; i < 16; i++)
 					m_pServer->m_aClients[m_ClientID].m_ItemCount[i] = 0;
- 
+
 				while(pSqlServer->GetResults()->next())
 				{
 					int ItemType = (int)pSqlServer->GetResults()->getInt("item_type");
@@ -796,7 +796,7 @@ public:
 				"SELECT il_id, item_count FROM %s_uItems "
 				"WHERE item_owner = '%d' AND item_type = '%d';",
 				pSqlServer->GetPrefix(),
-				m_pServer->m_aClients[m_ClientID].AccData.m_UserID, m_Type);
+				m_pServer->m_aClients[m_ClientID].m_UserID, m_Type);
 			pSqlServer->executeSqlQuery(aBuf);
 			
 			bool found = false;
@@ -1147,7 +1147,7 @@ public:
 				"SELECT * FROM %s_Users "
 				"WHERE UserId = %d;"
 				, pSqlServer->GetPrefix()
-				, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+				, m_pServer->m_aClients[m_ClientID].m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			if(pSqlServer->GetResults()->next())
@@ -1174,10 +1174,10 @@ public:
 				{
 					CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, "登录时出现错误,请报告管理员");
 					m_pServer->AddGameServerCmd(pCmd);
-					dbg_msg("user", "玩家ID %d 的数据初始化出现问题", m_pServer->m_aClients[m_ClientID].AccData.m_UserID);	
+					dbg_msg("user", "玩家ID %d 的数据初始化出现问题", m_pServer->m_aClients[m_ClientID].m_UserID);	
 					return false;
 				}
-				dbg_msg("user", "玩家ID %d 的数据初始化成功", m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+				dbg_msg("user", "玩家ID %d 的数据初始化成功", m_pServer->m_aClients[m_ClientID].m_UserID);
 			}
 			else
 			{
@@ -1200,7 +1200,7 @@ public:
 		try
 		{
 			str_format(aBuf, sizeof(aBuf), 
-				"SELECT il_id, item_count, item_settings, item_enchant FROM %s_uItems WHERE item_owner = %d;", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+				"SELECT il_id, item_count, item_settings, item_enchant FROM %s_uItems WHERE item_owner = %d;", pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			while(pSqlServer->GetResults()->next())
@@ -1227,7 +1227,7 @@ public:
 			str_format(aBuf, sizeof(aBuf), 
 				"SELECT * FROM %s_uClass WHERE UserID = %d;"
 				, pSqlServer->GetPrefix()
-				, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+				, m_pServer->m_aClients[m_ClientID].m_UserID);
 			pSqlServer->executeSqlQuery(aBuf);
 
 			if(pSqlServer->GetResults()->next())
@@ -1321,7 +1321,7 @@ public:
 					m_pServer->m_aClients[m_ClientID].AccData.m_IsJailed, 
 					m_pServer->m_aClients[m_ClientID].AccData.m_JailLength,
 					m_pServer->m_aClients[m_ClientID].AccData.m_SummerHealingTimes,  
-					m_UserID);
+					m_pServer->m_aClients[m_ClientID].m_UserID);
 				//dbg_msg("sql",aBuf);
 				pSqlServer->executeSqlQuery(aBuf);
 			}
@@ -1344,7 +1344,7 @@ public:
 					"WHERE UserID = '%d';"
 					, pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Upgrade, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_SkillPoint, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Speed, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Health, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Damage,
 					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HPRegen, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_AmmoRegen, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Ammo, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Spray, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Mana, 
-					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HammerRange, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Pasive2, m_UserID);
+					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HammerRange, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Pasive2, m_pServer->m_aClients[m_ClientID].m_UserID);
 				
 				pSqlServer->executeSqlQuery(aBuf);
 			}
@@ -1354,7 +1354,7 @@ public:
 				str_format(aBuf, sizeof(aBuf), 
 					"UPDATE %s_Users SET ClanID = '%d' WHERE UserId = '%d';"
 					, pSqlServer->GetPrefix()
-					, ClanID, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+					, ClanID, m_pServer->m_aClients[m_ClientID].m_UserID);
 				pSqlServer->executeSqlQuery(aBuf);	
 				
 				if(ClanID > 0)
@@ -1427,13 +1427,13 @@ public:
 			{
 				for(int i = 0; i < MAX_PLAYERS; ++i)
 				{
-					if((int)pSqlServer->GetResults()->getInt("UserId") == m_pServer->m_aClients[i].AccData.m_UserID)
+					if((int)pSqlServer->GetResults()->getInt("UserId") == m_pServer->m_aClients[i].m_UserID)
 					{
-						m_pServer->m_aClients[m_ClientID].AccData.m_UserID = -1;
+						m_pServer->m_aClients[m_ClientID].m_UserID = -1;
 						return false;
 					}
 				}
-				m_pServer->m_aClients[m_ClientID].AccData.m_UserID = (int)pSqlServer->GetResults()->getInt("UserId");
+				m_pServer->m_aClients[m_ClientID].m_UserID = (int)pSqlServer->GetResults()->getInt("UserId");
 				m_pServer->InitClientDB(m_ClientID);
 			}
 			else
@@ -1713,7 +1713,7 @@ public:
 			str_format(aBuf, sizeof(aBuf), 
 				"UPDATE %s_Users SET PasswordHash = '%s' WHERE UserId = '%d';"
 				, pSqlServer->GetPrefix()
-				, m_sPasswordHash.ClrStr(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+				, m_sPasswordHash.ClrStr(), m_pServer->m_aClients[m_ClientID].m_UserID);
 			//dbg_msg("test","1.5");
 			pSqlServer->executeSql(aBuf);	
 			//dbg_msg("test","2");
@@ -2022,7 +2022,7 @@ public:
 			if(pSqlServer->GetResults()->next())
 			{
 				m_pServer->m_aClients[m_ClientID].m_UserStatusID = (int)pSqlServer->GetResults()->getInt("ID");
-				//dbg_msg("uid","%d",m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
+				//dbg_msg("uid","%d",m_pServer->m_aClients[m_ClientID].m_UserID);
 			}
 				dbg_msg("user","玩家 %s 上线了", m_sNick.ClrStr());
 		}
@@ -2500,5 +2500,231 @@ public:
 			return false;
 		}
 		return true;
+	}
+};
+
+//#####################################################################
+// Создание клана
+class CSqlJob_Server_Newclan : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+	int m_ClientID;
+	CSqlString<64> m_sName;
+	CSqlString<64> m_sNick;
+	
+public:
+	CSqlJob_Server_Newclan(CServer* pServer, int ClientID, const char* pName)
+	{
+		m_pServer = pServer;
+		m_ClientID = ClientID;
+		m_sName = CSqlString<64>(pName);
+		m_sNick = CSqlString<64>(m_pServer->ClientName(m_ClientID));
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		char aBuf[512];
+		// Проверка регистра
+		if(m_pServer->m_aClients[m_ClientID].m_LogInstance != GetInstance()) return true;
+		try
+		{
+			str_format(aBuf, sizeof(aBuf), "SELECT ClanID FROM %s_Clans WHERE Clanname COLLATE UTF8_GENERAL_CI = '%s';", 
+			pSqlServer->GetPrefix(), m_sName.ClrStr());
+			pSqlServer->executeSqlQuery(aBuf);
+
+			if(pSqlServer->GetResults()->next())
+			{
+				dbg_msg("clan", "公会名称 %s 已被使用", m_sName);
+				CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("这个名称已被使用"));
+				m_pServer->AddGameServerCmd(pCmd);
+				
+				return true;
+			}
+			else
+			{
+				str_format(aBuf, sizeof(aBuf), 
+					"INSERT INTO %s_Clans (Clanname, LeaderName, LeaderID, Money, Exp) VALUES ('%s', '%s', '%d', '0', '0');"
+					, pSqlServer->GetPrefix(), m_sName.ClrStr(), m_sNick.ClrStr(), m_pServer->m_aClients[m_ClientID].m_UserID);
+				pSqlServer->executeSql(aBuf);
+				//dbg_msg("test","1");
+				str_format(aBuf, sizeof(aBuf), 
+					"SELECT * FROM %s_Clans WHERE Clanname COLLATE UTF8_GENERAL_CI = '%s';"
+					, pSqlServer->GetPrefix(), m_sName.ClrStr());
+				pSqlServer->executeSqlQuery(aBuf);
+				//dbg_msg("test","2");
+				if(pSqlServer->GetResults()->next())
+				{
+					int ClanID = (int)pSqlServer->GetResults()->getInt("ClanID");
+					m_pServer->m_stClan[ClanID].ID = ClanID;
+					m_pServer->m_stClan[ClanID].Level = (int)pSqlServer->GetResults()->getInt("Level");
+					m_pServer->m_stClan[ClanID].Money = (int)pSqlServer->GetResults()->getInt("Money");
+					m_pServer->m_stClan[ClanID].MaxMemberNum = (int)pSqlServer->GetResults()->getInt("MaxNum");
+					m_pServer->m_stClan[ClanID].MemberNum = 1;
+					
+					str_copy(m_pServer->m_stClan[ClanID].Name, pSqlServer->GetResults()->getString("Clanname").c_str(), sizeof(m_pServer->m_stClan[ClanID].Name));
+					str_copy(m_pServer->m_stClan[ClanID].Creator, pSqlServer->GetResults()->getString("LeaderName").c_str(), sizeof(m_pServer->m_stClan[ClanID].Creator));
+
+					m_pServer->m_aClients[m_ClientID].AccData.m_ClanID = ClanID;
+					str_copy(m_pServer->m_aClients[m_ClientID].AccData.m_Clan, pSqlServer->GetResults()->getString("Clanname").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].AccData.m_Clan));
+					//dbg_msg("test","3");
+					//try
+					//{
+						//dbg_msg("test","4,%d", ClanID);
+						str_format(aBuf, sizeof(aBuf), "UPDATE %s_Users SET ClanID = '%d' WHERE UserId = '%d';"
+							, pSqlServer->GetPrefix()
+							, ClanID, m_pServer->m_aClients[m_ClientID].m_UserID);
+						pSqlServer->executeSql(aBuf);	// 麻了,鬼知道为啥这玩意执行以后,明明是成功的,读取到的值居然是失败的
+						//dbg_msg("test","5");
+					/*}
+					catch(sql::SQLException const &e)
+					{*/
+						//dbg_msg("test","6");
+						//dbg_msg("test","7");
+						// 干脆把代码写这得了,好像没啥毛病
+						//CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, ("创建成功,公会票已使用"));
+						//m_pServer->AddGameServerCmd(pCmd);
+						//dbg_msg("clan","%s 创建了 %s 公会", m_sNick, m_sName);
+
+						//m_pServer->RemItem(m_ClientID, CLANTICKET, 1, -1);
+						//return true;
+					//}
+					//dbg_msg("test","7");
+					CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("创建成功,公会票已使用"));
+					m_pServer->AddGameServerCmd(pCmd);
+					//dbg_msg("clan","%s 创建了 %s 公会", m_sNick, m_sName);
+
+					m_pServer->RemItem(m_ClientID, CLANTICKET, 1, -1);
+					return true;
+				}
+			}
+		}
+		catch (sql::SQLException const &e)
+		{
+			//dbg_msg("test","0");
+			CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("创建失败"));
+			m_pServer->AddGameServerCmd(pCmd);
+			dbg_msg("sql", "公会创建失败 MySQL 错误: %s", e.what());
+			return false;
+		}		
+		
+		return true;
+	}
+	
+	virtual void CleanInstanceRef()
+	{
+		m_pServer->m_aClients[m_ClientID].m_LogInstance = -1;
+	}
+};
+
+// Обновление коинтов
+class CSqlJob_Server_UpClanCount : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+	CSqlString<64> m_sName;
+	int m_ClanID;
+	
+public:
+	CSqlJob_Server_UpClanCount(CServer* pServer, int ClanID)
+	{
+		m_pServer = pServer;
+		m_ClanID = ClanID;
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		char aBuf[128];
+		try
+		{
+			str_format(aBuf, sizeof(aBuf), 
+				"SELECT ClanID FROM %s_Users "
+				"WHERE ClanID = '%d';"
+				, pSqlServer->GetPrefix()
+				, m_ClanID);
+			pSqlServer->executeSqlQuery(aBuf);
+			
+			int Num = 0;
+			while(pSqlServer->GetResults()->next())
+				Num++;
+
+			m_pServer->m_stClan[m_ClanID].MemberNum = Num;
+		}
+		catch (sql::SQLException const &e)
+		{
+			dbg_msg("sql", "Error", e.what());
+			return false;
+		}
+		return true;
+	}
+};
+
+// Лист игроков
+class CSqlJob_Server_Listclan : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+	int m_ClientID;
+	int m_ClanID;
+	
+public:
+	CSqlJob_Server_Listclan(CServer* pServer, int ClientID, int ClanID)
+	{
+		m_pServer = pServer;
+		m_ClientID = ClientID;
+		m_ClanID = ClanID;
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		char aBuf[128];
+		if(m_pServer->m_aClients[m_ClientID].m_LogInstance != GetInstance())
+			return true;
+	
+		try
+		{
+			str_format(aBuf, sizeof(aBuf), 
+				"SELECT UserID, ClanID, Level, Nick, ClanAdded FROM %s_Users "
+				"WHERE ClanID = '%d' ORDER BY Level DESC;", pSqlServer->GetPrefix(), m_ClanID);
+			pSqlServer->executeSqlQuery(aBuf);
+			
+			int Num = 0;
+			char aReform[MAX_NAME_LENGTH], aBufW[64], aBufCs[12];
+			while(pSqlServer->GetResults()->next())
+			{
+				str_copy(aReform, pSqlServer->GetResults()->getString("Nick").c_str(), sizeof(aReform));
+				
+				int UserID = (int)pSqlServer->GetResults()->getInt("UserID");
+				int Level = (int)pSqlServer->GetResults()->getInt("Level");
+				int ClanAdded = (int)pSqlServer->GetResults()->getInt("ClanAdded");
+				
+				str_format(aBufCs, sizeof(aBufCs), "cs%d", Num);
+				str_format(aBufW, sizeof(aBufW), "▹ 等级 %d:%s(ID:%d)", Level, aReform, UserID);
+				CServer::CGameServerCmd* pCmd = new CGameServerCmd_AddLocalizeVote_Language(m_ClientID, aBufCs, _(aBufW));
+				m_pServer->AddGameServerCmd(pCmd);
+
+				str_format(aBufW, sizeof(aBufW), "为公会贡献了 %d 黄金", ClanAdded);
+				pCmd = new CGameServerCmd_AddLocalizeVote_Language(m_ClientID, aBufCs, _(aBufW));
+				m_pServer->AddGameServerCmd(pCmd);
+				
+				str_copy(m_pServer->m_aClients[m_ClientID].m_aSelectPlayer[Num], aReform, sizeof(m_pServer->m_aClients[m_ClientID].m_aSelectPlayer[Num]));
+				Num++;
+			}
+			m_pServer->m_stClan[m_ClanID].MemberNum = Num;
+		}
+		catch (sql::SQLException const &e)
+		{
+			CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("Error clan list say administrator."));
+			m_pServer->AddGameServerCmd(pCmd);
+			dbg_msg("sql", "Can't check clanname list (MySQL Error: %s)", e.what());
+			
+			return false;
+		}
+		return true;
+	}
+	
+	virtual void CleanInstanceRef()
+	{
+		m_pServer->m_aClients[m_ClientID].m_LogInstance = -1;
 	}
 };

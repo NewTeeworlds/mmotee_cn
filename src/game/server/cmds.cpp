@@ -426,9 +426,23 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		LastChat();
 		int MapID;
 		if (sscanf(Msg->m_pMessage, "/goto %d", &MapID) != 1)
-			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _(""), NULL);
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("没有这个编号的地图"), NULL);
 
 		GameServer()->Server()->ChangeClientMap(ClientID, MapID);
+		return;
+	}
+	else if (!strncmp(Msg->m_pMessage, "/setclass", 9))
+	{
+		LastChat();
+		int CID, Class;
+		if (sscanf(Msg->m_pMessage, "/setclass %d %d", &CID, &Class) != 2)
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("使用方法：/setclass <启动器ID> <职业ID>"), NULL);
+
+		if(!GameServer()->m_apPlayers[CID])
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("无效的启动器ID"), NULL);
+
+		GameServer()->m_apPlayers[CID]->SetClass(Class);
+		GameServer()->UpdateStats(CID);
 		return;
 	}
 	if (!strncmp(Msg->m_pMessage, "/", 1))

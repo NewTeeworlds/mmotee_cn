@@ -972,13 +972,14 @@ void CGameContext::AreaTick()
 
 void CGameContext::OnTick()
 {
+	
 	// copy tuning
 	m_World.m_Core.m_Tuning = m_Tuning;
 	m_World.Tick();
 
 	// if(world.paused) // make sure that the game object always updates
 	m_pController->Tick();
-
+	
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(!Server()->ClientIngame(i) || !m_apPlayers[i] || m_apPlayers[i]->GetMapID() != GetMapID())
@@ -1156,7 +1157,7 @@ void CGameContext::OnClientConnected(int ClientID)
 
 void CGameContext::OnClientDrop(int ClientID, int Type, const char *pReason)
 {
-	if (g_Config.m_SvLoginControl)
+	if (g_Config.m_SvLoginControl && Server()->GetClientMapID(ClientID) == GetMapID())
 		Server()->SyncOffline(ClientID);
 
 	ClearVotes(ClientID);
@@ -5107,10 +5108,13 @@ void CGameContext::OnInit(int MapID)
 	for (int o = 0; o < 3; o++, CurID++)
 		CreateBot(CurID+1, BOT_NPCW, o);
 
-	Server()->InitInvID();
-	Server()->InitClan();
-	Server()->GetTopClanHouse();
-	Server()->InitMaterialID();
+	if(MapID == DEFAULT_MAP_ID)
+	{
+		Server()->InitInvID();
+		Server()->InitClan();
+		Server()->GetTopClanHouse();
+		Server()->InitMaterialID();
+	}
 }
 
 void CGameContext::OnShutdown()

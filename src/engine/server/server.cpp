@@ -300,7 +300,7 @@ void CServer::CClient::Reset(bool ResetScore)
 		m_LogInstance = -1;
 		mem_zero(&AccData, sizeof(AccData));
 		mem_zero(&AccUpgrade, sizeof(AccUpgrade));
-		AccData.m_UserID = -1;
+		m_UserID = -1;
 
 		m_AntiPing = 0;
 		str_copy(m_aLanguage, "en", sizeof(m_aLanguage));
@@ -805,7 +805,7 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 	pThis->m_aClients[ClientID].m_pRconCmdToSend = 0;
 	pThis->m_aClients[ClientID].m_WaitingTime = 0;
 
-	pThis->m_aClients[ClientID].AccData.m_UserID = -1;
+	pThis->m_aClients[ClientID].m_UserID = -1;
 	pThis->m_aClients[ClientID].AccData.m_ClanID = -1;
 	pThis->m_aClients[ClientID].AccData.m_Level = -1;
 	pThis->m_aClients[ClientID].AccData.m_Jail = false;
@@ -865,7 +865,7 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 
 void CServer::Logout(int ClientID)
 {
-	m_aClients[ClientID].AccData.m_UserID = -1;
+	m_aClients[ClientID].m_UserID = -1;
 }
 
 void CServer::SendMap(int ClientID, int MapID)
@@ -1205,7 +1205,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					char aAddrStr[64];
 					char aBuf[128];
 					net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), false);
-					str_format(aBuf, sizeof(aBuf), "!警告! 陷阱被触发! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].AccData.m_UserID, ClientName(ClientID), aAddrStr);
+					str_format(aBuf, sizeof(aBuf), "!警告! 陷阱被触发! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientName(ClientID), aAddrStr);
 					LogWarning(aBuf);
 					
 					Ban(ClientID, -1, "尝试黑入服务器");
@@ -1219,7 +1219,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					
 					char aAddrStr[64];
 					net_addr_str(m_NetServer.ClientAddr(ClientID), aAddrStr, sizeof(aAddrStr), false);
-					str_format(aBuf, sizeof(aBuf), "!警告! !错误的密码! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].AccData.m_UserID, ClientName(ClientID), aAddrStr);
+					str_format(aBuf, sizeof(aBuf), "!警告! !错误的密码! 用户ID: %d, 游戏名:%s, IP:%s", m_aClients[ClientID].m_UserID, ClientName(ClientID), aAddrStr);
 					LogWarning(aBuf);
 
 					if(m_aClients[ClientID].m_AuthTries >= g_Config.m_SvRconMaxTries)
@@ -2348,12 +2348,12 @@ void CServer::SetSecurity(int ClientID, int n)
 
 bool CServer::IsClientLogged(int ClientID)
 {
-	return m_aClients[ClientID].AccData.m_UserID >= 0;
+	return m_aClients[ClientID].m_UserID >= 0;
 }
 
 int CServer::GetUserID(int ClientID)
 {
-	return m_aClients[ClientID].AccData.m_UserID;
+	return m_aClients[ClientID].m_UserID;
 }
 
 int CServer::GetClanID(int ClientID)
@@ -2608,7 +2608,7 @@ void CServer::InitMaterialID()
 
 void CServer::RemItems(int ItemID, int ClientID, int Count, int Type)
 {
-	if(m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
+	if(m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_RemItems(this, ItemID, ClientID, Count, Type);
@@ -2922,16 +2922,16 @@ void CServer::FirstInit(int ClientID)
 
 void CServer::UpdateStats(int ClientID, int Type)
 {
-	if(m_aClients[ClientID].AccData.m_Class < 0 || (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]) || m_aClients[ClientID].AccData.m_Level <= 0)
+	if(m_aClients[ClientID].AccData.m_Class < 0 || (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]) || m_aClients[ClientID].AccData.m_Level <= 0)
 		return;
 	
-	CSqlJob* pJob = new CSqlJob_Server_UpdateStat(this, ClientID, m_aClients[ClientID].AccData.m_UserID, Type);
+	CSqlJob* pJob = new CSqlJob_Server_UpdateStat(this, ClientID, m_aClients[ClientID].m_UserID, Type);
 	pJob->Start();
 }
 
 void CServer::ListInventory(int ClientID, int Type, int GetCount)
 {
-	if(m_aClients[ClientID].m_LogInstance >= 0 && (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
+	if(m_aClients[ClientID].m_LogInstance >= 0 && (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_ListInventory(this, ClientID, Type, GetCount);
@@ -2977,122 +2977,9 @@ void CServer::InitClanID(int ClanID, Sign Need, const char* SubType, int Price, 
 	pJob->Start();
 }
 
-//#####################################################################
-// Создание клана
-class CSqlJob_Server_Newclan : public CSqlJob
-{
-private:
-	CServer* m_pServer;
-	int m_ClientID;
-	CSqlString<64> m_sName;
-	CSqlString<64> m_sNick;
-	
-public:
-	CSqlJob_Server_Newclan(CServer* pServer, int ClientID, const char* pName)
-	{
-		m_pServer = pServer;
-		m_ClientID = ClientID;
-		m_sName = CSqlString<64>(pName);
-		m_sNick = CSqlString<64>(m_pServer->ClientName(m_ClientID));
-	}
-
-	virtual bool Job(CSqlServer* pSqlServer)
-	{
-		char aBuf[512];
-		// Проверка регистра
-		if(m_pServer->m_aClients[m_ClientID].m_LogInstance != GetInstance()) return true;
-		try
-		{
-			str_format(aBuf, sizeof(aBuf), "SELECT ClanID FROM %s_Clans WHERE Clanname COLLATE UTF8_GENERAL_CI = '%s';", 
-			pSqlServer->GetPrefix(), m_sName.ClrStr());
-			pSqlServer->executeSqlQuery(aBuf);
-
-			if(pSqlServer->GetResults()->next())
-			{
-				dbg_msg("clan", "公会名称 %s 已被使用", m_sName);
-				CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("这个名称已被使用"));
-				m_pServer->AddGameServerCmd(pCmd);
-				
-				return true;
-			}
-			else
-			{
-				str_format(aBuf, sizeof(aBuf), 
-					"INSERT INTO %s_Clans (Clanname, LeaderName, LeaderID, Money, Exp) VALUES ('%s', '%s', '%d', '0', '0');"
-					, pSqlServer->GetPrefix(), m_sName.ClrStr(), m_sNick.ClrStr(), m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
-				pSqlServer->executeSql(aBuf);
-				//dbg_msg("test","1");
-				str_format(aBuf, sizeof(aBuf), 
-					"SELECT * FROM %s_Clans WHERE Clanname COLLATE UTF8_GENERAL_CI = '%s';"
-					, pSqlServer->GetPrefix(), m_sName.ClrStr());
-				pSqlServer->executeSqlQuery(aBuf);
-				//dbg_msg("test","2");
-				if(pSqlServer->GetResults()->next())
-				{
-					int ClanID = (int)pSqlServer->GetResults()->getInt("ClanID");
-					m_pServer->m_stClan[ClanID].ID = ClanID;
-					m_pServer->m_stClan[ClanID].Level = (int)pSqlServer->GetResults()->getInt("Level");
-					m_pServer->m_stClan[ClanID].Money = (int)pSqlServer->GetResults()->getInt("Money");
-					m_pServer->m_stClan[ClanID].MaxMemberNum = (int)pSqlServer->GetResults()->getInt("MaxNum");
-					m_pServer->m_stClan[ClanID].MemberNum = 1;
-					
-					str_copy(m_pServer->m_stClan[ClanID].Name, pSqlServer->GetResults()->getString("Clanname").c_str(), sizeof(m_pServer->m_stClan[ClanID].Name));
-					str_copy(m_pServer->m_stClan[ClanID].Creator, pSqlServer->GetResults()->getString("LeaderName").c_str(), sizeof(m_pServer->m_stClan[ClanID].Creator));
-
-					m_pServer->m_aClients[m_ClientID].AccData.m_ClanID = ClanID;
-					str_copy(m_pServer->m_aClients[m_ClientID].AccData.m_Clan, pSqlServer->GetResults()->getString("Clanname").c_str(), sizeof(m_pServer->m_aClients[m_ClientID].AccData.m_Clan));
-					//dbg_msg("test","3");
-					//try
-					//{
-						//dbg_msg("test","4,%d", ClanID);
-						str_format(aBuf, sizeof(aBuf), "UPDATE %s_Users SET ClanID = '%d' WHERE UserId = '%d';"
-							, pSqlServer->GetPrefix()
-							, ClanID, m_pServer->m_aClients[m_ClientID].AccData.m_UserID);
-						pSqlServer->executeSql(aBuf);	// 麻了,鬼知道为啥这玩意执行以后,明明是成功的,读取到的值居然是失败的
-						//dbg_msg("test","5");
-					/*}
-					catch(sql::SQLException const &e)
-					{*/
-						//dbg_msg("test","6");
-						//dbg_msg("test","7");
-						// 干脆把代码写这得了,好像没啥毛病
-						//CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, ("创建成功,公会票已使用"));
-						//m_pServer->AddGameServerCmd(pCmd);
-						//dbg_msg("clan","%s 创建了 %s 公会", m_sNick, m_sName);
-
-						//m_pServer->RemItem(m_ClientID, CLANTICKET, 1, -1);
-						//return true;
-					//}
-					//dbg_msg("test","7");
-					CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("创建成功,公会票已使用"));
-					m_pServer->AddGameServerCmd(pCmd);
-					//dbg_msg("clan","%s 创建了 %s 公会", m_sNick, m_sName);
-
-					m_pServer->RemItem(m_ClientID, CLANTICKET, 1, -1);
-					return true;
-				}
-			}
-		}
-		catch (sql::SQLException const &e)
-		{
-			//dbg_msg("test","0");
-			CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("创建失败"));
-			m_pServer->AddGameServerCmd(pCmd);
-			dbg_msg("sql", "公会创建失败 MySQL 错误: %s", e.what());
-			return false;
-		}		
-		
-		return true;
-	}
-	
-	virtual void CleanInstanceRef()
-	{
-		m_pServer->m_aClients[m_ClientID].m_LogInstance = -1;
-	}
-};
 void CServer::NewClan(int ClientID, const char* pName)
 {
-	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
+	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_Newclan(this, ClientID, pName);
@@ -3100,78 +2987,9 @@ void CServer::NewClan(int ClientID, const char* pName)
 	pJob->Start();
 }
 
-// Лист игроков
-class CSqlJob_Server_Listclan : public CSqlJob
-{
-private:
-	CServer* m_pServer;
-	int m_ClientID;
-	int m_ClanID;
-	
-public:
-	CSqlJob_Server_Listclan(CServer* pServer, int ClientID, int ClanID)
-	{
-		m_pServer = pServer;
-		m_ClientID = ClientID;
-		m_ClanID = ClanID;
-	}
-
-	virtual bool Job(CSqlServer* pSqlServer)
-	{
-		char aBuf[128];
-		if(m_pServer->m_aClients[m_ClientID].m_LogInstance != GetInstance())
-			return true;
-	
-		try
-		{
-			str_format(aBuf, sizeof(aBuf), 
-				"SELECT UserID, ClanID, Level, Nick, ClanAdded FROM %s_Users "
-				"WHERE ClanID = '%d' ORDER BY Level DESC;", pSqlServer->GetPrefix(), m_ClanID);
-			pSqlServer->executeSqlQuery(aBuf);
-			
-			int Num = 0;
-			char aReform[MAX_NAME_LENGTH], aBufW[64], aBufCs[12];
-			while(pSqlServer->GetResults()->next())
-			{
-				str_copy(aReform, pSqlServer->GetResults()->getString("Nick").c_str(), sizeof(aReform));
-				
-				int UserID = (int)pSqlServer->GetResults()->getInt("UserID");
-				int Level = (int)pSqlServer->GetResults()->getInt("Level");
-				int ClanAdded = (int)pSqlServer->GetResults()->getInt("ClanAdded");
-				
-				str_format(aBufCs, sizeof(aBufCs), "cs%d", Num);
-				str_format(aBufW, sizeof(aBufW), "▹ 等级 %d:%s(ID:%d)", Level, aReform, UserID);
-				CServer::CGameServerCmd* pCmd = new CGameServerCmd_AddLocalizeVote_Language(m_ClientID, aBufCs, _(aBufW));
-				m_pServer->AddGameServerCmd(pCmd);
-
-				str_format(aBufW, sizeof(aBufW), "为公会贡献了 %d 黄金", ClanAdded);
-				pCmd = new CGameServerCmd_AddLocalizeVote_Language(m_ClientID, aBufCs, _(aBufW));
-				m_pServer->AddGameServerCmd(pCmd);
-				
-				str_copy(m_pServer->m_aClients[m_ClientID].m_aSelectPlayer[Num], aReform, sizeof(m_pServer->m_aClients[m_ClientID].m_aSelectPlayer[Num]));
-				Num++;
-			}
-			m_pServer->m_stClan[m_ClanID].MemberNum = Num;
-		}
-		catch (sql::SQLException const &e)
-		{
-			CServer::CGameServerCmd* pCmd = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("Error clan list say administrator."));
-			m_pServer->AddGameServerCmd(pCmd);
-			dbg_msg("sql", "Can't check clanname list (MySQL Error: %s)", e.what());
-			
-			return false;
-		}
-		return true;
-	}
-	
-	virtual void CleanInstanceRef()
-	{
-		m_pServer->m_aClients[m_ClientID].m_LogInstance = -1;
-	}
-};
 void CServer::ListClan(int ClientID, int ClanID)
 {
-	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
+	if(m_aClients[ClientID].m_LogInstance >= 0 || (m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID]))
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_Listclan(this, ClientID, ClanID);
@@ -3179,47 +2997,6 @@ void CServer::ListClan(int ClientID, int ClanID)
 	pJob->Start();
 }
 
-// Обновление коинтов
-class CSqlJob_Server_UpClanCount : public CSqlJob
-{
-private:
-	CServer* m_pServer;
-	CSqlString<64> m_sName;
-	int m_ClanID;
-	
-public:
-	CSqlJob_Server_UpClanCount(CServer* pServer, int ClanID)
-	{
-		m_pServer = pServer;
-		m_ClanID = ClanID;
-	}
-
-	virtual bool Job(CSqlServer* pSqlServer)
-	{
-		char aBuf[128];
-		try
-		{
-			str_format(aBuf, sizeof(aBuf), 
-				"SELECT ClanID FROM %s_Users "
-				"WHERE ClanID = '%d';"
-				, pSqlServer->GetPrefix()
-				, m_ClanID);
-			pSqlServer->executeSqlQuery(aBuf);
-			
-			int Num = 0;
-			while(pSqlServer->GetResults()->next())
-				Num++;
-
-			m_pServer->m_stClan[m_ClanID].MemberNum = Num;
-		}
-		catch (sql::SQLException const &e)
-		{
-			dbg_msg("sql", "Error", e.what());
-			return false;
-		}
-		return true;
-	}
-};
 void CServer::UpdClanCount(int ClanID)
 {
 	CSqlJob* pJob = new CSqlJob_Server_UpClanCount(this, ClanID);
@@ -3252,7 +3029,7 @@ void CServer::ExitClanOff(int ClientID, const char* pName)
 {
 	for(int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		if(ClientIngame(i) && m_aClients[i].AccData.m_UserID)
+		if(ClientIngame(i) && m_aClients[i].m_UserID)
 			if(str_comp_nocase(pName, ClientName(i)) == 0)
 				m_aClients[i].AccData.m_ClanID = 0;
 	}
@@ -3263,7 +3040,7 @@ void CServer::ExitClanOff(int ClientID, const char* pName)
 
 void CServer::InitClientDB(int ClientID)
 {
-	if(m_aClients[ClientID].AccData.m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
+	if(m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
 		return;
 
 	CSqlJob* pJob = new CSqlJob_Server_InitClient(this, ClientID);
