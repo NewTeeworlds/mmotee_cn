@@ -377,9 +377,11 @@ INSERT INTO `tw_uItemList` VALUES
 (151,10,'称号-人民公社','- 吃菜获得经验*1.5'),
 (152,10,'称号-大跃进','- 移速增加，具有"浮夸风"'),
 (153,4,'劳动节称号包','- 所有劳动节限定称号"'),
-(154,10,'出生点设置','- 出生点设置');
--- (131,10,'中秋节称号','- 射速+10'),
--- (132,5,'活动用品','用于合成');
+(154,10,'出生点设置','- 出生点设置'),
+(155,6,'龙镐','- 用于挖矿'),
+(156,5,'核心基座','- 用于合成核心'),
+(157,1,'神器-繁林核心','- 单次伐木进度+5%/个'),
+(158,1,'神器-髓岩核心','- 挖矿时补偿龙矿，锡矿概率增加');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
 UNLOCK TABLES
 
@@ -548,7 +550,7 @@ INSERT INTO `tw_uItemList_en` VALUES
 (138,10,'Show Clan','- TAB显示'),
 (139,10,'Guard Hammer Shard','- 用于合成守卫锤子'),
 (140,1,'Guard Hammer','- 守卫的锤子,强者愈弱,弱者愈强'),
-(141,1,'Juicer','- Eat all vegetables in 1 press(exp -5%)'),
+(141,1,'Juicer','- Eat all vegetables in 1 go(exp -5%)'),
 (142,10,'Antiping','- 可以减少部分延迟'),
 (143,4,'Customized Package','- 让你使用自己的皮肤和颜色'),
 (144,10,'Title WorkerF','- 挖矿速度提升100%'),
@@ -561,7 +563,11 @@ INSERT INTO `tw_uItemList_en` VALUES
 (151,10,'Title People Commune','- 吃菜获得经验*1.5'),
 (152,10,'Title G.L.F.','- 移速增加，具有"浮夸风"'),
 (153,4,'Labour Day Package','- 所有劳动节限定称号"'),
-(154,10,'Spawn Settings','- 出生点设置');
+(154,10,'Spawn Settings','- 出生点设置'),
+(155,6,'Dragon Pickaxe','- For mining'),
+(156,5,'Core Base','- For crafting cores'),
+(157,1,'Rare Forest Core','- Cut Wood faster 75%'),
+(158,1,'Rare Rock Core','- get more dragon & exp when mining');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;

@@ -125,7 +125,7 @@ void CPickup::StartFarm(int ClientID)
 			Temp += 5;
 		}
 
-		if(Server()->GetItemSettings(ClientID, TITLE_FRAMERF))
+		if(Server()->GetItemSettings(ClientID, TITLEFARMF))
 			Temp *= 2;
 		
 		m_Drop += Temp;
@@ -147,7 +147,7 @@ void CPickup::StartFarm(int ClientID)
 			if(random_prob(0.5f))
 				Server()->SetMaterials(2, Server()->GetMaterials(2)+1);
 
-			if(Server()->GetItemSettings(ClientID, TITLE_FRAMERM))
+			if(Server()->GetItemSettings(ClientID, TITLEFARMM))
 				LevelItem *= 2;
 
 			switch(random_int(0, 4))
@@ -174,7 +174,21 @@ void CPickup::StartFarm(int ClientID)
 		int Broke = 0;
 		int Count = 0;
 		int Temp = 0;
-		const char* ItemName = "Nope";
+		const char* ItemName = "啥都没有";
+		if(Server()->GetItemCount(ClientID, DRAGONPIX))
+		{
+			Count = Server()->GetItemCount(ClientID, DRAGONPIX);
+			Broke = 985*Server()->GetItemCount(ClientID, DRAGONPIX);
+			Dropable = Server()->GetItemSettings(ClientID, DRAGONPIX);
+			if(Dropable <= 0)
+			{
+				Server()->RemItem(ClientID, DRAGONPIX, Server()->GetItemCount(ClientID, DRAGONPIX), -1);
+				GameServer()->SendChatTarget_Localization(ClientID, -1, _("~ 矿具: {str:name} 已损毁, 不能用了"), "name", Server()->GetItemName(ClientID, DRAGONPIX), NULL);
+			}
+			Server()->SetItemSettingsCount(ClientID, DRAGONPIX, Dropable-1);
+			ItemName = Server()->GetItemName(ClientID, DRAGONPIX);
+			Temp += random_int(45,60);	
+		}
 		if(Server()->GetItemCount(ClientID, DIAMONDPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, DIAMONDPIX);
@@ -235,7 +249,7 @@ void CPickup::StartFarm(int ClientID)
 		{
 			Temp += 5;
 		}
-		if(Server()->GetItemSettings(ClientID, TITLE_WORKERF))
+		if(Server()->GetItemSettings(ClientID, TITLEWORKF))
 			Temp *= 2;
 
 		m_Drop += Temp;
@@ -256,16 +270,15 @@ void CPickup::StartFarm(int ClientID)
 			int ItemDrop = 3+LevelItem/g_Config.m_SvMinerUpgrade;
 			if(ItemDrop > 11)
 				ItemDrop = 11;
-			int DragonOre = 1 + LevelItem / 250;
-			if(DragonOre >= 6)
-			{
-				DragonOre = 6;
-			}
-
-			if(Server()->GetItemSettings(ClientID, TITLE_WORKERM))
+			if(Server()->GetItemSettings(ClientID, TITLEWORKM))
 			{
 				LevelItem *= 2;
-				DragonOre *= 2;
+			}
+			if(Server()->GetItemCount(ClientID, MINECORE) && ItemDrop >= 7)
+			{
+				int DragonExtra = Server()->GetItemCount(ClientID, MINECORE);
+				GameServer()->GiveItem(ClientID, DRAGONORE, DragonExtra);
+				GameServer()->SendChatTarget_Localization(ClientID, -1, _("[{str:name}] 获得{int:dragon}个龙矿"), "name", Server()->GetItemName(ClientID, MINECORE), "dragon", DragonExtra, NULL);
 			}
 
 			switch(random_int(0, ItemDrop))
@@ -273,15 +286,13 @@ void CPickup::StartFarm(int ClientID)
 				case 3: GameServer()->GiveItem(ClientID, IRONORE, 1+LevelItem/15); break; 
 				case 4: GameServer()->GiveItem(ClientID, GOLDORE, 1+LevelItem/15); break; 
 				case 5: GameServer()->GiveItem(ClientID, DIAMONDORE, 1+LevelItem/15); break; 
-				case 7: GameServer()->GiveItem(ClientID, DRAGONORE, DragonOre); break; 
+				case 7: GameServer()->GiveItem(ClientID, DRAGONORE, 1+LevelItem/600); break; 
 				default: GameServer()->GiveItem(ClientID, COOPERORE, 1+LevelItem/15); break;
 			}
 			GameServer()->GiveItem(ClientID, MINEREXP, 1);
 			
-			if(random_prob(0.0002f))
+			if(random_prob(Server()->GetItemCount(ClientID, MINECORE) + 1) * 0.01f)
 				GameServer()->GiveItem(ClientID, STANNUM, 1);
-
-			
 
 			// 加经验
 			GameServer()->m_apPlayers[ClientID]->AccData()->m_Exp += 10+LevelItem;
@@ -315,8 +326,9 @@ void CPickup::StartFarm(int ClientID)
 			Temp += 10+random_int(0, 25);
 		}
 
-		if(Server()->GetItemSettings(ClientID, TITLE_GLF))
+		if(Server()->GetItemSettings(ClientID, TITLEGLF))
 			Temp *= 2;
+		Temp += min(75, Server()->GetItemCount(ClientID, WOODCORE) * 5);
 		
 		m_Drop += Temp;
 
@@ -330,7 +342,7 @@ void CPickup::StartFarm(int ClientID)
 		if(m_Drop >= 100)
 		{
 			Temp = 1;
-			if(Server()->GetItemSettings(ClientID, TITLE_GLF))
+			if(Server()->GetItemSettings(ClientID, TITLEGLF))
 				Temp += 2;
 			GameServer()->GiveItem(ClientID, WOOD, Temp);
 		

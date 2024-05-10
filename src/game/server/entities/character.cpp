@@ -1354,7 +1354,7 @@ void CCharacter::Die(int Killer, int Weapon)
 					get = 50;
 			}
 			
-			if(!Server()->GetItemSettings(Killer, TITLE_TGPCR))
+			if(!Server()->GetItemSettings(Killer, TITLECR))
 			{
 				pKillerPlayer->AccData()->m_Rel += get;
 				GameServer()->SendChatTarget_Localization(Killer, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pKillerPlayer->AccData()->m_Rel, NULL);
@@ -1547,7 +1547,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 				
 			// Агрессия
 			// 守卫愤怒值
-			if(m_pPlayer->GetBotType() == BOT_GUARD && !Server()->GetItemSettings(From, TITLE_TGPCR))
+			if(m_pPlayer->GetBotType() == BOT_GUARD && !Server()->GetItemSettings(From, TITLECR))
 			{
 				pFrom->AccData()->m_Rel += 10;
 				GameServer()->SendChatTarget_Localization(From, CHATCATEGORY_DEFAULT, _("交际愤怒值: {int:rel}"), "rel", &pFrom->AccData()->m_Rel, NULL);
@@ -1595,7 +1595,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	
 	if(From >= 0 && pFrom && pFrom->GetCharacter())
 	{
-		if(Server()->GetItemSettings(From, GUARD_HAMMER) && Weapon == WEAPON_HAMMER)
+		if(Server()->GetItemSettings(From, GUARDHAMMER) && Weapon == WEAPON_HAMMER)
 		{
 			if(m_pPlayer->m_Search)
 				Dmg = m_Health;
@@ -1637,7 +1637,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			if(pFrom->GetCharacter()->m_ActiveWeapon == WEAPON_SHOTGUN)
 				Dmg = (int)(CritDamage/2);
 			
-			if(Server()->GetItemSettings(From, TITLE_DONATE_BAOJI50))
+			if(Server()->GetItemSettings(From, TITLEDNTCRIT))
 				Dmg *= 50;
 
 			if(!Server()->GetItemSettings(From, SCHAT))
@@ -1766,7 +1766,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 			if(pFrom && m_pPlayer->GetBotType() == BOT_GUARD)
 			{
-				CreateDropRandom(GUARD_HEAD, 1, 20, From, Force/(50+randforce));
+				CreateDropRandom(GUARDHEAD, 1, 20, From, Force/(50+randforce));
 				CreateDropRandom(PIGPORNO, 4, 100, From, Force/(50+randforce));
 			}
 		}
@@ -1813,7 +1813,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 						case BOT_BOSSGUARD:
 							CreateDropRandom(MONEYBAG, random_int(500, 1000), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(5, 10), false, i, Force/(35+randforce));
-							CreateDropRandom(GUARD_HAMMER_FRAG, random_int(1, 4), 25, i, Force/(12+randforce));
+							CreateDropRandom(GUARDHAMFRAG, random_int(1, 4), 25, i, Force/(12+randforce));
 							break;
 
 						default:
@@ -2117,10 +2117,10 @@ void CCharacter::ClassSpawnAttributes()
 		m_Armor += 1000;
 	}
 
-	if (Server()->GetItemSettings(m_pPlayer->GetCID(), TITLE_DONATE_SHENGMIN70))
+	if (Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEDNTHP))
 		m_Health *= 70;
 
-	if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLE_PPP))
+	if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEPPP))
 	{
 		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade()->m_Speed += 10;
 	}
@@ -2387,7 +2387,7 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
 		return;
 	}
-	if (Server()->GetItemSettings(HowID, TITLE_PPP))
+	if (Server()->GetItemSettings(HowID, TITLEPPP))
 		Random += 20;
 	
 	if(Random > 100)
