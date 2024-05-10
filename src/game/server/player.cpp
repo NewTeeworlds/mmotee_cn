@@ -426,11 +426,11 @@ void CPlayer::Tick()
 			int Time = m_JailTick / Server()->TickSpeed();
 			if (!AccData()->m_IsJailed)
 			{
-				GameServer()->SendChatTarget_World(m_ClientID, 100, 100, _("你进了监狱, 刑期:{sec:siska}."), "siska", &Time, NULL);
+				GameServer()->SendBroadcast_Localization(m_ClientID, 100, 100, _("你进了监狱, 刑期:{sec:siska}."), "siska", &Time, NULL);
 			}
 			else
 			{
-				GameServer()->SendChatTarget_World(m_ClientID, 100, 100, _("你因得罪皇上（管理员）被打入大牢, 刑期:{sec:siska}."), "siska", &Time, NULL);
+				GameServer()->SendBroadcast_Localization(m_ClientID, 100, 100, _("你因得罪皇上（管理员）被打入大牢, 刑期:{sec:siska}."), "siska", &Time, NULL);
 			}
 			m_JailTick--;
 			if (!m_JailTick)
