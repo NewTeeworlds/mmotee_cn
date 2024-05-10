@@ -291,7 +291,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			GameServer()->GiveItem(ClientID, MINEREXP, 1);
 			
-			if(random_prob(Server()->GetItemCount(ClientID, MINECORE) + 1) * 0.01f)
+			if(random_prob((Server()->GetItemCount(ClientID, MINECORE) + 1) * 0.01f))
 				GameServer()->GiveItem(ClientID, STANNUM, 1);
 
 			// 加经验
