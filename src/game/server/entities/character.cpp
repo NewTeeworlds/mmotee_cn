@@ -1714,6 +1714,14 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			if(g_Config.m_SvEventSummer)
 				CreateDropRandom(ESUMMER, 1, 45, From, Force/(50+randforce));
 
+			if(!pFrom->IsBot())
+			{
+				int woodcore = Server()->GetItemCount(pFrom->GetCID(), WOODCORE);
+				if(woodcore)
+					CreateDropRandom(BIGWOOD, min(10, (int)woodcore / 2), 10, From, Force/(50+randforce));
+			}
+				
+
 			if(m_pPlayer->GetBotType() == BOT_L1MONSTER)
 			{
 				if(!GameServer()->m_CityStart)
