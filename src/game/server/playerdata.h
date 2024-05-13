@@ -3,7 +3,6 @@
 
 struct SAccData
 {
-    int m_UserID;
     int m_Level;
     unsigned long int m_Exp;
     int m_Class = 0;

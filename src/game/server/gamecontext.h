@@ -112,11 +112,23 @@ enum
 	QUEST6 = 120,
 	QUEST7 = 3,
 };
+
 enum
 {
 	HAMMERRANGE = 15
 };
 
+enum
+{
+	PRICEHEALTH = 20,
+	PRICEDMG = 50,
+	PRICEAMMOREGAN = 50,
+	PRICEAMMO = 100,
+	PRICEHEALTHREGAN = 20,
+	PRICEHANDLE = 50,
+	PRICEMANA = 10,
+	PRICESPRAY = 100,
+};
 class CGameContext : public IGameServer
 {
 	IServer *m_pServer;
@@ -299,6 +311,7 @@ public:
 	virtual void SendChatTarget_Localization(int To, int Category, const char *pText, ...);
 	virtual void SendChatTarget_Localization_P(int To, int Category, int Number, const char *pText, ...);
 	virtual void SendChatClan(int ClanID, const char *pText, ...);
+	virtual void SendChatTarget_World(int To, int Category, const char *pText, ...);
 
 	// Основные функции
 	// 主要功能

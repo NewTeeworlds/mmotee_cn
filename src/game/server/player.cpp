@@ -140,7 +140,7 @@ void CPlayer::RandomBoxTick()
 					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
 
 				GameServer()->GiveItem(m_ClientID, getitem, m_OpenBoxAmount);
-				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
+				GameServer()->SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
 														  "name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, RANDOMCRAFTITEM, false), "num", &m_OpenBoxAmount, "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &m_OpenBoxAmount, NULL);
 				m_OpenBoxAmount = 0;
 			}
@@ -170,7 +170,7 @@ void CPlayer::RandomBoxTick()
 					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
 
 				GameServer()->GiveItem(m_ClientID, getitem, m_OpenBoxAmount);
-				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
+				GameServer()->SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
 														  "name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, EVENTBOX, false), "num", &m_OpenBoxAmount, "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &m_OpenBoxAmount, NULL);
 				m_OpenBoxAmount = 0;
 			}
@@ -233,7 +233,7 @@ void CPlayer::RandomBoxTick()
 					GameServer()->CreateDeath(m_pCharacter->m_Pos, m_ClientID);
 
 				GameServer()->GiveItem(m_ClientID, getitem, Get);
-				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
+				GameServer()->SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"),
 														  "name", Server()->ClientName(m_ClientID), "used", Server()->GetItemName(m_ClientID, FARMBOX, false), "num", &m_OpenBoxAmount, "get", Server()->GetItemName(m_ClientID, getitem, false), "num2", &Get, NULL);
 				m_OpenBoxAmount = 0;
 			}
@@ -286,11 +286,11 @@ void CPlayer::BasicAuthedTick()
 		if (AccData()->m_Level % 10 == 0)
 			GameServer()->SendMail(m_ClientID, 8, RANDOMCRAFTITEM, 3);
 		if (AccData()->m_Level == 2)
-			GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("你现在可以去做任务了."), NULL);
+			GameServer()->SendChatTarget_World(m_ClientID, CHATCATEGORY_DEFAULT, _("你现在可以去做任务了."), NULL);
 	}
 	if (upgraded)
 	{
-		GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("[Level UP] 恭喜你你升级了! 你获得了技能点和升级点."), NULL);
+		GameServer()->SendChatTarget_World(m_ClientID, CHATCATEGORY_DEFAULT, _("[Level UP] 恭喜你你升级了! 你获得了技能点和升级点."), NULL);
 		if (m_pCharacter)
 		{
 			GameServer()->CreateLolText(m_pCharacter, false, vec2(0, -75), vec2(0, -1), 50, "Level ++");
@@ -403,7 +403,7 @@ void CPlayer::Tick()
 					}
 
 					GameServer()->SendMail(m_ClientID, 9, Type, 1);
-					GameServer()->SendChatTarget_Localization(m_ClientID, CHATCATEGORY_DEFAULT, _("在线奖励:{str:name} 获得了 {str:item}."), "name", Server()->ClientName(m_ClientID), "item", Server()->GetItemName(m_ClientID, Type), NULL);
+					GameServer()->SendChatTarget_World(m_ClientID, CHATCATEGORY_DEFAULT, _("在线奖励:{str:name} 获得了 {str:item}."), "name", Server()->ClientName(m_ClientID), "item", Server()->GetItemName(m_ClientID, Type), NULL);
 				}
 			}
 			if (Server()->Tick() % (1 * Server()->TickSpeed() * 120) == 0 && g_Config.m_SvLoginControl)
@@ -419,7 +419,7 @@ void CPlayer::Tick()
 		if (!m_Search && AccData()->m_Rel >= 1000)
 		{
 			m_Search = true;
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被通缉了!"), "name", Server()->ClientName(m_ClientID), NULL);
+			GameServer()->SendChatTarget_World(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被通缉了!"), "name", Server()->ClientName(m_ClientID), NULL);
 		}
 		if (m_JailTick && AccData()->m_Jail)
 		{
@@ -444,7 +444,7 @@ void CPlayer::Tick()
 					m_pCharacter->Die(m_ClientID, WEAPON_WORLD);
 
 				GameServer()->UpdateStats(m_ClientID);
-				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name}, 出狱了"), "name", Server()->ClientName(m_ClientID), NULL);
+				GameServer()->SendChatTarget_World(-1, CHATCATEGORY_HEALER, _("玩家 {str:name}, 出狱了"), "name", Server()->ClientName(m_ClientID), NULL);
 			}
 		}
 		if (GetTeam() != TEAM_SPECTATORS && AccData()->m_Rel > 0 && Server()->Tick() % (1 * Server()->TickSpeed() * 60) == 0)
@@ -456,7 +456,7 @@ void CPlayer::Tick()
 			if (AccData()->m_Rel == 0 && m_Search)
 			{
 				m_Search = false;
-				GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被取消通缉了"), "name", Server()->ClientName(m_ClientID), NULL);
+				GameServer()->SendChatTarget_World(-1, CHATCATEGORY_HEALER, _("玩家 {str:name} 被取消通缉了"), "name", Server()->ClientName(m_ClientID), NULL);
 			}
 			GameServer()->SendBroadcast_Localization(m_ClientID, BROADCAST_PRIORITY_GAMEANNOUNCE, BROADCAST_DURATION_GAMEANNOUNCE, _("交际愤怒值 -100. 你的交际愤怒值:{int:rel}"), "rel", &AccData()->m_Rel, NULL);
 			GameServer()->UpdateStats(m_ClientID);
