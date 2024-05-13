@@ -1719,8 +1719,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 				int woodcore = Server()->GetItemCount(pFrom->GetCID(), WOODCORE);
 				if(woodcore)
 				{
-					int Count = min(10, (int)woodcore / 10);
-					CreateDropRandom(BIGWOOD, Count, 10, From, Force/(50+randforce));
+					int Count = min(10, (int)woodcore / 5);
+					CreateDropRandom(BIGWOOD, Count, 5, From, Force/(50+randforce));
 				}
 					
 			}
