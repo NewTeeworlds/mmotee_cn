@@ -3163,10 +3163,11 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	break;
 	case IRON:
 	{
-		if (Server()->GetItemCount(ClientID, IRONORE) < 5 * Count)
-			return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "铁矿x5", NULL);
+		if (Server()->GetItemCount(ClientID, DIAMONDORE) < Count || Server()->GetItemCount(ClientID, IRONORE) < 10 * Count)
+			return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "钻石矿x1, 铁矿x10", NULL);
 
-		Server()->RemItem(ClientID, IRONORE, 5 * Count, -1);
+		Server()->RemItem(ClientID, DIAMONDORE, Count, -1);
+		Server()->RemItem(ClientID, IRONORE, 10 * Count, -1);
 	}
 	break;
 	case CUSTOMSKIN:
@@ -3500,38 +3501,41 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	break;
 	case COREBASE:
 	{
-		if (Server()->GetItemCount(ClientID, STANNUM) < 20 * Count || Server()->GetItemCount(ClientID, IRON) < 100 * Count)
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, STANNUM) < 30 || Server()->GetItemCount(ClientID, IRON) < 200)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "锡矿x20, 精铁x100", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "锡矿x30, 精铁x200", NULL);
 			return;
 		}
-		Server()->RemItem(ClientID, STANNUM, 20 * Count, -1);
-		Server()->RemItem(ClientID, IRON, 100 * Count, -1);
+		Server()->RemItem(ClientID, STANNUM, 30, -1);
+		Server()->RemItem(ClientID, IRON, 200, -1);
 	}
 	break;
 	case WOODCORE:
 	{
-		if (Server()->GetItemCount(ClientID, COREBASE) < Count || Server()->GetItemCount(ClientID, WOOD) < 200 * Count || Server()->GetItemCount(ClientID, GOLDTICKET) < 50 * Count)
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, WOOD) < 200 || Server()->GetItemCount(ClientID, GOLDTICKET) < 100)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 木头x200, 金券x50", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 木头x200, 金券x100", NULL);
 			return;
 		}
-		Server()->RemItem(ClientID, COREBASE, Count, -1);
-		Server()->RemItem(ClientID, WOOD, 200 * Count, -1);
-		Server()->RemItem(ClientID, GOLDTICKET, 50 * Count, -1);
+		Server()->RemItem(ClientID, COREBASE, 1, -1);
+		Server()->RemItem(ClientID, WOOD, 200, -1);
+		Server()->RemItem(ClientID, GOLDTICKET, 100, -1);
 	}
 	break;
 	case MINECORE:
 	{
-		if (Server()->GetItemCount(ClientID, COREBASE) < Count || Server()->GetItemCount(ClientID, DRAGONORE) < 200 * Count || Server()->GetItemCount(ClientID, GOLDTICKET) < 50 * Count)
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, COREBASE) < 1 || Server()->GetItemCount(ClientID, DRAGONORE) < 200 || Server()->GetItemCount(ClientID, GOLDTICKET) < 100)
 		{
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 龙矿x200, 金券x50", NULL);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "核心基座x1, 龙矿x200, 金券x100", NULL);
 			return;
 		}
 		
-		Server()->RemItem(ClientID, COREBASE, Count, -1);
-		Server()->RemItem(ClientID, DRAGONORE, 200 * Count, -1);
-		Server()->RemItem(ClientID, GOLDTICKET, 50 * Count, -1);
+		Server()->RemItem(ClientID, COREBASE, 1, -1);
+		Server()->RemItem(ClientID, DRAGONORE, 200, -1);
+		Server()->RemItem(ClientID, GOLDTICKET, 100, -1);
 	}
 	break;
 	case STCLASIC:
@@ -4640,7 +4644,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddNewCraftVote(ClientID, "铁矿x100, 铜矿x100", FORMULAEARRINGS);
 				AddNewCraftVote(ClientID, "铁矿x125, 铜矿x125", FORMULAFORRING);
 				AddNewCraftVote(ClientID, "铁矿x150, 铜矿x150", FORMULAWEAPON);
-				AddNewCraftVote(ClientID, "铁矿x5", IRON);
+				AddNewCraftVote(ClientID, "钻石矿x1, 铁矿x10", IRON);
 			}
 			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 2)
 			{
@@ -4657,9 +4661,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddNewCraftVote(ClientID, "灵魂碎片x50", CUSTOMCOLOR);
 				AddNewCraftVote(ClientID, "土豆x60, 番茄x60, 萝卜x60", JUMPIMPULS);
 				AddNewCraftVote(ClientID, "守卫锤子碎片x10", GUARDHAMMER);
-				AddNewCraftVote(ClientID, "锡矿x20, 精铁x100", COREBASE);
-				AddNewCraftVote(ClientID, "核心基座x1, 木头x200, 金券x50", WOODCORE);
-				AddNewCraftVote(ClientID, "核心基座x1, 龙矿x200, 金券x50", MINECORE);
+				AddNewCraftVote(ClientID, "锡矿x30, 精铁x200", COREBASE);
+				AddNewCraftVote(ClientID, "核心基座x1, 木头x200, 金券x100", WOODCORE);
+				AddNewCraftVote(ClientID, "核心基座x1, 龙矿x200, 金券x100", MINECORE);
 			}
 			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 3)
 			{
@@ -5453,6 +5457,13 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 经验"),
 										"name", Server()->ClientName(ClientID), "used", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, "pvars", &PackOne, NULL);
 			pPlayer->ExpAdd(PackOne, false);
+		}
+		else if (ItemID == BIGWOOD)
+		{
+			PackOne = 5 * Count;
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 木头"),
+										"name", Server()->ClientName(ClientID), "used", Server()->GetItemName(ClientID, ItemID, false), "num", &Count, "pvars", &PackOne, NULL);
+			Server()->GiveItem(ClientID, WOOD, PackOne);
 		}
 		else if (ItemID == CLANBOXEXP)
 		{
