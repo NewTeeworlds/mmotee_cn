@@ -1192,7 +1192,7 @@ void CPlayer::ResetUpgrade(int ClientID)
 {
 	if (Server()->IsClientLogged(m_ClientID))
 	{
-		int Back = AccUpgrade()->m_Speed + AccUpgrade()->m_Health + AccUpgrade()->m_Damage + AccUpgrade()->m_HPRegen + AccUpgrade()->m_Mana + AccUpgrade()->m_AmmoRegen + (AccUpgrade()->m_Ammo * 5 + AccUpgrade()->m_Spray * 10);
+		int Back = AccUpgrade()->m_Speed * 50 + AccUpgrade()->m_Health * 20 + AccUpgrade()->m_Damage * 50 + AccUpgrade()->m_HPRegen * 20 + AccUpgrade()->m_Mana * 10 + AccUpgrade()->m_AmmoRegen * 50 + AccUpgrade()->m_Ammo * 100 + AccUpgrade()->m_Spray * 100;
 		AccUpgrade()->m_Speed = AccUpgrade()->m_Health = AccUpgrade()->m_Damage = AccUpgrade()->m_HPRegen = AccUpgrade()->m_Mana = 0;
 		AccUpgrade()->m_AmmoRegen = AccUpgrade()->m_Ammo = AccUpgrade()->m_Spray = 0;
 
