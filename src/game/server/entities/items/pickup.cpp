@@ -113,7 +113,7 @@ void CPickup::StartFarm(int ClientID)
 		if(Server()->GetItemCount(ClientID, DRAGONHOE))
 		{
 			Count = Server()->GetItemCount(ClientID, DRAGONHOE);
-			Broke = 8000*Server()->GetItemCount(ClientID, DRAGONHOE);
+			Broke = 608*Server()->GetItemCount(ClientID, DRAGONHOE);
 			Dropable = Server()->GetItemSettings(ClientID, DRAGONHOE);
 			if(Dropable <= 0)
 			{
@@ -150,7 +150,7 @@ void CPickup::StartFarm(int ClientID)
 			if(Server()->GetItemSettings(ClientID, TITLEFARMM))
 				LevelItem *= 2;
 
-			switch(random_int(0, 4))
+			switch(random_int(0, 5))
 			{
 				case 0:	GameServer()->GiveItem(ClientID, TOMATE, LevelItem); break; 
 				case 1: GameServer()->GiveItem(ClientID, POTATO, LevelItem); break;
@@ -162,7 +162,7 @@ void CPickup::StartFarm(int ClientID)
 				GameServer()->SendChatTarget_Localization(ClientID, -1, _("~ 种地等级提升~ 获得了农耕盲盒"), NULL);
 				GameServer()->GiveItem(ClientID, FARMBOX, 1);
 			}
-			if(random_prob(0.008333f)) // 1/120
+			if(random_prob(0.01f)) // 1/100
 				GameServer()->GiveItem(ClientID, FARMBOX, 1);
 
 			GameServer()->GiveItem(ClientID, FARMLEVEL, 1);
@@ -178,7 +178,7 @@ void CPickup::StartFarm(int ClientID)
 		if(Server()->GetItemCount(ClientID, DRAGONPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, DRAGONPIX);
-			Broke = 985*Server()->GetItemCount(ClientID, DRAGONPIX);
+			Broke = 638*Server()->GetItemCount(ClientID, DRAGONPIX);
 			Dropable = Server()->GetItemSettings(ClientID, DRAGONPIX);
 			if(Dropable <= 0)
 			{
@@ -192,7 +192,7 @@ void CPickup::StartFarm(int ClientID)
 		if(Server()->GetItemCount(ClientID, DIAMONDPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, DIAMONDPIX);
-			Broke = 699*Server()->GetItemCount(ClientID, DIAMONDPIX);
+			Broke = 499*Server()->GetItemCount(ClientID, DIAMONDPIX);
 			Dropable = Server()->GetItemSettings(ClientID, DIAMONDPIX);
 			if(Dropable <= 0)
 			{
@@ -206,7 +206,7 @@ void CPickup::StartFarm(int ClientID)
 		else if(Server()->GetItemCount(ClientID, GOLDPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, GOLDPIX);
-			Broke = 491*Server()->GetItemCount(ClientID, GOLDPIX);
+			Broke = 291*Server()->GetItemCount(ClientID, GOLDPIX);
 			Dropable = Server()->GetItemSettings(ClientID, GOLDPIX);
 			if(Dropable <= 0)
 			{
@@ -220,7 +220,7 @@ void CPickup::StartFarm(int ClientID)
 		else if(Server()->GetItemCount(ClientID, IRONPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, IRONPIX);
-			Broke = 211*Server()->GetItemCount(ClientID, IRONPIX);
+			Broke = 162*Server()->GetItemCount(ClientID, IRONPIX);
 			Dropable = Server()->GetItemSettings(ClientID, IRONPIX);
 			if(Dropable <= 0)
 			{
@@ -234,7 +234,7 @@ void CPickup::StartFarm(int ClientID)
 		else if(Server()->GetItemCount(ClientID, COOPERPIX))
 		{
 			Count = Server()->GetItemCount(ClientID, COOPERPIX);
-			Broke = 180*Server()->GetItemCount(ClientID, COOPERPIX);
+			Broke = 88*Server()->GetItemCount(ClientID, COOPERPIX);
 			Dropable = Server()->GetItemSettings(ClientID, COOPERPIX);
 			if(Dropable <= 0)
 			{
@@ -274,29 +274,30 @@ void CPickup::StartFarm(int ClientID)
 			{
 				LevelItem *= 2;
 			}
-			if(Server()->GetItemCount(ClientID, MINECORE) && ItemDrop >= 7)
+			if(Server()->GetItemCount(ClientID, MINECORE) && ItemDrop >= 7 && random_prob(0.75f))
 			{
-				int DragonExtra = min(1+LevelItem / 200, Server()->GetItemCount(ClientID, MINECORE));
+				int DragonExtra = min(1+LevelItem / 600, Server()->GetItemCount(ClientID, MINECORE));
 				GameServer()->GiveItem(ClientID, DRAGONORE, DragonExtra);
-				GameServer()->SendChatTarget_Localization(ClientID, -1, _("[{str:name}] 获得{int:dragon}个龙矿"), "name", Server()->GetItemName(ClientID, MINECORE), "dragon", &DragonExtra, NULL);
+				GameServer()->SendChatTarget_Localization(ClientID, -1, _("[{str:name}] 额外获得{int:dragon}个龙矿"), "name", Server()->GetItemName(ClientID, MINECORE), "dragon", &DragonExtra, NULL);
 			}
 
 			switch(random_int(0, ItemDrop))
 			{
-				case 3: GameServer()->GiveItem(ClientID, IRONORE, 1+LevelItem/15); break; 
-				case 4: GameServer()->GiveItem(ClientID, GOLDORE, 1+LevelItem/15); break; 
-				case 5: GameServer()->GiveItem(ClientID, DIAMONDORE, 1+LevelItem/15); break; 
+				case 3: GameServer()->GiveItem(ClientID, IRONORE, 1+LevelItem/30); break; 
+				case 4: GameServer()->GiveItem(ClientID, GOLDORE, 1+LevelItem/45); break; 
+				case 5: GameServer()->GiveItem(ClientID, DIAMONDORE, 1+LevelItem/60); break; 
 				case 7: GameServer()->GiveItem(ClientID, DRAGONORE, 1+LevelItem/600); break; 
 				default: GameServer()->GiveItem(ClientID, COOPERORE, 1+LevelItem/15); break;
 			}
 			GameServer()->GiveItem(ClientID, MINEREXP, 1);
 			
-			if(random_prob((Server()->GetItemCount(ClientID, MINECORE) + 1) * 0.01f))
+			if(random_prob(min(100, (Server()->GetItemCount(ClientID, MINECORE) + 1)) * 0.008f))
 				GameServer()->GiveItem(ClientID, STANNUM, 1);
 
 			// 加经验
-			GameServer()->m_apPlayers[ClientID]->AccData()->m_Exp += 10+LevelItem;
-			GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+10 +{int:bonus}点专长经验"), "bonus", &LevelItem, NULL);
+			int exp = 10 + LevelItem;
+			GameServer()->m_apPlayers[ClientID]->AccData()->m_Exp += exp;
+			GameServer()->SendChatTarget_Localization(ClientID, -1, _("[Player] 经验+{int:exp} +{int:bonus}点专长经验"), "exp", &exp, "bonus", &LevelItem, NULL);
 		}
 	}
 	else if(m_SubType == 3) // ########################### WOOOD
@@ -310,7 +311,7 @@ void CPickup::StartFarm(int ClientID)
 		if(Server()->GetItemCount(ClientID, DRAGONAXE))
 		{
 			Count = Server()->GetItemCount(ClientID, DRAGONAXE);
-			Broke = 10000*Server()->GetItemCount(ClientID, DRAGONAXE);
+			Broke = 608*Server()->GetItemCount(ClientID, DRAGONAXE);
 			Dropable = Server()->GetItemSettings(ClientID, DRAGONAXE);
 			if(Dropable <= 0)
 			{
@@ -374,10 +375,10 @@ void CPickup::StartFarm(int ClientID)
 void CPickup::MaterFarm(int ClientID, int MaterialID)
 {
 	if(Server()->GetMaterials(MaterialID) < 25)
-		return	GameServer()->SendBroadcast_Localization(ClientID, 1000, 100, _("你没有足够的附魔材料(material). 至少需要25个"), NULL); 
+		return	GameServer()->SendBroadcast_Localization(ClientID, 1000, 100, _("这里没有足够的材料. 至少需要25个"), NULL); 
 	
 	if(Server()->GetItemCount(ClientID, MATERIAL) > 50000)
-		return	GameServer()->SendBroadcast_Localization(ClientID, 1000, 100, _("物品栏内最多塞50000个附魔材料(material). 在物品栏对装备附魔吧!"), NULL); 
+		return	GameServer()->SendBroadcast_Localization(ClientID, 1000, 100, _("物品栏内最多塞50000个附魔材料. 在物品栏对装备附魔，或者卖给商店吧!"), NULL); 
 
 	m_Drop += 25;
 	GameServer()->CreateSound(m_Pos, 20); 
