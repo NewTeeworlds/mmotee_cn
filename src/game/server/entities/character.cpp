@@ -1722,7 +1722,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			if(!pFrom->IsBot())
 			{
 				int woodcore = Server()->GetItemCount(pFrom->GetCID(), WOODCORE);
-				if(woodcore)
+				if(woodcore >= 5)
 				{
 					int Count = min(10, (int)woodcore / 5);
 					CreateDropRandom(BIGWOOD, Count, 5, From, Force/(50+randforce));
