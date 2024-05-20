@@ -835,7 +835,7 @@ void CGameContext::BossTick()
 		{
 			m_BossStartTick = 0;
 			m_BossStart = false;
-			SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("Boss战被取消了, 玩家们不在等待室内(waiting room)"), NULL);
+			SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("Boss战被取消了, 玩家们不在等待室内"), NULL);
 		}
 
 		if (m_BossStartTick == 50)
@@ -1353,11 +1353,11 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					const char *pLanguage = m_apPlayers[ClientID]->GetLanguage();
 
 					dynamic_string Buffer;
-					Server()->Localization()->Format_L(Buffer, pLanguage, _("All owners InfClass"), NULL);
+					Server()->Localization()->Format_L(Buffer, pLanguage, _("感谢InfClass感染模式的所有制作人员"), NULL);
 					Buffer.append("\n\n");
-					Server()->Localization()->Format_L(Buffer, pLanguage, _("主要制作人员:\nNajvlad, Rem1x, Matodor, Kurosio - 原作者"), NULL);
+					Server()->Localization()->Format_L(Buffer, pLanguage, _("主要制作人员:\n原作者们:Najvlad, Rem1x, Matodor, Kurosio"), NULL);
 					Buffer.append("\n\n");
-					Server()->Localization()->Format_L(Buffer, pLanguage, _("天际 - 修改地图\nNinecloud - 协助开发\n天上的星星 - 开发者,服务器管理"), NULL);
+					Server()->Localization()->Format_L(Buffer, pLanguage, _("地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽"), NULL);
 					Buffer.append("\n\n");
 
 					SendMOTD(ClientID, Buffer.buffer());

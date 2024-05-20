@@ -1833,7 +1833,7 @@ public:
 				int Level = (int)pSqlServer->GetResults()->getInt(m_sType.ClrStr());
 
 				dynamic_string Buffer;
-				m_pServer->Localization()->Format(Buffer, m_pServer->GetClientLanguage(m_ClientID), _("Rank {int:Rank} - {str:Name} {int:Count} Leader {str:Leader}"), 
+				m_pServer->Localization()->Format(Buffer, m_pServer->GetClientLanguage(m_ClientID), _("第{int:Rank}名 - {str:Name} {int:Count} 会长 {str:Leader}"), 
 					"Rank", &Rank, "Name", pSqlServer->GetResults()->getString("Clanname").c_str(), "Count", &Level, "Leader", pSqlServer->GetResults()->getString("LeaderName").c_str());
 			
 				if(m_Type == 1)

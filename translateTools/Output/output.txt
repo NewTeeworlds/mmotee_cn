@@ -1,0 +1,879 @@
+{"translation":[
+	{
+		"key": "Server does not allow voting to move players to spectators",
+		"value": "Server does not allow voting to move players to spectators"
+	},
+	{
+		"key": "Wait for current vote to end before calling a new one.",
+		"value": "Wait for current vote to end before calling a new one."
+	},
+	{
+		"key": "You can't move yourself",
+		"value": "You can't move yourself"
+	},
+	{
+		"key": "With not the wall!",
+		"value": "With not the wall!"
+	},
+	{
+		"key": "Server does not allow voting to kick players",
+		"value": "Server does not allow voting to kick players"
+	},
+	{
+		"key": "Username: {str:Username}",
+		"value": "Username: {str:Username}"
+	},
+	{
+		"key": "Unknown language",
+		"value": "Unknown language"
+	},
+	{
+		"key": "You can kick only your team member",
+		"value": "You can kick only your team member"
+	},
+	{
+		"key": "pm to '{str:Name}': {str:text}",
+		"value": "pm to '{str:Name}': {str:text}"
+	},
+	{
+		"key": "Use /login <username> <password> to rejoin",
+		"value": "Use /login <username> <password> to rejoin"
+	},
+	{
+		"key": "You must wait {int:sec} seconds before making another vote",
+		"value": "You must wait {int:sec} seconds before making another vote"
+	},
+	{
+		"key": "Successfully logged in! Have fun while playing!",
+		"value": "Successfully logged in! Have fun while playing!"
+	},
+	{
+		"key": "Invalid client id to kick",
+		"value": "Invalid client id to kick"
+	},
+	{
+		"key": "You can't kick yourself",
+		"value": "You can't kick yourself"
+	},
+	{
+		"key": "Language successfully switched to English",
+		"value": "Language successfully switched to English"
+	},
+	{
+		"key": "Use /cmdlist' for a list of commands",
+		"value": "Use /cmdlist' for a list of commands"
+	},
+	{
+		"key": "You can only move your team member to specators",
+		"value": "You can only move your team member to specators"
+	},
+	{
+		"key": "This Small distance!",
+		"value": "This Small distance!"
+	},
+	{
+		"key": "You can't kick moderators",
+		"value": "You can't kick moderators"
+	},
+	{
+		"key": "Invalid spectator id used",
+		"value": "Invalid spectator id used"
+	},
+	{
+		"key": "Invalid option",
+		"value": "Invalid option"
+	},
+	{
+		"key": "~~~~~~~~ ! Registered ! ~~~~~~~~",
+		"value": "~~~~~~~~ ! Registered ! ~~~~~~~~"
+	},
+	{
+		"key": "This account does not exist. Use /help",
+		"value": "This account does not exist. Use /help"
+	},
+	{
+		"key": "Attempt to send a personal message to yourself -_-",
+		"value": "Attempt to send a personal message to yourself -_-"
+	},
+	{
+		"key": "pm from '{str:Name}': {str:text}",
+		"value": "pm from '{str:Name}': {str:text}"
+	},
+	{
+		"key": "Only {int:Num} active players are allowed",
+		"value": "Only {int:Num} active players are allowed"
+	},
+	{
+		"key": "No player with such id",
+		"value": "No player with such id"
+	},
+	{
+		"key": "Password: {str:Password}",
+		"value": "Password: {str:Password}"
+	},
+	{
+		"key": "Use /register <username> <password> to create an account",
+		"value": "Use /register <username> <password> to create an account"
+	},
+	{
+		"key": "Spectators aren't allowed to start a vote.",
+		"value": "Spectators aren't allowed to start a vote."
+	},
+	{
+		"key": "Invalid client id to move",
+		"value": "Invalid client id to move"
+	},
+	{
+		"key": "Account already exists.",
+		"value": "Account already exists."
+	},
+	{
+		"key": "Now use the /login {str:u} {str:p}",
+		"value": "Now use the /login {str:u} {str:p}"
+	},
+	{
+		"key": "Available languages: {str:ListOfLanguage}",
+		"value": "Available languages: {str:ListOfLanguage}"
+	},
+	{
+		"key": "You only can join the human team when round hasn't started.",
+		"value": "You only can join the human team when round hasn't started."
+	},
+	{
+		"key": "Zombies can't change team.",
+		"value": "Zombies can't change team."
+	},
+	{
+		"key": "You can't join the zombie team.",
+		"value": "You can't join the zombie team."
+	},
+	{
+		"key": "You are the only zombie.",
+		"value": "You are the only zombie."
+	},
+	{
+		"key": "Zombie will be chosen randomly.",
+		"value": "Zombie will be chosen randomly."
+	},
+	{
+		"key": "Successfully! Your new level {int:Level}\n/ Upgrade counts {int:Money}",
+		"value": "Successfully! Your new level {int:Level}\n/ Upgrade counts {int:Money}"
+	},
+	{
+		"key": "You are now a zombie! Eat some brains.",
+		"value": "You are now a zombie! Eat some brains."
+	},
+	{
+		"key": "To start the game read /help.",
+		"value": "To start the game read /help."
+	},
+	{
+		"key": "Zombie: {str:Name} (WIN)",
+		"value": "Zombie: {str:Name} (WIN)"
+	},
+	{
+		"key": "Win: {int:winner} / Lose: {int:lose} ({percent:kofs})",
+		"value": "Win: {int:winner} / Lose: {int:lose} ({percent:kofs})"
+	},
+	{
+		"key": "Zombie: {str:Name} (LOSE)",
+		"value": "Zombie: {str:Name} (LOSE)"
+	},
+	{
+		"key": "Username / Password must contain 4-15 characters",
+		"value": "Username / Password must contain 4-15 characters"
+	},
+	{
+		"key": "You can't log out as the last zombie!",
+		"value": "You can't log out as the last zombie!"
+	},
+	{
+		"key": "Maximum handle level already reached (300).",
+		"value": "Maximum handle level already reached (300)."
+	},
+	{
+		"key": "/ultimatevip - get info ultimatevip status",
+		"value": "/ultimatevip - get info ultimatevip status"
+	},
+	{
+		"key": "/register <name> <pass> - Register new account",
+		"value": "/register <name> <pass> - Register new account"
+	},
+	{
+		"key": "Exp: {int:Exp}",
+		"value": "Exp: {int:Exp}"
+	},
+	{
+		"key": "Use /upgr <dmg>, <hp>, <handle>, <ammoregen>, <ammo>, <stats> to upgrade stats",
+		"value": "Use /upgr <dmg>, <hp>, <handle>, <ammoregen>, <ammo>, <stats> to upgrade stats"
+	},
+	{
+		"key": "There is no such player!'",
+		"value": "There is no such player!'"
+	},
+	{
+		"key": "/account - information & help account system",
+		"value": "/account - information & help account system"
+	},
+	{
+		"key": "Insufficient score (3).",
+		"value": "Insufficient score (3)."
+	},
+	{
+		"key": "Please use: /setgroup <id> <groupid>",
+		"value": "Please use: /setgroup <id> <groupid>"
+	},
+	{
+		"key": "SuperVIP: Get 5x Exp & 3x Money & 5 Score4Life & 3 For killing spree",
+		"value": "SuperVIP: Get 5x Exp & 3x Money & 5 Score4Life & 3 For killing spree"
+	},
+	{
+		"key": "Invis: +5 secounds, InvisCD: 5 secounds",
+		"value": "Invis: +5 secounds, InvisCD: 5 secounds"
+	},
+	{
+		"key": "#This command police group",
+		"value": "#This command police group"
+	},
+	{
+		"key": "Available only zombies!",
+		"value": "Available only zombies!"
+	},
+	{
+		"key": "~~~~~~~~ Welcome to info! ~~~~~~~~",
+		"value": "~~~~~~~~ Welcome to info! ~~~~~~~~"
+	},
+	{
+		"key": "1 month UltimateVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros",
+		"value": "1 month UltimateVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros"
+	},
+	{
+		"key": "/jump [3 score] - Buy 1 other jump",
+		"value": "/jump [3 score] - Buy 1 other jump"
+	},
+	{
+		"key": "Login: {str:Username}",
+		"value": "Login: {str:Username}"
+	},
+	{
+		"key": "Panic mod by Kurosio, helper: {str:name}",
+		"value": "Panic mod by Kurosio, helper: {str:name}"
+	},
+	{
+		"key": "Since 100: +10 ammo",
+		"value": "Since 100: +10 ammo"
+	},
+	{
+		"key": "Use /sd <idsound>",
+		"value": "Use /sd <idsound>"
+	},
+	{
+		"key": "/password - Change account password",
+		"value": "/password - Change account password"
+	},
+	{
+		"key": "You was kicked by the Police!",
+		"value": "You was kicked by the Police!"
+	},
+	{
+		"key": "AmmoRegen: {int:AmmoRegen}",
+		"value": "AmmoRegen: {int:AmmoRegen}"
+	},
+	{
+		"key": "/turret speed - upgrade turret speed (1 turret money)",
+		"value": "/turret speed - upgrade turret speed (1 turret money)"
+	},
+	{
+		"key": "Your turret's range is upgraded, now it is: {int:TurretRange}",
+		"value": "Your turret's range is upgraded, now it is: {int:TurretRange}"
+	},
+	{
+		"key": "Since 40: your shotgun spread growing by 1 bullet per 10 levels",
+		"value": "Since 40: your shotgun spread growing by 1 bullet per 10 levels"
+	},
+	{
+		"key": "1 month VIP = 0euros || 3 months VIP = 0euros || LifeTime VIP = 0euros",
+		"value": "1 month VIP = 0euros || 3 months VIP = 0euros || LifeTime VIP = 0euros"
+	},
+	{
+		"key": "1 month SuperVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros",
+		"value": "1 month SuperVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros"
+	},
+	{
+		"key": "Your turret's speed is upgraded, now it is: {int:TurretSpeed}",
+		"value": "Your turret's speed is upgraded, now it is: {int:TurretSpeed}"
+	},
+	{
+		"key": "/vip - get info vip status",
+		"value": "/vip - get info vip status"
+	},
+	{
+		"key": "New damage: {int:damage}, Your money: {int:Money}",
+		"value": "New damage: {int:damage}, Your money: {int:Money}"
+	},
+	{
+		"key": "/turret dmg - upgrade turret damage (1 turret money)",
+		"value": "/turret dmg - upgrade turret damage (1 turret money)"
+	},
+	{
+		"key": "1. Don't farm XP (freeze acc)",
+		"value": "1. Don't farm XP (freeze acc)"
+	},
+	{
+		"key": "/shop - shop score tees",
+		"value": "/shop - shop score tees"
+	},
+	{
+		"key": "Maximal turret damage level!",
+		"value": "Maximal turret damage level!"
+	},
+	{
+		"key": "/stats, /upgr - upgrade system",
+		"value": "/stats, /upgr - upgrade system"
+	},
+	{
+		"key": "UltimateVIP: Get 7x Exp & 5x Money & 5 Score4Life & 2 For killing spree",
+		"value": "UltimateVIP: Get 7x Exp & 5x Money & 5 Score4Life & 2 For killing spree"
+	},
+	{
+		"key": "HP: {int:hp}",
+		"value": "HP: {int:hp}"
+	},
+	{
+		"key": "/cmdlist - commands server",
+		"value": "/cmdlist - commands server"
+	},
+	{
+		"key": "/news - for see what news in server",
+		"value": "/news - for see what news in server"
+	},
+	{
+		"key": "/register, /login, /logout - account system",
+		"value": "/register, /login, /logout - account system"
+	},
+	{
+		"key": "There is no such player!",
+		"value": "There is no such player!"
+	},
+	{
+		"key": "/levels - info about level",
+		"value": "/levels - info about level"
+	},
+	{
+		"key": "/pm - send personal message to player",
+		"value": "/pm - send personal message to player"
+	},
+	{
+		"key": "Maximal turret ammo level!",
+		"value": "Maximal turret ammo level!"
+	},
+	{
+		"key": "You had to change your level!'",
+		"value": "You had to change your level!'"
+	},
+	{
+		"key": "New handle: {int:handle}, Your money: {int:money}",
+		"value": "New handle: {int:handle}, Your money: {int:money}"
+	},
+	{
+		"key": "You can not freeze your account!",
+		"value": "You can not freeze your account!"
+	},
+	{
+		"key": "/superprefix = Special Dmg + 15 Ammo, Access to commands:",
+		"value": "/superprefix = Special Dmg + 15 Ammo, Access to commands:"
+	},
+	{
+		"key": "Turret could be placed via Ghost Emoticon",
+		"value": "Turret could be placed via Ghost Emoticon"
+	},
+	{
+		"key": "~~~~~~~~ Welcome to cmdlist! ~~~~~~~~",
+		"value": "~~~~~~~~ Welcome to cmdlist! ~~~~~~~~"
+	},
+	{
+		"key": "/turret help - show help",
+		"value": "/turret help - show help"
+	},
+	{
+		"key": "/logout - Logout from your account",
+		"value": "/logout - Logout from your account"
+	},
+	{
+		"key": "Maximum ammo regen level already reached (60).",
+		"value": "Maximum ammo regen level already reached (60)."
+	},
+	{
+		"key": "Handle: {int:handle}",
+		"value": "Handle: {int:handle}"
+	},
+	{
+		"key": "--- Account ---",
+		"value": "--- Account ---"
+	},
+	{
+		"key": "Money: {int:Money}",
+		"value": "Money: {int:Money}"
+	},
+	{
+		"key": "Maximum ammo level already reached (20).",
+		"value": "Maximum ammo level already reached (20)."
+	},
+	{
+		"key": "Turrets can have 3 different weapons",
+		"value": "Turrets can have 3 different weapons"
+	},
+	{
+		"key": "Please use: /setmoney <id> <money>",
+		"value": "Please use: /setmoney <id> <money>"
+	},
+	{
+		"key": "Owner: {str:Owner} / Skype: {str:Skype}",
+		"value": "Owner: {str:Owner} / Skype: {str:Skype}"
+	},
+	{
+		"key": "/idlist - view ids players",
+		"value": "/idlist - view ids players"
+	},
+	{
+		"key": "2. Don't insult (mute/ban 1-7 day)",
+		"value": "2. Don't insult (mute/ban 1-7 day)"
+	},
+	{
+		"key": "Maximum damage level already reached (21).",
+		"value": "Maximum damage level already reached (21)."
+	},
+	{
+		"key": "/range [10 score] - Buy range zombie hammer",
+		"value": "/range [10 score] - Buy range zombie hammer"
+	},
+	{
+		"key": "/resetupgr - Reset your upgr & /supervipmsg - Special messge",
+		"value": "/resetupgr - Reset your upgr & /supervipmsg - Special messge"
+	},
+	{
+		"key": "You can change your password with the command:",
+		"value": "You can change your password with the command:"
+	},
+	{
+		"key": "Wrong command. Use /cmdlist",
+		"value": "Wrong command. Use /cmdlist"
+	},
+	{
+		"key": "You are not logged in! Type '/account' for more information!",
+		"value": "You are not logged in! Type '/account' for more information!"
+	},
+	{
+		"key": "Use only if you are alive!",
+		"value": "Use only if you are alive!"
+	},
+	{
+		"key": "Lvl: {int:Lvl}",
+		"value": "Lvl: {int:Lvl}"
+	},
+	{
+		"key": "4. Don't self-kill (same as farming)",
+		"value": "4. Don't self-kill (same as farming)"
+	},
+	{
+		"key": "/turret ammoregen - upgrade turret ammo (1 turret money)",
+		"value": "/turret ammoregen - upgrade turret ammo (1 turret money)"
+	},
+	{
+		"key": "/turret info - show information",
+		"value": "/turret info - show information"
+	},
+	{
+		"key": "~~~~~~~~ ! Your account details ! ~~~~~~~~",
+		"value": "~~~~~~~~ ! Your account details ! ~~~~~~~~"
+	},
+	{
+		"key": "Your turret's ammoregen is upgraded, now it is: {int:TurretShotgun}",
+		"value": "Your turret's ammoregen is upgraded, now it is: {int:TurretShotgun}"
+	},
+	{
+		"key": "/login <name> <pass> - Login to your account",
+		"value": "/login <name> <pass> - Login to your account"
+	},
+	{
+		"key": "/resetupgr - Reset your upgr & /ultimatemsg - Special message",
+		"value": "/resetupgr - Reset your upgr & /ultimatemsg - Special message"
+	},
+	{
+		"key": "No such turret upgrade: '{str:wtf}'!",
+		"value": "No such turret upgrade: '{str:wtf}'!"
+	},
+	{
+		"key": "Please wait for the round to end!",
+		"value": "Please wait for the round to end!"
+	},
+	{
+		"key": "Group ID not found!",
+		"value": "Group ID not found!"
+	},
+	{
+		"key": "Username and Password must be different",
+		"value": "Username and Password must be different"
+	},
+	{
+		"key": "Added basic ranked system",
+		"value": "Added basic ranked system"
+	},
+	{
+		"key": "---- Turret ----",
+		"value": "---- Turret ----"
+	},
+	{
+		"key": "Use /register <username> <password>'",
+		"value": "Use /register <username> <password>'"
+	},
+	{
+		"key": "New ammo: {int:Ammo}, Your money: {int:Money}",
+		"value": "New ammo: {int:Ammo}, Your money: {int:Money}"
+	},
+	{
+		"key": "New ammo regen: {int:Ammoregen}, Your money: {int:Money}",
+		"value": "New ammo regen: {int:Ammoregen}, Your money: {int:Money}"
+	},
+	{
+		"key": "Ammo regen: {int:ammoregen}",
+		"value": "Ammo regen: {int:ammoregen}"
+	},
+	{
+		"key": "~~~~~~~~ Welcome to help! ~~~~~~~~",
+		"value": "~~~~~~~~ Welcome to help! ~~~~~~~~"
+	},
+	{
+		"key": "Username and Password must contain 4-15 characters",
+		"value": "Username and Password must contain 4-15 characters"
+	},
+	{
+		"key": "/idlist - List IDs players",
+		"value": "/idlist - List IDs players"
+	},
+	{
+		"key": "Damage: {int:dmg}",
+		"value": "Damage: {int:dmg}"
+	},
+	{
+		"key": "Wait for the round to start!",
+		"value": "Wait for the round to start!"
+	},
+	{
+		"key": "Freeze: {int:Freeze}",
+		"value": "Freeze: {int:Freeze}"
+	},
+	{
+		"key": "Use /w <id> <text>",
+		"value": "Use /w <id> <text>"
+	},
+	{
+		"key": "Please use: /freeze <id>",
+		"value": "Please use: /freeze <id>"
+	},
+	{
+		"key": "--- UltimateViP ---",
+		"value": "--- UltimateViP ---"
+	},
+	{
+		"key": "Ammo: {int:Ammo}",
+		"value": "Ammo: {int:Ammo}"
+	},
+	{
+		"key": "/turret info - info about turrets",
+		"value": "/turret info - info about turrets"
+	},
+	{
+		"key": "Maximal turret ammoregen level!",
+		"value": "Maximal turret ammoregen level!"
+	},
+	{
+		"key": "Range: {int:Range}",
+		"value": "Range: {int:Range}"
+	},
+	{
+		"key": "--- SuperViP ---",
+		"value": "--- SuperViP ---"
+	},
+	{
+		"key": "Insufficient money (1 needed).",
+		"value": "Insufficient money (1 needed)."
+	},
+	{
+		"key": "You are not logged in! Use /account for more information!",
+		"value": "You are not logged in! Use /account for more information!"
+	},
+	{
+		"key": "/turret range - upgrade turret range (1 turret money)",
+		"value": "/turret range - upgrade turret range (1 turret money)"
+	},
+	{
+		"key": "This type doesn't exist.",
+		"value": "This type doesn't exist."
+	},
+	{
+		"key": "You have not turret money counts!",
+		"value": "You have not turret money counts!"
+	},
+	{
+		"key": "Since 50: +10 ammo",
+		"value": "Since 50: +10 ammo"
+	},
+	{
+		"key": "Shotgun Turret: Shoots once per 3 sec at enemy",
+		"value": "Shotgun Turret: Shoots once per 3 sec at enemy"
+	},
+	{
+		"key": "Available only to zombies!",
+		"value": "Available only to zombies!"
+	},
+	{
+		"key": "Logged out.",
+		"value": "Logged out."
+	},
+	{
+		"key": "/prefix = +5 ammo + Special Dmg & 5 For killing spree",
+		"value": "/prefix = +5 ammo + Special Dmg & 5 For killing spree"
+	},
+	{
+		"key": "/password <new password>",
+		"value": "/password <new password>"
+	},
+	{
+		"key": "Please use: /setlvl <id> <level>",
+		"value": "Please use: /setlvl <id> <level>"
+	},
+	{
+		"key": "Speed: {int:Speed}",
+		"value": "Speed: {int:Speed}"
+	},
+	{
+		"key": "Use only if you alive!",
+		"value": "Use only if you alive!"
+	},
+	{
+		"key": "Group ID: 0 - Removed, 1 - Police, 2 - VIP, 3 - Helper",
+		"value": "Group ID: 0 - Removed, 1 - Police, 2 - VIP, 3 - Helper"
+	},
+	{
+		"key": "Gun Turret: Shoots once per sec at enemy",
+		"value": "Gun Turret: Shoots once per sec at enemy"
+	},
+	{
+		"key": "Invis: +3 secounds, InvisCD: 10 secounds",
+		"value": "Invis: +3 secounds, InvisCD: 10 secounds"
+	},
+	{
+		"key": "Please use: /kick <id>",
+		"value": "Please use: /kick <id>"
+	},
+	{
+		"key": "3. Don't use bots (perma ban)",
+		"value": "3. Don't use bots (perma ban)"
+	},
+	{
+		"key": "You aren't logged in!",
+		"value": "You aren't logged in!"
+	},
+	{
+		"key": "/rules, /help, /info - information",
+		"value": "/rules, /help, /info - information"
+	},
+	{
+		"key": "Payments: Name, name",
+		"value": "Payments: Name, name"
+	},
+	{
+		"key": "The player is not logged in account!",
+		"value": "The player is not logged in account!"
+	},
+	{
+		"key": "Your turret's gun is upgraded, now it is: {int:TurretAmmo}",
+		"value": "Your turret's gun is upgraded, now it is: {int:TurretAmmo}"
+	},
+	{
+		"key": "/supervip - get info supervip status",
+		"value": "/supervip - get info supervip status"
+	},
+	{
+		"key": "Invis: +1 secounds, InvisCD: 20 secounds",
+		"value": "Invis: +1 secounds, InvisCD: 20 secounds"
+	},
+	{
+		"key": "Maximal turret range level!",
+		"value": "Maximal turret range level!"
+	},
+	{
+		"key": "--- ViP ---",
+		"value": "--- ViP ---"
+	},
+	{
+		"key": "~~~~~~~~ ! Upgr stats details ! ~~~~~~~~",
+		"value": "~~~~~~~~ ! Upgr stats details ! ~~~~~~~~"
+	},
+	{
+		"key": "Insufficient score (10).",
+		"value": "Insufficient score (10)."
+	},
+	{
+		"key": "/turret ammo - upgrade turret ammo (1 turret money)",
+		"value": "/turret ammo - upgrade turret ammo (1 turret money)"
+	},
+	{
+		"key": "#/policehelp - help for police group",
+		"value": "#/policehelp - help for police group"
+	},
+	{
+		"key": "New HP: {int:HP}, Maximum HP: {int:MaximumHP}, Your money: {int:Money}",
+		"value": "New HP: {int:HP}, Maximum HP: {int:MaximumHP}, Your money: {int:Money}"
+	},
+	{
+		"key": "Mailbox: <no mailbox> (no active)",
+		"value": "Mailbox: <no mailbox> (no active)"
+	},
+	{
+		"key": "You are not logged in! Use /account for more information",
+		"value": "You are not logged in! Use /account for more information"
+	},
+	{
+		"key": "Damage: {int:Damage}",
+		"value": "Damage: {int:Damage}"
+	},
+	{
+		"key": "Insufficient money (10 needed).",
+		"value": "Insufficient money (10 needed)."
+	},
+	{
+		"key": "Level: {int:Level}",
+		"value": "Level: {int:Level}"
+	},
+	{
+		"key": "This player already no in group!",
+		"value": "This player already no in group!"
+	},
+	{
+		"key": "Use /turret info",
+		"value": "Use /turret info"
+	},
+	{
+		"key": "/heart [20 score] - Buy 1 heart if you zombie team",
+		"value": "/heart [20 score] - Buy 1 heart if you zombie team"
+	},
+	{
+		"key": "Laser Turret: places a laser each 40 sec if the zombie reach it's line",
+		"value": "Laser Turret: places a laser each 40 sec if the zombie reach it's line"
+	},
+	{
+		"key": "----- Shop -----",
+		"value": "----- Shop -----"
+	},
+	{
+		"key": "Use: /login <username> <password>",
+		"value": "Use: /login <username> <password>"
+	},
+	{
+		"key": "/turret stats - view stats upgrade turrets",
+		"value": "/turret stats - view stats upgrade turrets"
+	},
+	{
+		"key": "--- List IDs ---",
+		"value": "--- List IDs ---"
+	},
+	{
+		"key": "Use /login <username> <password> to login again",
+		"value": "Use /login <username> <password> to login again"
+	},
+	{
+		"key": "Insufficient score (20).",
+		"value": "Insufficient score (20)."
+	},
+	{
+		"key": "Please wait for the round to end.",
+		"value": "Please wait for the round to end."
+	},
+	{
+		"key": "Skype: nope, Name: nope",
+		"value": "Skype: nope, Name: nope"
+	},
+	{
+		"key": "ViP: Get 3x Exp & 2x Money & 5 For killing spree",
+		"value": "ViP: Get 3x Exp & 2x Money & 5 For killing spree"
+	},
+	{
+		"key": "Maximal turret speed level!",
+		"value": "Maximal turret speed level!"
+	},
+	{
+		"key": "Use \"/password <new password>\"",
+		"value": "Use \"/password <new password>\""
+	},
+	{
+		"key": "Maximum HP level already reached (100).",
+		"value": "Maximum HP level already reached (100)."
+	},
+	{
+		"key": "/kick <id> - kick player ids",
+		"value": "/kick <id> - kick player ids"
+	},
+	{
+		"key": "/freeze <id> - freeze/unfreeze player",
+		"value": "/freeze <id> - freeze/unfreeze player"
+	},
+	{
+		"key": "Ammo: {int:ammo}",
+		"value": "Ammo: {int:ammo}"
+	},
+	{
+		"key": "Done!",
+		"value": "Done!"
+	},
+	{
+		"key": "/rules - for read the rules Panic",
+		"value": "/rules - for read the rules Panic"
+	},
+	{
+		"key": "You don't have unlimited air jumps",
+		"value": "You don't have unlimited air jumps"
+	},
+	{
+		"key": "\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}",
+		"value": "\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}"
+	},
+	{
+		"key": "The second point can not be set here",
+		"value": "The second point can not be set here"
+	},
+	{
+		"key": "{str:Who} is on killing spree!",
+		"value": "{str:Who} is on killing spree!"
+	},
+	{
+		"key": "You have unlimited air jumps",
+		"value": "You have unlimited air jumps"
+	},
+	{
+		"key": "Exp {int:Exp}/{int:Level}",
+		"value": "Exp {int:Exp}/{int:Level}"
+	},
+	{
+		"key": "Already logged in",
+		"value": "Already logged in"
+	},
+	{
+		"key": "Password successfully changed!",
+		"value": "Password successfully changed!"
+	},
+	{
+		"key": "Turret's Level-Up! Your turret's level now is: {int:TurretLevel}",
+		"value": "Turret's Level-Up! Your turret's level now is: {int:TurretLevel}"
+	},
+	{
+		"key": "{str:Name} destroyed turret wall hearted",
+		"value": "{str:Name} destroyed turret wall hearted"
+	},
+	{
+		"key": "Your turret's damage is upgraded, now it is: {int:TurretDmg}",
+		"value": "Your turret's damage is upgraded, now it is: {int:TurretDmg}"
+	},
+]
+}

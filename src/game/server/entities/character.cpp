@@ -2148,9 +2148,9 @@ void CCharacter::ClassSpawnAttributes()
 	//TODO
 	// книги инфа
 	if(m_pPlayer->m_MoneyAdd)
-		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKMONEYMIN), NULL);		
+		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你正在使用{str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKMONEYMIN), NULL);		
 	if(m_pPlayer->m_ExperienceAdd)
-		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKEXPMIN), NULL);		
+		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你正在使用{str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKEXPMIN), NULL);		
 
 	if(m_pPlayer->IsBot())
 		m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*10;
