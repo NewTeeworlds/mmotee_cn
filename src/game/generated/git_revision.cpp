@@ -1,1 +1,1 @@
-const char *GIT_SHORTREV_HASH = "b855a8dde6062269";
+const char *GIT_SHORTREV_HASH = "732618138d518bb7";

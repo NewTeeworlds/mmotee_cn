@@ -4,6 +4,8 @@
 #include "sql_server.h"
 #include "sql_job.h"
 
+#include <teeuniverses/components/localization.h>
+
 class CGameServerCmd_AddLocalizeVote_Language : public CServer::CGameServerCmd
 {
 private:
@@ -12,7 +14,7 @@ private:
 	char m_aText[128];
 	
 public:
-	CGameServerCmd_AddLocalizeVote_Language(int ClientID, const char* pType, const char* pText)
+	CGameServerCmd_AddLocalizeVote_Language(int ClientID, const char* pType, const char* pText, ...)
 	{
 		m_ClientID = ClientID;
 		str_copy(m_aText, pText, sizeof(m_aText));
@@ -71,7 +73,7 @@ private:
 	char m_aText[128];
 	
 public:
-	CGameServerCmd_SendChatTarget_Language(int ClientID, int ChatCategory, const char* pText)
+	CGameServerCmd_SendChatTarget_Language(int ClientID, int ChatCategory, const char* pText, ...)
 	{
 		m_ClientID = ClientID;
 		m_ChatCategory = ChatCategory;

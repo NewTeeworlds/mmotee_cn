@@ -153,8 +153,12 @@
 			"value": "You need buy this weapon to pick up this weapon's ammo!"
 		},
 		{
-			"key": "公会 {str:name} {str:type} 了房屋!",
-			"value": "Clan {str:name} do smth with the house({str:type})!"
+			"key": "公会 {str:name} 打开了房屋!",
+			"value": "Clan {str:name} open the house!"
+		},
+		{
+			"key": "公会 {str:name} 关闭了房屋!",
+			"value": "Clan {str:name} closed the house!"
 		},
 		{
 			"key": "小游戏进行中. 请等待其结束",

@@ -652,7 +652,8 @@ void CServer::DoSnapshot(int MapID)
 		{
 			m_SnapshotBuilder.Init();
 
-			GameServer(MapID)->OnSnap(i);
+			if(i < MAX_PLAYERS)
+				GameServer(MapID)->OnSnap(i);
 
 			char aData[CSnapshot::MAX_SIZE] = { 0 };
 			CSnapshot *pData = (CSnapshot*)aData;	// Fix compiler warning for strict-aliasing
@@ -2282,7 +2283,7 @@ void CServer::InitClientBot(int ClientID, int MapID)
 		return;
 		
 	m_aClients[ClientID].m_State = CServer::CClient::STATE_INGAME;
-	m_aClients[ClientID].m_MapID = MapID;
+	//m_aClients[ClientID].m_MapID = MapID;
 }
 
 int CServer::GetClientAntiPing(int ClientID)

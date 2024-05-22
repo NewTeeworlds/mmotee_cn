@@ -1416,8 +1416,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					}
 					if (Server()->SetOpenHouse(Server()->GetOwnHouse(ClientID)))
 					{
-						SendChatTarget_Localization(-1, -1, _("公会 {str:name} {str:type} 了房屋!"),
-													"name", Server()->GetClanName(Server()->GetClanID(ClientID)), "type", Server()->GetOpenHouse(Server()->GetOwnHouse(ClientID)) ? "打开" : "关闭");
+						char aBuf[32];
+						str_copy(aBuf, Server()->GetClanName(Server()->GetClanID(ClientID)), sizeof(aBuf));
+						if(Server()->GetOpenHouse(Server()->GetOwnHouse(ClientID)))
+							SendChatTarget_Localization(-1, -1, _("公会 {str:name} 打开了房屋!"), "name", aBuf);
+						else
+							SendChatTarget_Localization(-1, -1, _("公会 {str:name} 关闭了房屋!"), "name", aBuf);
 					}
 					ResetVotes(ClientID, CHOUSE);
 					return;
