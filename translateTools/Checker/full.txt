@@ -1,0 +1,219 @@
+Server does not allow voting to move players to spectators
+Wait for current vote to end before calling a new one.
+You can't move yourself
+With not the wall!
+Server does not allow voting to kick players
+Username: {str:Username}
+Unknown language
+You can kick only your team member
+pm to '{str:Name}': {str:text}
+Use /login <username> <password> to rejoin
+You must wait {int:sec} seconds before making another vote
+Successfully logged in! Have fun while playing!
+Invalid client id to kick
+You can't kick yourself
+Language successfully switched to English
+Use /cmdlist' for a list of commands
+You can only move your team member to specators
+This Small distance!
+You can't kick moderators
+Invalid spectator id used
+Invalid option
+~~~~~~~~ ! Registered ! ~~~~~~~~
+This account does not exist. Use /help
+Attempt to send a personal message to yourself -_-
+pm from '{str:Name}': {str:text}
+Only {int:Num} active players are allowed
+No player with such id
+Password: {str:Password}
+Use /register <username> <password> to create an account
+Spectators aren't allowed to start a vote.
+Invalid client id to move
+Account already exists.
+Now use the /login {str:u} {str:p}
+Available languages: {str:ListOfLanguage}
+You only can join the human team when round hasn't started.
+Zombies can't change team.
+You can't join the zombie team.
+You are the only zombie.
+Zombie will be chosen randomly.
+Successfully! Your new level {int:Level}\n/ Upgrade counts {int:Money}
+You are now a zombie! Eat some brains.
+To start the game read /help.
+Zombie: {str:Name} (WIN)
+Win: {int:winner} / Lose: {int:lose} ({percent:kofs})
+Zombie: {str:Name} (LOSE)
+Username / Password must contain 4-15 characters
+You can't log out as the last zombie!
+Maximum handle level already reached (300).
+/ultimatevip - get info ultimatevip status
+/register <name> <pass> - Register new account
+Exp: {int:Exp}
+Use /upgr <dmg>, <hp>, <handle>, <ammoregen>, <ammo>, <stats> to upgrade stats
+There is no such player!'
+/account - information & help account system
+Insufficient score (3).
+Please use: /setgroup <id> <groupid>
+SuperVIP: Get 5x Exp & 3x Money & 5 Score4Life & 3 For killing spree
+Invis: +5 secounds, InvisCD: 5 secounds
+#This command police group
+Available only zombies!
+~~~~~~~~ Welcome to info! ~~~~~~~~
+1 month UltimateVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros
+/jump [3 score] - Buy 1 other jump
+Login: {str:Username}
+Panic mod by Kurosio, helper: {str:name}
+Since 100: +10 ammo
+Use /sd <idsound>
+/password - Change account password
+You was kicked by the Police!
+AmmoRegen: {int:AmmoRegen}
+/turret speed - upgrade turret speed (1 turret money)
+Your turret's range is upgraded, now it is: {int:TurretRange}
+Since 40: your shotgun spread growing by 1 bullet per 10 levels
+1 month VIP = 0euros || 3 months VIP = 0euros || LifeTime VIP = 0euros
+1 month SuperVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros
+Your turret's speed is upgraded, now it is: {int:TurretSpeed}
+/vip - get info vip status
+New damage: {int:damage}, Your money: {int:Money}
+/turret dmg - upgrade turret damage (1 turret money)
+1. Don't farm XP (freeze acc)
+/shop - shop score tees
+Maximal turret damage level!
+/stats, /upgr - upgrade system
+UltimateVIP: Get 7x Exp & 5x Money & 5 Score4Life & 2 For killing spree
+HP: {int:hp}
+/cmdlist - commands server
+/news - for see what news in server
+/register, /login, /logout - account system
+There is no such player!
+/levels - info about level
+/pm - send personal message to player
+Maximal turret ammo level!
+You had to change your level!'
+New handle: {int:handle}, Your money: {int:money}
+You can not freeze your account!
+/superprefix = Special Dmg + 15 Ammo, Access to commands:
+Turret could be placed via Ghost Emoticon
+~~~~~~~~ Welcome to cmdlist! ~~~~~~~~
+/turret help - show help
+/logout - Logout from your account
+Maximum ammo regen level already reached (60).
+Handle: {int:handle}
+--- Account ---
+Money: {int:Money}
+Maximum ammo level already reached (20).
+Turrets can have 3 different weapons
+Please use: /setmoney <id> <money>
+Owner: {str:Owner} / Skype: {str:Skype}
+/idlist - view ids players
+2. Don't insult (mute/ban 1-7 day)
+Maximum damage level already reached (21).
+/range [10 score] - Buy range zombie hammer
+/resetupgr - Reset your upgr & /supervipmsg - Special messge
+You can change your password with the command:
+Wrong command. Use /cmdlist
+You are not logged in! Type '/account' for more information!
+Use only if you are alive!
+Lvl: {int:Lvl}
+4. Don't self-kill (same as farming)
+/turret ammoregen - upgrade turret ammo (1 turret money)
+/turret info - show information
+~~~~~~~~ ! Your account details ! ~~~~~~~~
+Your turret's ammoregen is upgraded, now it is: {int:TurretShotgun}
+/login <name> <pass> - Login to your account
+/resetupgr - Reset your upgr & /ultimatemsg - Special message
+No such turret upgrade: '{str:wtf}'!
+Please wait for the round to end!
+Group ID not found!
+Username and Password must be different
+Added basic ranked system
+---- Turret ----
+Use /register <username> <password>'
+New ammo: {int:Ammo}, Your money: {int:Money}
+New ammo regen: {int:Ammoregen}, Your money: {int:Money}
+Ammo regen: {int:ammoregen}
+~~~~~~~~ Welcome to help! ~~~~~~~~
+Username and Password must contain 4-15 characters
+/idlist - List IDs players
+Damage: {int:dmg}
+Wait for the round to start!
+Freeze: {int:Freeze}
+Use /w <id> <text>
+Please use: /freeze <id>
+--- UltimateViP ---
+Ammo: {int:Ammo}
+/turret info - info about turrets
+Maximal turret ammoregen level!
+Range: {int:Range}
+--- SuperViP ---
+Insufficient money (1 needed).
+You are not logged in! Use /account for more information!
+/turret range - upgrade turret range (1 turret money)
+This type doesn't exist.
+You have not turret money counts!
+Since 50: +10 ammo
+Shotgun Turret: Shoots once per 3 sec at enemy
+Available only to zombies!
+Logged out.
+/prefix = +5 ammo + Special Dmg & 5 For killing spree
+/password <new password>
+Please use: /setlvl <id> <level>
+Speed: {int:Speed}
+Use only if you alive!
+Group ID: 0 - Removed, 1 - Police, 2 - VIP, 3 - Helper
+Gun Turret: Shoots once per sec at enemy
+Invis: +3 secounds, InvisCD: 10 secounds
+Please use: /kick <id>
+3. Don't use bots (perma ban)
+You aren't logged in!
+/rules, /help, /info - information
+Payments: Name, name
+The player is not logged in account!
+Your turret's gun is upgraded, now it is: {int:TurretAmmo}
+/supervip - get info supervip status
+Invis: +1 secounds, InvisCD: 20 secounds
+Maximal turret range level!
+--- ViP ---
+~~~~~~~~ ! Upgr stats details ! ~~~~~~~~
+Insufficient score (10).
+/turret ammo - upgrade turret ammo (1 turret money)
+#/policehelp - help for police group
+New HP: {int:HP}, Maximum HP: {int:MaximumHP}, Your money: {int:Money}
+Mailbox: <no mailbox> (no active)
+You are not logged in! Use /account for more information
+Damage: {int:Damage}
+Insufficient money (10 needed).
+Level: {int:Level}
+This player already no in group!
+Use /turret info
+/heart [20 score] - Buy 1 heart if you zombie team
+Laser Turret: places a laser each 40 sec if the zombie reach it's line
+----- Shop -----
+Use: /login <username> <password>
+/turret stats - view stats upgrade turrets
+--- List IDs ---
+Use /login <username> <password> to login again
+Insufficient score (20).
+Please wait for the round to end.
+Skype: nope, Name: nope
+ViP: Get 3x Exp & 2x Money & 5 For killing spree
+Maximal turret speed level!
+Use \"/password <new password>\"
+Maximum HP level already reached (100).
+/kick <id> - kick player ids
+/freeze <id> - freeze/unfreeze player
+Ammo: {int:ammo}
+Done!
+/rules - for read the rules Panic
+You don't have unlimited air jumps
+\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}
+The second point can not be set here
+{str:Who} is on killing spree!
+You have unlimited air jumps
+Exp {int:Exp}/{int:Level}
+Already logged in
+Password successfully changed!
+Turret's Level-Up! Your turret's level now is: {int:TurretLevel}
+{str:Name} destroyed turret wall hearted
+Your turret's damage is upgraded, now it is: {int:TurretDmg}

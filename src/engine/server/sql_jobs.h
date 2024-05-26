@@ -4,6 +4,8 @@
 #include "sql_server.h"
 #include "sql_job.h"
 
+#include <teeuniverses/components/localization.h>
+
 class CGameServerCmd_AddLocalizeVote_Language : public CServer::CGameServerCmd
 {
 private:
@@ -12,7 +14,7 @@ private:
 	char m_aText[128];
 	
 public:
-	CGameServerCmd_AddLocalizeVote_Language(int ClientID, const char* pType, const char* pText)
+	CGameServerCmd_AddLocalizeVote_Language(int ClientID, const char* pType, const char* pText, ...)
 	{
 		m_ClientID = ClientID;
 		str_copy(m_aText, pText, sizeof(m_aText));
@@ -71,7 +73,7 @@ private:
 	char m_aText[128];
 	
 public:
-	CGameServerCmd_SendChatTarget_Language(int ClientID, int ChatCategory, const char* pText)
+	CGameServerCmd_SendChatTarget_Language(int ClientID, int ChatCategory, const char* pText, ...)
 	{
 		m_ClientID = ClientID;
 		m_ChatCategory = ChatCategory;
@@ -1833,7 +1835,7 @@ public:
 				int Level = (int)pSqlServer->GetResults()->getInt(m_sType.ClrStr());
 
 				dynamic_string Buffer;
-				m_pServer->Localization()->Format(Buffer, m_pServer->GetClientLanguage(m_ClientID), _("Rank {int:Rank} - {str:Name} {int:Count} Leader {str:Leader}"), 
+				m_pServer->Localization()->Format(Buffer, m_pServer->GetClientLanguage(m_ClientID), _("第{int:Rank}名 - {str:Name} {int:Count} 会长 {str:Leader}"), 
 					"Rank", &Rank, "Name", pSqlServer->GetResults()->getString("Clanname").c_str(), "Count", &Level, "Leader", pSqlServer->GetResults()->getString("LeaderName").c_str());
 			
 				if(m_Type == 1)

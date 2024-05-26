@@ -2132,10 +2132,6 @@ void CCharacter::ClassSpawnAttributes()
 	if (Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEDNTHP))
 		m_Health *= 70;
 
-	if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEPPP))
-	{
-		GameServer()->m_apPlayers[m_pPlayer->GetCID()]->AccUpgrade()->m_Speed += 10;
-	}
 	// 新手保护，禁用 PvP
 	m_pPlayer->m_AntiPvpSmall = false;
 	if(m_pPlayer->AccData()->m_Level < 20)
@@ -2148,9 +2144,9 @@ void CCharacter::ClassSpawnAttributes()
 	//TODO
 	// книги инфа
 	if(m_pPlayer->m_MoneyAdd)
-		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKMONEYMIN), NULL);		
+		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你正在使用{str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKMONEYMIN), NULL);		
 	if(m_pPlayer->m_ExperienceAdd)
-		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("You have an active {str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKEXPMIN), NULL);		
+		GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你正在使用{str:name}."), "name", Server()->GetItemName(m_pPlayer->GetCID(), BOOKEXPMIN), NULL);		
 
 	if(m_pPlayer->IsBot())
 		m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*10;
@@ -2161,12 +2157,17 @@ void CCharacter::ClassSpawnAttributes()
 
 	// 武器属性设置
 	int geta = (int)(5+m_pPlayer->AccUpgrade()->m_Ammo);// 弹药数量
-	int getsp = 1000+m_pPlayer->AccUpgrade()->m_Speed*20;// 射速
-	int getspg = 1000+m_pPlayer->AccUpgrade()->m_Speed*8;// Grenade（火箭炮）射速
+	int TempSpd = m_pPlayer->AccUpgrade()->m_Speed;
+
+	if(Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEPPP))
+		TempSpd += 10;
+
+	int getsp = 1000+TempSpd*20;// 射速
+	int getspg = 1000+TempSpd*8;// Grenade（火箭炮）射速
 	int getar = 0;									// 子弹回复速度
 	if(m_pPlayer->AccUpgrade()->m_AmmoRegen > 0) 
 		getar= (int)(650-m_pPlayer->AccUpgrade()->m_AmmoRegen*2);
-		
+
 	// 按照弹夹数量添加弹药
 	if(Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED))
 		geta += Server()->GetItemCount(m_pPlayer->GetCID(), WEAPONPRESSED)*5;

@@ -1,0 +1,984 @@
+{
+	"translation": [
+		{
+			"key": "你的技能成功提升 {int:lv} 级",
+			"value": "You upgrade successfully {int:lv} level's"
+		},
+		{
+			"key": "店里可没材料.",
+			"value": "There is no materials in the shop."
+		},
+		{
+			"key": "{str:PlayerName} 被踢出了 ({str:Reason})",
+			"value": "{str:PlayerName} has been kicked ({str:Reason})"
+		},
+		{
+			"key": "欢迎! 请登录(/login)或者注册(/register)一个新的账户,指令见/cmdlist",
+			"value": "Welcome! Please login(/login) or register(/register), see commands with /cmdlist"
+		},
+		{
+			"key": "你好{str:name}(*′▽｀)ノノ! 你现在在商店，商店菜单现在可用了",
+			"value": "Hi! {str:name}(*′▽｀)ノノ! You in shop open vote menu"
+		},
+		{
+			"key": "Boss战进行中. 等待其结束或者创建新的Boss.",
+			"value": "Boss fight is already started, wait for its end."
+		},
+		{
+			"key": "请先完成小游戏",
+			"value": "Please finish the mini game first"
+		},
+		{
+			"key": "你成功地获得了升级",
+			"value": "You level up successfully"
+		},
+		{
+			"key": "你好{str:name}(*′▽｀)ノノ! 你现在在任务大厅，任务菜单可用了.",
+			"value": "Hi {str:name}(*′▽｀)ノノ! You now in the quest room, open the vote menu."
+		},
+		{
+			"key": "你需要登录(/login)或者创建(/register)一个新账户",
+			"value": "You need login(/login) or register(/register) an account."
+		},
+		{
+			"key": "[专长] {str:items}",
+			"value": "[JOB] {str:items}"
+		},
+		{
+			"key": "{str:name} 创建了Boss战, Boss 是 {str:names}",
+			"value": "{str:name} created boss fight, the boss is {str:names}"
+		},
+		{
+			"key": "[小游戏] 最少需要两名玩家才能开始",
+			"value": "[MINI-GAME] Need at least 2 players."
+		},
+		{
+			"key": "你已经升到满级了",
+			"value": "You are reach the max level."
+		},
+		{
+			"key": "你被通缉了，不能进入Boss房间.",
+			"value": "You're wanted, you can't enter the boss room."
+		},
+		{
+			"key": "{str:PlayerName} 离开了游戏",
+			"value": "{str:PlayerName} has left the game"
+		},
+		{
+			"key": "您没有可用于榨汁儿的蔬菜水果!",
+			"value": "You don't have any vegetables or fruits available for juice extraction"
+		},
+		{
+			"key": "公会新的管理员:{str:name}",
+			"value": "New admin in clan:{str:name}"
+		},
+		{
+			"key": "玩家 {str:PlayerName} 进入了服务器!",
+			"value": "Player {str:PlayerName} has joined the game!"
+		},
+		{
+			"key": "[小游戏] 奖励: 钱袋, 神器 {int:gets}%",
+			"value": "[MINI-GAME] Bonus: MoneyBag, Artifacts {int:gets}%"
+		},
+		{
+			"key": "{int:rmb} 人民币 - {int:donate} 点券",
+			"value": "{int:rmb} CNY - {int:donate} Donate"
+		},
+		{
+			"key": "{str:PlayerName} 被封禁了 ({str:Reason})",
+			"value": "{str:PlayerName} has been banned ({str:Reason})"
+		},
+		{
+			"key": "你向工会捐了 {int:count} 黄金",
+			"value": "You donate {int:count} gold for your clan"
+		},
+		{
+			"key": "/logout - 注销该账户",
+			"value": "/logout - ?"
+		},
+		{
+			"key": "为了合成你需要 {str:need}",
+			"value": "You need {str:need} to create it."
+		},
+		{
+			"key": "# 你不能把该公会的会长或者管理员踢出公会",
+			"value": "# You can't kick the Owner or the Admin in your clan"
+		},
+		{
+			"key": "白银 +{int:point}",
+			"value": "Money +{int:point}"
+		},
+		{
+			"key": "你所在的公会没有房屋!",
+			"value": "There is no room in your clan!"
+		},
+		{
+			"key": "公会新的会长:{str:name}",
+			"value": "New owner in your clan:{str:name}"
+		},
+		{
+			"key": "{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 经验",
+			"value": "{str:name} Use: {str:used} x{int:num} , +{int:pvars} EXP"
+		},
+		{
+			"key": "你的技能成功地提升了",
+			"value": "You upgrade successfully"
+		},
+		{
+			"key": "{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvar} 黄金与 {int:pvars} 白银",
+			"value": "{str:name} Use: {str:used} x{int:num} , +{int:pvar} Gold & +{int:pvars} Money"
+		},
+		{
+			"key": "读取数据时发生错误,请报告管理员",
+			"value": "Fatal Error! Contact with the admin!"
+		},
+		{
+			"key": "玩家 {str:name} 加入了公会",
+			"value": "Player {str:name} joined the clan"
+		},
+		{
+			"key": "{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 木头",
+			"value": "{str:name} 使用了物品:{str:used} x{int:num} , +{int:pvars} Wood"
+		},
+		{
+			"key": "{str:name} 成功地附魔了物品:{str:item} +{int:enchant}",
+			"value": "{str:name} Enchant {str:item} +{int:enchant}"
+		},
+		{
+			"key": "武器:霰弹枪&火箭炮 射速:快\n奖励:\n- 钱袋 x300-500\n- 5% - 高级材料\n- 20% - 高级消耗品盲盒",
+			"value": "Weapon:Shotgun & Grenade, Fire Speed:FAST\n奖励:\n- MoneyBag x300-500\n- 5% - Craft item\n- 20% - Random Box"
+		},
+		{
+			"key": "你需要购买该武器才能拾取该武器的弹药!",
+			"value": "You need buy this weapon to pick up this weapon's ammo!"
+		},
+		{
+			"key": "公会 {str:name} 打开了房屋!",
+			"value": "Clan {str:name} open the house!"
+		},
+		{
+			"key": "公会 {str:name} 关闭了房屋!",
+			"value": "Clan {str:name} closed the house!"
+		},
+		{
+			"key": "小游戏进行中. 请等待其结束",
+			"value": "Mini-game is running, Please wait it end."
+		},
+		{
+			"key": "# 你不是该公会的会长",
+			"value": "# You're not the clan's owner"
+		},
+		{
+			"key": "{str:PlayerName} 离开了游戏 ({str:Reason})",
+			"value": "{str:PlayerName} has left the game ({str:Reason})"
+		},
+		{
+			"key": "{str:buff}{str:sdata}({int:getl}%)\n经验: {int:exp}/{int:expl} +{int:exps}\n白银: {int:money} +{int:moneys}",
+			"value": "{str:buff}{str:sdata}({int:getl}%)\nEXP: {int:exp}/{int:expl} +{int:exps}\nMoney: {int:money} +{int:moneys}"
+		},
+		{
+			"key": "Boss房发起的Boss战即将开始. 进入Boss房以进入Boss战.",
+			"value": "Boss fight is going start. Join the waiting room to join the boss fight."
+		},
+		{
+			"key": "太棒了! 玩家最终取得了胜利! Boss {str:name} 已经倒下!",
+			"value": "GREAT! Player won the Boss Fight! Boss {str:name} Die!"
+		},
+		{
+			"key": "[小游戏] 游戏结束.最终赢家是:{str:name}:",
+			"value": "[MINI-GAME] Game over.The winner is {str:name}"
+		},
+		{
+			"key": "你失去了 {str:items}x{int:counts}",
+			"value": "You lost {str:items}x{int:counts}"
+		},
+		{
+			"key": "公会原管理员 {str:name} 被罢免了!",
+			"value": "The admin {str:name} in your clan has been FIRED!"
+		},
+		{
+			"key": "你没有达到规定的等级.",
+			"value": "You're not reach the level."
+		},
+		{
+			"key": "任务还未完成!",
+			"value": "Quest not finish!"
+		},
+		{
+			"key": "你没有足够的技能点",
+			"value": "You don't have enough upgrade point."
+		},
+		{
+			"key": "经验 +{int:point}. 公会 +{int:struct}",
+			"value": "+{int:point} EXP. Clan +{int:struct}"
+		},
+		{
+			"key": "你获得了 {str:items}x{int:counts}",
+			"value": "You got {str:items}x{int:counts}"
+		},
+		{
+			"key": "玩家 {str:player} 发起了小游戏 {str:name} .",
+			"value": "Player {str:player} call for the mini-game {str:name} ."
+		},
+		{
+			"key": "合成错误",
+			"value": "Wrong craft."
+		},
+		{
+			"key": "你没有那么多钱,小穷光蛋",
+			"value": "You don't have enough money, poor child."
+		},
+		{
+			"key": "Boss战正在进行,请等待其结束",
+			"value": "Boss fight is already started, wait for its end."
+		},
+		{
+			"key": "请先完成 Boss 战",
+			"value": "Please finish the boss fight first."
+		},
+		{
+			"key": "你使用了物品:{str:items}x{int:num}",
+			"value": "You use the item: {str:items}x{int:num}"
+		},
+		{
+			"key": "{str:name} 获得了 {str:items}",
+			"value": "{str:name} got a {str:items}"
+		},
+		{
+			"key": "你可以用 /lang 命令来改变mod语言.",
+			"value": "You can use /lang to change the language."
+		},
+		{
+			"key": "你好{str:name}(*′▽｀)ノノ! 你现在可以在投票里挑战Boss了！",
+			"value": "Hello {str:name}(*′▽｀)ノノ! You can challenge boss in vote menu now!"
+		},
+		{
+			"key": "你好{str:name}(*′▽｀)ノノ! 你现在在合成室，合成菜单现在可用了.",
+			"value": "Hello {str:name}(*′▽｀)ノノ! You're in the craft room now, craft menu is available now."
+		},
+		{
+			"key": "你没有足够的黄金,小穷光蛋.",
+			"value": "You don't have enough money, poor child."
+		},
+		{
+			"key": "技能已满级",
+			"value": "You are reach the max level."
+		},
+		{
+			"key": "你需要 250 级",
+			"value": "You need at least lv250"
+		},
+		{
+			"key": "请稍候...",
+			"value": "Please wait..."
+		},
+		{
+			"key": "{str:name} 获得了 {str:items}x{int:counts}",
+			"value": "{str:name} got {str:items}x{int:counts}"
+		},
+		{
+			"key": " ",
+			"value": " "
+		},
+		{
+			"key": "玩家 {str:name} 退出了公会",
+			"value": "Player {str:name} has left the clan"
+		},
+		{
+			"key": "{str:name} 使用了物品:{str:used} x{int:num} ,获得了 {int:pvars} 黄金",
+			"value": "{str:name} use item:{str:used} x{int:num} , +{int:pvars} Gold"
+		},
+		{
+			"key": "欢迎来到公会",
+			"value": "Welcome to the clan"
+		},
+		{
+			"key": "Boss战的玩家都死亡了, boss {str:name} 最终胜利了",
+			"value": "All the challengers died, Boss {str:name} is the only winner."
+		},
+		{
+			"key": "[公会] 社会声誉增加了 +{int:count}",
+			"value": "[CLAN] SOCIAL POINT +{int:count}"
+		},
+		{
+			"key": "这里是禁止PVP的区域.",
+			"value": "[ZONE]PVP Disabled."
+		},
+		{
+			"key": "地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽",
+			"value": "Map edit：天际, 卖鱼强, Ninecloud, Flower\nDevelopers: 天上的星星, Flower, Ninecloud\nServer Admins: Flower, 籽抽"
+		},
+		{
+			"key": "你不是会长或者你没有足够的钱",
+			"value": "You're not the owner or you don't have enough money."
+		},
+		{
+			"key": "武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 20% - 守卫锤子碎片",
+			"value": "Weapon:Hammer  Fire Speed:♾\nBonus:\n- MoneyBag x500-1000\n- PigMeet\n- 20% - Guard Hammer Frag"
+		},
+		{
+			"key": "你没有足够的升级点",
+			"value": "You don't have enough upgrade point."
+		},
+		{
+			"key": "{str:PlayerName} 安心地去了",
+			"value": "{str:PlayerName} dead happily"
+		},
+		{
+			"key": "因此你获得了 {int:count} 黄金",
+			"value": "So you got {int:count} gold"
+		},
+		{
+			"key": "感谢InfClass感染模式的所有制作人员",
+			"value": "Thanks for all the developers of InfClass"
+		},
+		{
+			"key": "用法: /newclan <公会名> - 创建一个新的公会",
+			"value": "Usage: /newclan <clanName> - create a new clan"
+		},
+		{
+			"key": "没有找到该名字的玩家",
+			"value": "Don't find a player with that name."
+		},
+		{
+			"key": "人数已达到最大值",
+			"value": "You're reach the max."
+		},
+		{
+			"key": "你购买了公会升级!",
+			"value": "You bought the clan upgrade!"
+		},
+		{
+			"key": "# 你不是该公会的会长或者管理员",
+			"value": "# You're not the clan's owner or admin"
+		},
+		{
+			"key": "这里是允许PVP的区域.",
+			"value": "[ZONE]PVP Enabled."
+		},
+		{
+			"key": "Boss战被取消了, 玩家们不在等待室内",
+			"value": "Boss Fight canceled, players are not in the waiting room"
+		},
+		{
+			"key": "武器:霰弹枪&火箭炮 射速:一般\n奖励:\n- 钱袋 x100-300\n- 5% - Slime材料\n- 20% - 材料盲盒",
+			"value": "Weapon: Shotgun&Grenade  Fire Speed:Normal\nBonus:\n- MoneyBag x100-300\n- 5% - Slime Craft Item\n- 20% - Random Box"
+		},
+		{
+			"key": "[小游戏] 游戏结束. 没有玩家获胜",
+			"value": "[MINI-GAME] Game over. No winner."
+		},
+		{
+			"key": "你已购买.",
+			"value": "You Bought."
+		},
+		{
+			"key": "/login <用户名> <密码> - 登录账户",
+			"value": "/login <username> <password> - login account"
+		},
+		{
+			"key": "{str:name} 进行榨汁，获得了 {int:pvars} 经验",
+			"value": "{str:name} 进行榨汁，获得了 {int:pvars} 经验"
+		},
+		{
+			"key": " \n\n等级: {int:lvl} | 经验: {int:exp}/{int:expl}\n----------------------\n{str:sdata} {int:getl}%\n{str:dataang} 怒气\n----------------------\n{str:mana} 魔能\n生命值: {int:hp}/{int:hpstart}\n\n\n\n\n\n\n\n\n\n\n\n{str:buff}{str:emp}",
+			"value": " \n\n等级: {int:lvl} | 经验: {int:exp}/{int:expl}\n----------------------\n{str:sdata} {int:getl}%\n{str:dataang} 怒气\n----------------------\n{str:mana} 魔能\n生命值: {int:hp}/{int:hpstart}\n\n\n\n\n\n\n\n\n\n\n\n{str:buff}{str:emp}"
+		},
+		{
+			"key": "你被通缉了. 不能进入小游戏.",
+			"value": "你被通缉了. 不能进入小游戏."
+		},
+		{
+			"key": "{str:name} 在合成 {str:item}x{int:coun} 的时候失败了",
+			"value": "{str:name} 在合成 {str:item}x{int:coun} 的时候失败了"
+		},
+		{
+			"key": "会长不能退出公会",
+			"value": "会长不能退出公会"
+		},
+		{
+			"key": "{str:sdata}\n({int:getl}%)\nBoss: {str:name} 生命值: {int:hp}/{int:hpstart}\n我的生命值 {int:yhp}/{int:yhps}",
+			"value": "{str:sdata}\n({int:getl}%)\nBoss: {str:name} 生命值: {int:hp}/{int:hpstart}\n我的生命值 {int:yhp}/{int:yhps}"
+		},
+		{
+			"key": "你需要登录(/login)或者注册(/register)一个新的账户.",
+			"value": "你需要登录(/login)或者注册(/register)一个新的账户."
+		},
+		{
+			"key": "对Boss战开始了. 玩家数量:{int:num}",
+			"value": "对Boss战开始了. 玩家数量:{int:num}"
+		},
+		{
+			"key": "需要创建小游戏 (/game)",
+			"value": "需要创建小游戏 (/game)"
+		},
+		{
+			"key": "你成功地购买了商品",
+			"value": "你成功地购买了商品"
+		},
+		{
+			"key": "小游戏进行中.请等待其结束",
+			"value": "小游戏进行中.请等待其结束"
+		},
+		{
+			"key": "/register <用户名> <密码> - 创建一个新的账户",
+			"value": "/register <用户名> <密码> - 创建一个新的账户"
+		},
+		{
+			"key": "主要制作人员:\n原作者们:Najvlad, Rem1x, Matodor, Kurosio",
+			"value": "主要制作人员:\n原作者们:Najvlad, Rem1x, Matodor, Kurosio"
+		},
+		{
+			"key": "需要 1000 材料(material)",
+			"value": "需要 1000 材料(material)"
+		},
+		{
+			"key": "升级失败.",
+			"value": "升级失败."
+		},
+		{
+			"key": "你成功地升了 {int:lv} 级",
+			"value": "你成功地升了 {int:lv} 级"
+		},
+		{
+			"key": "再见，我的{str:name}!",
+			"value": "再见，我的{str:name}!"
+		},
+		{
+			"key": "欲加入的玩家, 请进入Boss房(boss room)",
+			"value": "欲加入的玩家, 请进入Boss房(boss room)"
+		},
+		{
+			"key": "您的邮箱内有新的信息",
+			"value": "您的邮箱内有新的信息"
+		},
+		{
+			"key": "你丢出了物品:{str:items}x{int:counts}",
+			"value": "你丢出了物品:{str:items}x{int:counts}"
+		},
+		{
+			"key": "武器:锤子&手枪 射速:快\n奖励:\n- 钱袋 x50-200\n- 猪肉\n- 15% - 木材",
+			"value": "武器:锤子&手枪 射速:快\n奖励:\n- 钱袋 x50-200\n- 猪肉\n- 15% - 木材"
+		},
+		{
+			"key": "{str:name} 合成了物品 {str:item}x{int:coun}",
+			"value": "{str:name} 合成了物品 {str:item}x{int:coun}"
+		},
+		{
+			"key": "请等候...",
+			"value": "请等候..."
+		},
+		{
+			"key": "{str:name} 使用了物品:{str:items}x{int:num}",
+			"value": "{str:name} 使用了物品:{str:items}x{int:num}"
+		},
+		{
+			"key": "[小游戏] 游戏开始了, 一共有 {int:num} 名玩家参加",
+			"value": "[小游戏] 游戏开始了, 一共有 {int:num} 名玩家参加"
+		},
+		{
+			"key": "你向商店提供了 {int:count} 个材料，获得了 {int:money} 黄金",
+			"value": "你向商店提供了 {int:count} 个材料，获得了 {int:money} 黄金"
+		},
+		{
+			"key": "欲加入的玩家, 请进入小游戏房间(game)",
+			"value": "欲加入的玩家, 请进入小游戏房间(game)"
+		},
+		{
+			"key": "经验 +{int:point}",
+			"value": "经验 +{int:point}"
+		},
+		{
+			"key": "你卖出了:{str:name}x{int:count}",
+			"value": "你卖出了:{str:name}x{int:count}"
+		},
+		{
+			"key": "小游戏{str:name}即将开始,请进入房间",
+			"value": "小游戏{str:name}即将开始,请进入房间"
+		},
+		{
+			"key": "你没有足够点券(donate money),充钱吧.",
+			"value": "你没有足够点券(donate money),充钱吧."
+		},
+		{
+			"key": "在线奖励:{str:name} 获得了 {str:item}.",
+			"value": "在线奖励:{str:name} 获得了 {str:item}."
+		},
+		{
+			"key": "{str:PlayerName} joined the RPG Azataz",
+			"value": "{str:PlayerName} joined the RPG Azataz"
+		},
+		{
+			"key": "玩家 {str:name} 被取消通缉了",
+			"value": "玩家 {str:name} 被取消通缉了"
+		},
+		{
+			"key": "热身时间.{int:siska}秒后开始.",
+			"value": "热身时间.{int:siska}秒后开始."
+		},
+		{
+			"key": "物品:{str:name} 即将在 {int:ends} 分钟后失效(ending).",
+			"value": "物品:{str:name} 即将在 {int:ends} 分钟后失效(ending)."
+		},
+		{
+			"key": "物品:{str:name} 失效(ended)了",
+			"value": "物品:{str:name} 失效(ended)了"
+		},
+		{
+			"key": "开战吧!!!",
+			"value": "开战吧!!!"
+		},
+		{
+			"key": "你的账户有风险, 请设置安全设置(security)",
+			"value": "你的账户有风险, 请设置安全设置(security)"
+		},
+		{
+			"key": "等待玩家在 {int:siska} 秒捡起物品.",
+			"value": "等待玩家在 {int:siska} 秒捡起物品."
+		},
+		{
+			"key": "交际愤怒值 -100. 你的交际愤怒值:{int:rel}",
+			"value": "交际愤怒值 -100. 你的交际愤怒值:{int:rel}"
+		},
+		{
+			"key": "等待玩家加入Boss战 {sec:siska}. Boss:{str:name}",
+			"value": "等待玩家加入Boss战 {sec:siska}. Boss:{str:name}"
+		},
+		{
+			"key": "玩家 {str:name}, 出狱了",
+			"value": "玩家 {str:name}, 出狱了"
+		},
+		{
+			"key": "{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}",
+			"value": "{str:name} 使用了物品:{str:used} x{int:num} 而且获得了 {str:get} x{int:num2}"
+		},
+		{
+			"key": "你现在可以去做任务了.",
+			"value": "你现在可以去做任务了."
+		},
+		{
+			"key": "你进了监狱, 刑期:{sec:siska}.",
+			"value": "你进了监狱, 刑期:{sec:siska}."
+		},
+		{
+			"key": "物品:{str:name} 效果失效",
+			"value": "物品:{str:name} 效果失效"
+		},
+		{
+			"key": "物品:{str:name} 效果即将在 {int:ends} 分钟后失效.",
+			"value": "物品:{str:name} 效果即将在 {int:ends} 分钟后失效."
+		},
+		{
+			"key": "你因得罪皇上（管理员）被打入大牢, 刑期:{sec:siska}.",
+			"value": "你因得罪皇上（管理员）被打入大牢, 刑期:{sec:siska}."
+		},
+		{
+			"key": "[Level UP] 恭喜你你升级了! 你获得了技能点和升级点.",
+			"value": "[Level UP] 恭喜你你升级了! 你获得了技能点和升级点."
+		},
+		{
+			"key": "{int:siska}秒后结束战斗.{int:num}存活.",
+			"value": "{int:siska}秒后结束战斗.{int:num}存活."
+		},
+		{
+			"key": "玩家 {str:name} 被通缉了!",
+			"value": "玩家 {str:name} 被通缉了!"
+		},
+		{
+			"key": "你正在使用{str:name}.",
+			"value": "你正在使用{str:name}."
+		},
+		{
+			"key": "你被击败了.",
+			"value": "你被击败了."
+		},
+		{
+			"key": "玩家 {str:name} 被捕了!",
+			"value": "玩家 {str:name} 被捕了!"
+		},
+		{
+			"key": "医师",
+			"value": "医师"
+		},
+		{
+			"key": "你需要选择一个职业.",
+			"value": "你需要选择一个职业."
+		},
+		{
+			"key": "光墙已达最大数量.",
+			"value": "光墙已达最大数量."
+		},
+		{
+			"key": "交际愤怒值: {int:rel}",
+			"value": "交际愤怒值: {int:rel}"
+		},
+		{
+			"key": "被动技能不受伤害",
+			"value": "被动技能不受伤害"
+		},
+		{
+			"key": "刺客",
+			"value": "刺客"
+		},
+		{
+			"key": "玩家之间分享掉落的物品",
+			"value": "玩家之间分享掉落的物品"
+		},
+		{
+			"key": "欢迎来到白房间.",
+			"value": "欢迎来到白房间."
+		},
+		{
+			"key": "玩家 {str:name} 出监狱了!",
+			"value": "玩家 {str:name} 出监狱了!"
+		},
+		{
+			"key": "光剑已关闭.",
+			"value": "光剑已关闭."
+		},
+		{
+			"key": "你的魔能不足,需要150.",
+			"value": "你的魔能不足,需要150."
+		},
+		{
+			"key": "你被 Boss {str:name}击败.",
+			"value": "你被 Boss {str:name}击败."
+		},
+		{
+			"key": "注意!所有的设置项都在投票选项里面",
+			"value": "注意!所有的设置项都在投票选项里面"
+		},
+		{
+			"key": "你的魔能不足.",
+			"value": "你的魔能不足."
+		},
+		{
+			"key": "这间公会房不对外开放",
+			"value": "这间公会房不对外开放"
+		},
+		{
+			"key": "Boss {str:bossn} 被{int:cwin}个玩家击败.",
+			"value": "Boss {str:bossn} 被{int:cwin}个玩家击败."
+		},
+		{
+			"key": "玩家 {str:name}, 击败玩家 {str:name1}, 并将其打入大牢",
+			"value": "玩家 {str:name}, 击败玩家 {str:name1}, 并将其打入大牢"
+		},
+		{
+			"key": "PVP模式 -- 新手保护已开启.",
+			"value": "PVP模式 -- 新手保护已开启."
+		},
+		{
+			"key": "暴击伤害 {int:crit}",
+			"value": "暴击伤害 {int:crit}"
+		},
+		{
+			"key": "这间房屋还没有公会入驻,暂不开放",
+			"value": "这间房屋还没有公会入驻,暂不开放"
+		},
+		{
+			"key": "战士",
+			"value": "战士"
+		},
+		{
+			"key": "没有这个编号的地图",
+			"value": "没有这个编号的地图"
+		},
+		{
+			"key": "# 你不是公会会长或者管理员!",
+			"value": "# 你不是公会会长或者管理员!"
+		},
+		{
+			"key": "使用方法: /register <用户名> <密码>",
+			"value": "使用方法: /register <用户名> <密码>"
+		},
+		{
+			"key": "两次密码不一致",
+			"value": "两次密码不一致"
+		},
+		{
+			"key": "解封用户(管理员): /unban <昵称>",
+			"value": "解封用户(管理员): /unban <昵称>"
+		},
+		{
+			"key": "请在 1-250 服务器上注册",
+			"value": "请在 1-250 服务器上注册"
+		},
+		{
+			"key": "使用方法：/setclass <启动器ID> <职业ID>",
+			"value": "使用方法：/setclass <启动器ID> <职业ID>"
+		},
+		{
+			"key": "设置用户状态为下线(管理员): /offline <昵称>",
+			"value": "设置用户状态为下线(管理员): /offline <昵称>"
+		},
+		{
+			"key": "玩家 {str:name} 邀请你加入 {str:cname} 公会!",
+			"value": "玩家 {str:name} 邀请你加入 {str:cname} 公会!"
+		},
+		{
+			"key": "玩家已找到,请求已发送.",
+			"value": "玩家已找到,请求已发送."
+		},
+		{
+			"key": "无效的启动器ID",
+			"value": "无效的启动器ID"
+		},
+		{
+			"key": "这个账户未启用安全设置,只需要密码",
+			"value": "这个账户未启用安全设置,只需要密码"
+		},
+		{
+			"key": "修改密码(管理员): /chpw <昵称> <密码> ",
+			"value": "修改密码(管理员): /chpw <昵称> <密码> "
+		},
+		{
+			"key": "# 你已经加入一个公会了!",
+			"value": "# 你已经加入一个公会了!"
+		},
+		{
+			"key": "你已登录",
+			"value": "你已登录"
+		},
+		{
+			"key": "密码必须包含 2~15 个字符",
+			"value": "密码必须包含 2~15 个字符"
+		},
+		{
+			"key": "公会人数已达到上限",
+			"value": "公会人数已达到上限"
+		},
+		{
+			"key": "你没有公会票,请前往商店购买",
+			"value": "你没有公会票,请前往商店购买"
+		},
+		{
+			"key": "输入的 ID 无效.",
+			"value": "输入的 ID 无效."
+		},
+		{
+			"key": "玩家未找到,或者玩家已在公会!",
+			"value": "玩家未找到,或者玩家已在公会!"
+		},
+		{
+			"key": "# 为防止错误输入导致的账号密码泄露，系统已禁止聊天内容以“、”开头",
+			"value": "# 为防止错误输入导致的账号密码泄露，系统已禁止聊天内容以“、”开头"
+		},
+		{
+			"key": "公会名称长度必须在 1~12 个字符之间",
+			"value": "公会名称长度必须在 1~12 个字符之间"
+		},
+		{
+			"key": "用户名 / 密码必须包含 2-15 个字符",
+			"value": "用户名 / 密码必须包含 2-15 个字符"
+		},
+		{
+			"key": "# 请先登录",
+			"value": "# 请先登录"
+		},
+		{
+			"key": "封禁用户(管理员): /ban <客户端ID> <原因> ",
+			"value": "封禁用户(管理员): /ban <客户端ID> <原因> "
+		},
+		{
+			"key": "是否加入公会?",
+			"value": "是否加入公会?"
+		},
+		{
+			"key": "# 未知命令 {str:cmd} !",
+			"value": "# 未知命令 {str:cmd} !"
+		},
+		{
+			"key": "修改密码: /password <密码> <重复密码>",
+			"value": "修改密码: /password <密码> <重复密码>"
+		},
+		{
+			"key": "这个账户启用了安全设置,需要用户名与密码!",
+			"value": "这个账户启用了安全设置,需要用户名与密码!"
+		},
+		{
+			"key": "请在{int:seconds}秒内登录,否则将被系统自动踢出.",
+			"value": "请在{int:seconds}秒内登录,否则将被系统自动踢出."
+		},
+		{
+			"key": "~ 矿具: {str:name} 已损毁, 不能用了",
+			"value": "~ 矿具: {str:name} 已损毁, 不能用了"
+		},
+		{
+			"key": "[Player] 经验+20 +{int:bonus}点专长经验",
+			"value": "[Player] 经验+20 +{int:bonus}点专长经验"
+		},
+		{
+			"key": "~ 种地等级提升~ 获得了农耕盲盒",
+			"value": "~ 种地等级提升~ 获得了农耕盲盒"
+		},
+		{
+			"key": "[Player] 经验+{int:exp} +{int:bonus}点专长经验",
+			"value": "[Player] 经验+{int:exp} +{int:bonus}点专长经验"
+		},
+		{
+			"key": "~ 工具: {str:name} 已损毁, 不能用了",
+			"value": "~ 工具: {str:name} 已损毁, 不能用了"
+		},
+		{
+			"key": "物品栏内最多塞50000个附魔材料. 在物品栏对装备附魔，或者卖给商店吧!",
+			"value": "物品栏内最多塞50000个附魔材料. 在物品栏对装备附魔，或者卖给商店吧!"
+		},
+		{
+			"key": "[{str:name}] 额外获得{int:dragon}个龙矿",
+			"value": "[{str:name}] 额外获得{int:dragon}个龙矿"
+		},
+		{
+			"key": "在装备栏对装备附魔或者卖给商店吧.",
+			"value": "在装备栏对装备附魔或者卖给商店吧."
+		},
+		{
+			"key": "这里没有足够的材料. 至少需要25个",
+			"value": "这里没有足够的材料. 至少需要25个"
+		},
+		{
+			"key": "专长 - 萃取: {int:lvl}级 : {int:exp}/{int:expneed}经验\n奖励: 25+{int:bonus} : 萃取进度: {str:got} / {int:gotp}%",
+			"value": "专长 - 萃取: {int:lvl}级 : {int:exp}/{int:expneed}经验\n奖励: 25+{int:bonus} : 萃取进度: {str:got} / {int:gotp}%"
+		},
+		{
+			"key": "专长 - 伐木工: (光头强不会升级)\n工具: {str:name}x{int:count} ({int:brok}/{int:brok2})\n砍伐进度: {str:got} / {int:gotp}%",
+			"value": "专长 - 伐木工: (光头强不会升级)\n工具: {str:name}x{int:count} ({int:brok}/{int:brok2})\n砍伐进度: {str:got} / {int:gotp}%"
+		},
+		{
+			"key": "~ 农具: {str:name} 已损毁, 不能用了",
+			"value": "~ 农具: {str:name} 已损毁, 不能用了"
+		},
+		{
+			"key": "[Player] 经验+10 +并不存在的专长经验",
+			"value": "[Player] 经验+10 +并不存在的专长经验"
+		},
+		{
+			"key": "专长 - 种地: {int:lvl}级: {int:exp}/{int:expneed}经验\n工具: {str:name}x{int:count} ({int:brok}/{int:brok2})\n物品 : 采集进度: {str:got} / {int:gotp}%",
+			"value": "专长 - 种地: {int:lvl}级: {int:exp}/{int:expneed}经验\n工具: {str:name}x{int:count} ({int:brok}/{int:brok2})\n物品 : 采集进度: {str:got} / {int:gotp}%"
+		},
+		{
+			"key": "专长 - 采掘: {int:lvl}级 : {int:exp}/{int:expneed}经验\n工具: {str:name}x{int:count} ({int:brok}/{int:brok2})\n挖掘进度: {str:got} / {int:gotp}%",
+			"value": "专长 - 采掘: {int:lvl}级 : {int:exp}/{int:expneed}经验\n工具: {str:name}x{int:count} ({int:brok}/{int:brok2})\n挖掘进度: {str:got} / {int:gotp}%"
+		},
+		{
+			"key": "{str:name} 捡到钱袋了! 拿到了 {int:got} + {int:bonus} 个钱袋!",
+			"value": "{str:name} 捡到钱袋了! 拿到了 {int:got} + {int:bonus} 个钱袋!"
+		},
+		{
+			"key": "你的级别太低了, 这个物品你驾驭不住",
+			"value": "你的级别太低了, 这个物品你驾驭不住"
+		},
+		{
+			"key": "使用 {str:button} 来拾起 \n'{str:name}'x{int:num}\n这个物品是属于 {str:nhow} 的",
+			"value": "使用 {str:button} 来拾起 \n'{str:name}'x{int:num}\n这个物品是属于 {str:nhow} 的"
+		},
+		{
+			"key": "Error clan list say administrator.",
+			"value": "Error clan list say administrator."
+		},
+		{
+			"key": "这个栏目是空的",
+			"value": "这个栏目是空的"
+		},
+		{
+			"key": "封禁成功.",
+			"value": "封禁成功."
+		},
+		{
+			"key": "创建失败",
+			"value": "创建失败"
+		},
+		{
+			"key": "解封失败.",
+			"value": "解封失败."
+		},
+		{
+			"key": "Rank {int:Rank} - {str:Name} {int:Count}",
+			"value": "Rank {int:Rank} - {str:Name} {int:Count}"
+		},
+		{
+			"key": "操作失败.",
+			"value": "操作失败."
+		},
+		{
+			"key": "你获得了 {str:items}x{int:counts}",
+			"value": "你获得了 {str:items}x{int:counts}"
+		},
+		{
+			"key": "封禁失败.",
+			"value": "封禁失败."
+		},
+		{
+			"key": "登录时出现错误,请报告管理员",
+			"value": "登录时出现错误,请报告管理员"
+		},
+		{
+			"key": "欢迎新玩家!",
+			"value": "欢迎新玩家!"
+		},
+		{
+			"key": "在注册账号时发生了错误",
+			"value": "在注册账号时发生了错误"
+		},
+		{
+			"key": "账户注册成功.请使用/login <密码> 登录.",
+			"value": "账户注册成功.请使用/login <密码> 登录."
+		},
+		{
+			"key": "登录成功.按下esc界面中的“开始游戏”进入.",
+			"value": "登录成功.按下esc界面中的“开始游戏”进入."
+		},
+		{
+			"key": "更改密码失败",
+			"value": "更改密码失败"
+		},
+		{
+			"key": "------------",
+			"value": "------------"
+		},
+		{
+			"key": "点卷已送达.",
+			"value": "点卷已送达."
+		},
+		{
+			"key": "成功更改密码",
+			"value": "成功更改密码"
+		},
+		{
+			"key": "用户名或密码错误,或是您的账户不属于该昵称.",
+			"value": "用户名或密码错误,或是您的账户不属于该昵称."
+		},
+		{
+			"key": "第{int:Rank}名 - {str:Name} {int:Count} 会长 {str:Leader}",
+			"value": "第{int:Rank}名 - {str:Name} {int:Count} 会长 {str:Leader}"
+		},
+		{
+			"key": "创建成功,公会票已使用",
+			"value": "创建成功,公会票已使用"
+		},
+		{
+			"key": "解封成功.",
+			"value": "解封成功."
+		},
+		{
+			"key": "未找到该用户或该用户未被封禁.",
+			"value": "未找到该用户或该用户未被封禁."
+		},
+		{
+			"key": "这个用户名/昵称已被占用",
+			"value": "这个用户名/昵称已被占用"
+		},
+		{
+			"key": "未找到该玩家",
+			"value": "未找到该玩家"
+		},
+		{
+			"key": "找不到用户",
+			"value": "找不到用户"
+		},
+		{
+			"key": "这个名称已被使用",
+			"value": "这个名称已被使用"
+		}
+	]
+}

@@ -39,10 +39,10 @@ CCmd::CCmd(CPlayer *pPlayer, CGameContext *pGameServer)
 void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 {
 	int ClientID = m_pPlayer->GetCID() >= 0 ? m_pPlayer->GetCID() : -1;
-	if (!strncmp(Msg->m_pMessage, "、", 2))
+	if (!strncmp(Msg->m_pMessage, "、", 2) || !strncmp(Msg->m_pMessage, "\\", 2))
 	{
 		LastChat();
-		GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("# 为防止错误输入导致的账号密码泄露，系统已禁止聊天内容以“、”开头"), "cmd", Msg->m_pMessage, NULL);
+		GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("# 为防止错误输入导致的账号密码泄露，系统已禁止聊天内容以“、”, “\\”开头"), "cmd", Msg->m_pMessage, NULL);
 		return;
 	}
 	if (!strncmp(Msg->m_pMessage, "/login", 6))
@@ -462,6 +462,34 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("无效的启动器ID"), NULL);
 
 		GameServer()->m_apPlayers[CID]->SetClass(Class);
+		GameServer()->UpdateStats(CID);
+		return;
+	}
+	else if (!strncmp(Msg->m_pMessage, "/givepoint", 10))
+	{
+		LastChat();
+		int CID, Point;
+		if (sscanf(Msg->m_pMessage, "/givepoint %d %d", &CID, &Point) != 2)
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("使用方法：/givepoint <启动器ID> <点数>"), NULL);
+
+		if(!GameServer()->m_apPlayers[CID])
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("无效的启动器ID"), NULL);
+
+		GameServer()->Server()->GetAccUpgrade(CID)->m_Upgrade += Point;
+		GameServer()->UpdateStats(CID);
+		return;
+	}
+	else if (!strncmp(Msg->m_pMessage, "/giveskill", 10))
+	{
+		LastChat();
+		int CID, Point;
+		if (sscanf(Msg->m_pMessage, "/giveskill %d %d", &CID, &Point) != 2)
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("使用方法：/giveskill <启动器ID> <点数>"), NULL);
+
+		if(!GameServer()->m_apPlayers[CID])
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("无效的启动器ID"), NULL);
+
+		GameServer()->Server()->GetAccUpgrade(CID)->m_SkillPoint += Point;
 		GameServer()->UpdateStats(CID);
 		return;
 	}

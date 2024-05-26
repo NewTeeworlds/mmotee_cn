@@ -1227,8 +1227,18 @@ const char *CPlayer::TitleGot()
 			return "黄金VIP3";
 		case 4:
 			return "巨石VIP4";
+		case 5:
+			return "大佬VIP5";
+		case 6:
+			return "巨佬VIP6";
+		case 7:
+			return "超佬VIP7";
+		case 8:
+			return "神级VIP8";
+		case 9:
+			return "VIP180";
 		default:
-			return "至尊铂金5";
+			return "#人上人#";
 		}
 	}
 	else if (Server()->GetItemSettings(m_ClientID, TITLEQUESTS))
