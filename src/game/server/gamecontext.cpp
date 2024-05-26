@@ -1416,7 +1416,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					}
 					if (Server()->SetOpenHouse(Server()->GetOwnHouse(ClientID)))
 					{
-						SendChatTarget_Localization(-1, -1, _("公会 {str:name} {str:type} 了房屋!"),
+						SendChatTarget_Localization(-1, -1, _("公会 {str:name} {str:type} 了房屋与月球门!"),
 													"name", Server()->GetClanName(Server()->GetClanID(ClientID)), "type", Server()->GetOpenHouse(Server()->GetOwnHouse(ClientID)) ? "打开" : "关闭");
 					}
 					ResetVotes(ClientID, CHOUSE);
@@ -3745,7 +3745,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		if (Server()->GetItemCount(ClientID, JUICER))
 		{
 			AddVote("······················· ", "null", ClientID);
-			AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机(5%损耗)");
+			AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机");
 		}
 
 		if (m_apPlayers[ClientID]->GetShop())
@@ -4432,7 +4432,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", "你将会获得禁止PVP设置");
 		AddVote_Localization(ClientID, "null", "-----");
 		AddVote_Localization(ClientID, "bjuicer", "☞ 物品 榨汁儿机 [200]");
-		AddVote_Localization(ClientID, "null", "一次性吃完所有蔬菜水果(5%损耗)");
+		AddVote_Localization(ClientID, "null", "一次性吃完所有蔬菜水果");
 		AddVote_Localization(ClientID, "null", "-----");
 		AddVote_Localization(ClientID, "bcustomized", "☞ 物品 个性化包 [300]");
 		AddVote_Localization(ClientID, "null", "让你使用自己的皮肤和颜色");
