@@ -2509,7 +2509,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					int tomato = Server()->GetItemCount(ClientID, TOMATE);
 					int potato = Server()->GetItemCount(ClientID, POTATO);
 					int cabbage = Server()->GetItemCount(ClientID, CABBAGE);
-					long long int Get = (long long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35) * 0.95f;
+					long long int Get = (long long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35);
 
 					if(Get <= 0)
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("您没有可用于榨汁儿的蔬菜水果!"), NULL);
