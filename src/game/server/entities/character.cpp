@@ -192,6 +192,10 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	{
 		OpenClassChooser();
 	}
+	
+	if(Server()->GetItemSettings(GetCID(), TITLEGUARD))
+		m_Health = (int)(AccData()->m_Level * 50);
+
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
 	return true;

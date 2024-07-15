@@ -1092,14 +1092,7 @@ void CPlayer::TryRespawn()
 		Server()->SetFireDelay(m_ClientID, INFWEAPON_HAMMER, 1);
 	}
 	else
-	{
 		m_pCharacter = new (AllocMemoryCell) CCharacter(&GameServer()->m_World);
-		if(Server()->GetItemSettings(GetCID(), TITLEGUARD))
-		{
-			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 50);
-		}
-	}
 
 	m_pCharacter->Spawn(this, SpawnPos);
 	if (GetClass() != PLAYERCLASS_NONE)
@@ -1250,7 +1243,7 @@ const char *CPlayer::TitleGot()
 	else if (Server()->GetItemSettings(m_ClientID, BIGCRAFT))
 		return "合成师";
 	else if (Server()->GetItemSettings(m_ClientID, TITLESUMMER))
-		return "沐浴阳";
+		return "日光浴";
 	else if (Server()->GetItemSettings(m_ClientID, TITLEENCHANT))
 		return "魔法师";
 	else if(Server()->GetItemSettings(m_ClientID, TITLEDNTCRIT))
@@ -1260,13 +1253,13 @@ const char *CPlayer::TitleGot()
 	else if(Server()->GetItemSettings(m_ClientID, TITLETEEFUN))
 		return "TeeFun";
 	else if(Server()->GetItemSettings(m_ClientID, TITLEWORKF))
-		return "工人爷";
+		return "工爷";
 	else if(Server()->GetItemSettings(m_ClientID, TITLEWORKM))
-		return "工人奶";
+		return "工奶";
 	else if(Server()->GetItemSettings(m_ClientID, TITLEFARMF))
-		return "农民爷";
+		return "农爷";
 	else if(Server()->GetItemSettings(m_ClientID, TITLEFARMM))
-		return "农民奶";
+		return "农奶";
 	else if(Server()->GetItemSettings(m_ClientID, TITLEHANDCRAFT))
 		return "手工业";
 	else if(Server()->GetItemSettings(m_ClientID, TITLEPPP))
