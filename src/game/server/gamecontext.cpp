@@ -2530,6 +2530,16 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						"name", Server()->ClientName(ClientID), "pvars", &Get, NULL);
 					m_apPlayers[ClientID]->ExpAdd(Get, false);
 				}
+				
+				else if (str_comp(aCmd, "getup") == 0)
+				{
+					return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("Unfinished"), NULL);
+					if (Server()->GetItemCount(ClientID, FORMULAFORRING) < Count || Server()->GetItemCount(ClientID, HEADBOOMER) < 100 * Count)
+						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了获取升级点，你需要 {str:need}"), "need", "戒指蓝图, 爆破鬼才的尸体 x100", NULL);
+
+					Server()->RemItem(ClientID, HEADBOOMER, 100 * Count, -1);
+					Server()->RemItem(ClientID, FORMULAFORRING, Count, -1);
+				}
 
 				for (int i = 0; i < 20; i++)
 				{
@@ -4054,6 +4064,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写升级数");
 		AddVote("", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "统计数据(升级点 - {int:up} / 技能点 - {int:sp})", "up", &m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade, "sp", &m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint);
+		AddVote("-> 获取升级点", "getup", ClientID);
 		AddVote("············", "null", ClientID);
 		AddVote_Localization(ClientID, "null", "♛ {str:psevdo}", "psevdo", LocalizeText(ClientID, "升级选项"));
 		AddVote_Localization(ClientID, "uhealth", "☞ [{int:sum}] 生命值上限 +40(20升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Health, "bonus", m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER ? "C+10" : "C+0");
