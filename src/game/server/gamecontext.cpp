@@ -2534,11 +2534,6 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				else if (str_comp(aCmd, "getup") == 0)
 				{
 					return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("Unfinished"), NULL);
-					if (Server()->GetItemCount(ClientID, FORMULAFORRING) < Count || Server()->GetItemCount(ClientID, HEADBOOMER) < 100 * Count)
-						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了获取升级点，你需要 {str:need}"), "need", "戒指蓝图, 爆破鬼才的尸体 x100", NULL);
-
-					Server()->RemItem(ClientID, HEADBOOMER, 100 * Count, -1);
-					Server()->RemItem(ClientID, FORMULAFORRING, Count, -1);
 				}
 
 				for (int i = 0; i < 20; i++)
