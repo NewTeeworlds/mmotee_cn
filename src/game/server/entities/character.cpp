@@ -1080,7 +1080,6 @@ void CCharacter::Tick()
 			else
 			{
 				vec2 CursorPos = vec2(m_Input.m_TargetX, m_Input.m_TargetY);
-				bool Broadcast = false;
 
 				if(length(CursorPos) > 50.0f)
 				{
@@ -1092,15 +1091,12 @@ void CCharacter::Tick()
 					{
 						case CMapConverter::MENUCLASS_ASSASINS:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("刺客"), NULL);
-							Broadcast = true;	
 							break;
 						case CMapConverter::MENUCLASS_BERSERK:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("战士"), NULL);
-							Broadcast = true;
 							break;
 						case CMapConverter::MENUCLASS_HEALER:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("医师"), NULL);
-							Broadcast = true;
 							break;
 						default:
 							m_pPlayer->m_MapMenuItem = -1;

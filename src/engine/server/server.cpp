@@ -887,10 +887,10 @@ void CServer::SendMapData(int ClientID, int Chunk, int MapID)
  	int Last = 0;
  
  	// drop faulty map data requests
- 	if(Chunk < 0 || Offset > m_vMapData[MapID].m_CurrentMapSize)
+ 	if(Chunk < 0 || Offset > (unsigned int)m_vMapData[MapID].m_CurrentMapSize)
  		return;
  
- 	if(Offset+ChunkSize >= m_vMapData[MapID].m_CurrentMapSize)
+ 	if(Offset+ChunkSize >= (unsigned int)m_vMapData[MapID].m_CurrentMapSize)
  	{
  		ChunkSize = m_vMapData[MapID].m_CurrentMapSize-Offset;
  		Last = 1;

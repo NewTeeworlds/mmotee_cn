@@ -1031,29 +1031,29 @@ void CPlayer::TryRespawn()
 			break;
 		case BOT_BOSSVAMPIRE:
 			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
-			AccData()->m_Level = 1000 + random_int(0, 3);
+			AccData()->m_Level = 1500 + random_int(0, 3);
 
 			m_BigBot = true;
 
 			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
-			AccUpgrade()->m_Damage = 400;
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 2);
 			break;
 		case BOT_BOSSPIGKING:
 			m_pCharacter = new (AllocMemoryCell) CBossPig(&GameServer()->m_World);
-			AccData()->m_Level = 100 + random_int(3, 13);
+			AccData()->m_Level = 300 + random_int(3, 13);
 			m_BigBot = true;
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 6);
-			AccUpgrade()->m_Damage = 10;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 2);
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
 			break;
 		case BOT_BOSSGUARD:
 			m_pCharacter = new (AllocMemoryCell) CBossGuard(&GameServer()->m_World);
-			AccData()->m_Level = 500 + random_int(0, 10);
-			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
+			AccData()->m_Level = 2000 + random_int(0, 100);
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 20);
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:
 			m_pCharacter = new (AllocMemoryCell) CNpcSold(&GameServer()->m_World);
-			AccData()->m_Level = 500 + random_int(0, 10);
+			AccData()->m_Level = 1000 + random_int(0, 10);
 			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
 			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 50);
 			m_BigBot = true;

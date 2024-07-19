@@ -94,7 +94,6 @@ void CBossGuard::TickBotAI()
     // ИНТЕРАКТ С ИГРОКАМИ
     bool PlayerClose = false;
     bool PlayerFound = false;
-    bool PlayerNFound = false;
     float LessDist = 500.0f;
 
     m_BotClientIDFix = -1;
@@ -149,14 +148,14 @@ void CBossGuard::TickBotAI()
 		{
 			CPlayer *pPlayer = GameServer()->m_apPlayers[i];
 			if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->IsBoss())
-            continue;
+	            continue;
 
     		int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
-	    	if (Collide && pPlayer->AccData()->m_Class != PLAYERCLASS_HEALER)
-		    	continue;
+			if (Collide && pPlayer->AccData()->m_Class != PLAYERCLASS_HEALER) 
+				continue;
 
-			int Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);
-			if (Dist < LessDist)
+			float Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);
+			if (Dist < LessDist) 
 				LessDist = Dist;
 			else
 				continue;
@@ -227,8 +226,6 @@ void CBossGuard::TickBotAI()
 
 				m_Input.m_TargetX = static_cast<int>(pPlayer->GetCharacter()->m_Pos.x - m_Pos.x);
 				m_Input.m_TargetY = static_cast<int>(pPlayer->GetCharacter()->m_Pos.y - m_Pos.y);
-
-				PlayerNFound = true;
 			}
 		}
 	}

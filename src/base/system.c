@@ -113,6 +113,11 @@ void dbg_assert_imp(const char *filename, int line, int test, const char *msg)
 
 void dbg_msg(const char *sys, const char *fmt, ...)
 {
+	va_list args;
+	size_t len = 0;
+	char str[1024*4];
+	char *msg;
+	char timestr[80];
 #if defined(CONF_FAMILY_UNIX)
 	if(getenv("S"))
 	{
@@ -122,11 +127,6 @@ void dbg_msg(const char *sys, const char *fmt, ...)
 		}
 	}
 #endif
-	va_list args;
-	size_t len = 0;
-	char str[1024*4];
-	char *msg;
-	char timestr[80];
 	str_timestamp_format(timestr, sizeof(timestr), FORMAT_SPACE);
 
 	str_format(str, sizeof(str), "[%s][%s]: ", timestr, sys);
