@@ -1301,6 +1301,11 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			{
 				PrivateMessage(pMsg->m_pMessage + 3, ClientID, (Team != CGameContext::CHAT_ALL));
 			}
+			else if (!strncmp(pMsg->m_pMessage, "、", 2) || !strncmp(pMsg->m_pMessage, "\\", 2))
+			{
+				pPlayer->m_pChatCmd->LastChat();
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("# 为防止错误输入导致的账号密码泄露，系统已禁止聊天内容以“、”, “\\”开头"), NULL);
+			}
 			else if (pMsg->m_pMessage[0] == '/')
 				pPlayer->m_pChatCmd->ChatCmd(pMsg);
 			else
@@ -1367,7 +1372,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					Buffer.append("\n\n");
 					Server()->Localization()->Format_L(Buffer, pLanguage, _("主要制作人员:\n原作者们:Najvlad, Rem1x, Matodor, Kurosio"), NULL);
 					Buffer.append("\n\n");
-					Server()->Localization()->Format_L(Buffer, pLanguage, _("地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽"), NULL);
+					Server()->Localization()->Format_L(Buffer, pLanguage, _("地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽, 王小睿"), NULL);
 					Buffer.append("\n\n");
 
 					SendMOTD(ClientID, Buffer.buffer());
@@ -3772,7 +3777,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVoteMenu_Localization(ClientID, ARMORMENU, MENUONLY, "☞ 装备 ☭");
 			AddVoteMenu_Localization(ClientID, INVENTORY, MENUONLY, "☞ 物品栏/背包 ✪");
 			AddVoteMenu_Localization(ClientID, CRAFTING, MENUONLY, "☞ 合成栏 ☺");
-			AddVoteMenu_Localization(ClientID, MAINQUEST, MENUONLY, "☞ 任务与报酬 ⊹");
+			AddVoteMenu_Localization(ClientID, QUESTMENU, MENUONLY, "☞ 任务与报酬 ⊹");
 			AddVote_Localization(ClientID, "ssantiping", "☞ 特效显示(减轻服务器负担): {str:stat}", "stat", Data);
 
 			AddVote("······················· ", "null", ClientID);
@@ -4007,7 +4012,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote("", "null", ClientID);
 
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "修改"));
-			if (Server()->GetItemCount(ClientID, SNAPDAMAGE))
+			if (Server()->GetItemCount(ClientID, RAREEVENTHAMMER))
 				CreateNewShop(ClientID, RAREEVENTHAMMER, 1, 0, 0);
 
 			CreateNewShop(ClientID, JUMPIMPULS, 1, 0, 0);
@@ -4708,6 +4713,18 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddVote("更多任务敬请期待...", "null", ClientID);
 				AddBack(ClientID);
 			}
+		}
+		break;
+
+		case DAYQUEST:
+		{
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "每日任务!");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "功能尚未完成..");
+			AddVote_Localization(ClientID, "null", "发送你的创意到ilovejel@163.com");
+			AddVote_Localization(ClientID, "null", "如果被采用了将有丰厚奖励");
+			AddBack(ClientID);
 		}
 		break;
 

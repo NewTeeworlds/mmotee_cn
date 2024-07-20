@@ -56,7 +56,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_Search = m_BigBot = m_InArea = m_IsInGame = m_InBossed = false;
 
 	m_pChatCmd = new CCmd(this, m_pGameServer);
-	SetLanguage("en");
+	SetLanguage("cn");
 
 	InitSnap();
 }

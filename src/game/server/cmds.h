@@ -10,14 +10,12 @@ class CCmd
 public:
 	CCmd(CPlayer *pPlayer, CGameContext *pGameServer);
 	void ChatCmd(CNetMsg_Cl_Say *Msg);
+	void LastChat();
 
 private:
 	CPlayer *m_pPlayer;
 	CGameContext *m_pGameServer;
 	CGameContext *GameServer() const { return m_pGameServer; }
-
-	//CCharacter *Character;
-	void LastChat();
 };
 
 #endif

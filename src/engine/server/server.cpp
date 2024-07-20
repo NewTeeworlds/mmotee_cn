@@ -303,7 +303,7 @@ void CServer::CClient::Reset(bool ResetScore)
 		m_UserID = -1;
 
 		m_AntiPing = 0;
-		str_copy(m_aLanguage, "en", sizeof(m_aLanguage));
+		str_copy(m_aLanguage, "cn", sizeof(m_aLanguage));
 
 		m_WaitingTime = 0;
 	}
