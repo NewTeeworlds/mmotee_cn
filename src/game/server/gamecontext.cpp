@@ -4703,7 +4703,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
 			if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InQuest())
 			{
-				int Progress = m_apPlayers[ClientID]->AccData()->m_Quest;
+				int Progress = m_apPlayers[ClientID]->AccData()->m_Quest - 1;
 				int Num = EMainQuests::NUM_MAIN_QUEST;
 				AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
 				AddVote_Localization(ClientID, "null", "任务大厅！aw..!");
@@ -4718,6 +4718,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 		case DAYQUEST:
 		{
+			m_apPlayers[ClientID]->m_LastVotelist = QUESTMENU;
 			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
 			AddVote_Localization(ClientID, "null", "每日任务!");
 			AddVote("", "null", ClientID);
