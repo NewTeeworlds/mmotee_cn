@@ -529,7 +529,7 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 
 	case BOT_BOSSGUARD:
 		arghealth = 1250;
-		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 20% - 守卫锤子碎片"), NULL);
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 4% - 守卫锤子碎片"), NULL);
 		break;
 
 	default:
