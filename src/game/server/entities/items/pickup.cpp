@@ -276,7 +276,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			if(Server()->GetItemCount(ClientID, MINECORE) && ItemDrop >= 7 && random_prob(0.75f))
 			{
-				int DragonExtra = min(1+LevelItem / 600, Server()->GetItemCount(ClientID, MINECORE));
+				int DragonExtra = min(10, Server()->GetItemCount(ClientID, MINECORE)/10);
 				GameServer()->GiveItem(ClientID, DRAGONORE, DragonExtra);
 				GameServer()->SendChatTarget_Localization(ClientID, -1, _("[{str:name}] 额外获得{int:dragon}个龙矿"), "name", Server()->GetItemName(ClientID, MINECORE), "dragon", &DragonExtra, NULL);
 			}

@@ -381,7 +381,8 @@ INSERT INTO `tw_uItemList` VALUES
 (155,6,'龙镐','- 用于挖矿'),
 (156,5,'核心基座','- 用于合成核心'),
 (157,1,'神器-繁林核心','- 单次伐木进度+5%/个'),
-(158,1,'神器-髓岩核心','- 挖矿时概率补偿龙矿，锡矿概率增加');
+(158,1,'神器-髓岩核心','- 挖矿时概率补偿龙矿，锡矿概率增加'),
+(159,1,'每日任务','- 任务进度');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
 UNLOCK TABLES
 
@@ -567,7 +568,8 @@ INSERT INTO `tw_uItemList_en` VALUES
 (155,6,'Dragon Pickaxe','- For mining'),
 (156,5,'Core Base','- For crafting cores'),
 (157,1,'Rare Forest Core','- Cut Wood faster 75%'),
-(158,1,'Rare Rock Core','- get more dragon & exp when mining');
+(158,1,'Rare Rock Core','- get more dragon & exp when mining'),
+(159,6,'Daily Quest','- Check Daily Quest');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;

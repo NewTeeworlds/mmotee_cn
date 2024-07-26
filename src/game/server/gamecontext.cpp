@@ -4386,9 +4386,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "null", "玩家/公会排名");
 			AddVote("", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "★ 玩家 - {str:psevdo}", "psevdo", LocalizeText(ClientID, "Players"));
-			AddVote_Localization(ClientID, "sort1", "☞ 等级排名");
-			AddVote_Localization(ClientID, "sort2", "☞ 黄金排名");
-			AddVote_Localization(ClientID, "sort3", "☞ 任务排名");
+			AddVote_Localization(ClientID, "sort1", "☞ 等级排名 "); // WARNING! Don't remove the following space!!
+			AddVote_Localization(ClientID, "sort2", "☞ 黄金排名 "); // WARNING! Don't remove the following space!!
+			AddVote_Localization(ClientID, "sort3", "☞ 任务排名 "); // WARNING! Don't remove the following space!!
 			AddVote_Localization(ClientID, "sort6", "☞ 击杀排名");
 			AddVote_Localization(ClientID, "sort7", "☞ 竞技场胜利次数排名");
 			AddVote("", "null", ClientID);
