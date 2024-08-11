@@ -2877,6 +2877,15 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(!Server()->GetItemCount(ClientID, SSPAWNSETTINGS))
 				GiveItem(ClientID, SSPAWNSETTINGS, 1);
 
+			if(!Server()->GetItemCount(ClientID, COLLECTQUEST))
+				GiveItem(ClientID, COLLECTQUEST, 1);
+
+			if(!Server()->GetItemCount(ClientID, KILLQUEST))
+				GiveItem(ClientID, KILLQUEST, 1);
+
+			if(!Server()->GetItemCount(ClientID, CHALLENGEQUEST))
+				GiveItem(ClientID, CHALLENGEQUEST, 1);
+
 			pPlayer->UpdateSnap();
 		}
 		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_World.m_Paused)
