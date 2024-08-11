@@ -192,6 +192,8 @@ public:
 
 	int m_MapID;
 
+	void GiveUpPoint(int Num);
+
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;

@@ -1762,7 +1762,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
 							else
 							{
-								m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += 500;
+								m_apPlayers[ClientID]->GiveUpPoint(500);
 								m_apPlayers[ClientID]->AccData()->m_Quest++;
 								Server()->RemItem(ClientID, DIRTYGUARDHEAD, EMainQuestNeed::QUEST8, -1);
 								UpdateStats(ClientID);
@@ -1776,7 +1776,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
 							else
 							{
-								m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += 3000;
+								m_apPlayers[ClientID]->GiveUpPoint(3000);
 								m_apPlayers[ClientID]->AccData()->m_Quest++;
 								Server()->RemItem(ClientID, GUARDHEAD, EMainQuestNeed::QUEST9, -1);
 								UpdateStats(ClientID);
@@ -1808,7 +1808,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						else
 						{
 							Server()->RemItem(ClientID, Item, Need, -1);
-							m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += Get;
+							m_apPlayers[ClientID]->GiveUpPoint(Get);
 							Server()->SetItemSettingsCount(ClientID, COLLECTQUEST, GetDailyID());
 						}
 						break;
@@ -2587,11 +2587,11 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					if (m_apPlayers[ClientID]->m_LastChangeInfo && m_apPlayers[ClientID]->m_LastChangeInfo + Server()->TickSpeed() * 3 > Server()->Tick())
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("请稍候..."), NULL);
 
-					int carrot = Server()->GetItemCount(ClientID, CARROT);
-					int tomato = Server()->GetItemCount(ClientID, TOMATE);
-					int potato = Server()->GetItemCount(ClientID, POTATO);
-					int cabbage = Server()->GetItemCount(ClientID, CABBAGE);
-					long long int Get = (long long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35) * 0.95f;
+					unsigned long long int carrot = Server()->GetItemCount(ClientID, CARROT);
+					unsigned long long int tomato = Server()->GetItemCount(ClientID, TOMATE);
+					unsigned long long int potato = Server()->GetItemCount(ClientID, POTATO);
+					unsigned long long int cabbage = Server()->GetItemCount(ClientID, CABBAGE);
+					unsigned long long int Get = (unsigned long long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35) * 0.99f;
 
 					if(Get <= 0)
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("您没有可用于榨汁儿的蔬菜水果!"), NULL);
@@ -3872,7 +3872,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			if (Server()->GetItemCount(ClientID, JUICER))
 			{
 				AddVote("······················· ", "null", ClientID);
-				AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机(5%损耗)");
+				AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机(1%损耗)");
 			}
 
 			if (m_apPlayers[ClientID]->GetShop())
@@ -5807,7 +5807,7 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 		}
 		else if (ItemID == SKILLUPBOX)
 		{
-			m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += 10 * Count;
+			m_apPlayers[ClientID]->GiveUpPoint(10 * Count);
 			m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint += 10 * Count;
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你使用了物品:{str:items}x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
 			UpdateUpgrades(ClientID);

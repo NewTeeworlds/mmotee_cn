@@ -1733,7 +1733,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 50;
+					GameServer()->m_apPlayers[From]->GiveUpPoint(50);
 					GameServer()->UpdateStats(From);
 				}
 				if(!GameServer()->m_CityStart)
@@ -1761,7 +1761,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 100;
+					GameServer()->m_apPlayers[From]->GiveUpPoint(100);
 					GameServer()->UpdateStats(From);
 				}
 				if(!GameServer()->m_CityStart)
@@ -1786,7 +1786,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 300;
+					GameServer()->m_apPlayers[From]->GiveUpPoint(300);
 					GameServer()->UpdateStats(From);
 				}
 				if(!GameServer()->m_CityStart)
@@ -1807,7 +1807,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 10;
+					GameServer()->m_apPlayers[From]->GiveUpPoint(10);
 					GameServer()->UpdateStats(From);
 				}
 				if(random_prob(1.0f/80))
@@ -1842,7 +1842,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(FORMULAEARRINGS, 1, 90, i, Force/(35+randforce));
 							CreateDropRandom(FORMULAWEAPON, 1, 90, i, Force/(40+randforce));
 							CreateDropRandom(RANDOMCRAFTITEM, 1, 15, i, Force/(45+randforce));
-							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 20;
+							GameServer()->m_apPlayers[From]->GiveUpPoint(20);
 							GameServer()->UpdateStats(From);
 							break;
 						
@@ -1851,7 +1851,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(BOOKEXPMIN, 1, 15, i, Force/(45+randforce));
 							CreateDropRandom(BOOKMONEYMIN, 1, 80, i, Force/(45+randforce));
 							CreateDropRandom(CLANBOXEXP, 1, 50, i, Force/(45+randforce));
-							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 25;
+							GameServer()->m_apPlayers[From]->GiveUpPoint(25);
 							GameServer()->UpdateStats(From);
 							break;
 
@@ -1859,7 +1859,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(MONEYBAG, random_int(50, 200), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(1, 3), false, i, Force/(35+randforce));
 							CreateDropRandom(WOOD, random_int(20, 30), 15, i, Force/(12+randforce));
-							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 10;
+							GameServer()->m_apPlayers[From]->GiveUpPoint(10);
 							GameServer()->UpdateStats(From);
 							break;
 
@@ -1868,7 +1868,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(PIGPORNO, random_int(5, 10), false, i, Force/(35+randforce));
 							CreateDropRandom(GUARDHEAD, 3, false, i, Force/(35+randforce));
 							CreateDropRandom(GUARDHAMFRAG, random_int(1, 4), 25, i, Force/(12+randforce));
-							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 20;
+							GameServer()->m_apPlayers[From]->GiveUpPoint(20);
 							GameServer()->UpdateStats(From);
 							break;
 

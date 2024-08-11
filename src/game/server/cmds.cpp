@@ -449,7 +449,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		if(!GameServer()->m_apPlayers[CID])
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("无效的启动器ID"), NULL);
 
-		GameServer()->Server()->GetAccUpgrade(CID)->m_Upgrade += Point;
+		GameServer()->m_apPlayers[CID]->GiveUpPoint(Point);;
 		GameServer()->UpdateStats(CID);
 		return;
 	}

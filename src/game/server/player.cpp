@@ -279,7 +279,7 @@ void CPlayer::BasicAuthedTick()
 		AccData()->m_Exp -= AccData()->m_Level * GetNeedForUp();
 		AccData()->m_Level++;
 		AccUpgrade()->m_SkillPoint += 1;
-		AccUpgrade()->m_Upgrade += 2;
+		GiveUpPoint(100);
 		needexp = AccData()->m_Level * GetNeedForUp();
 		int GetBag = Server()->GetItemCount(m_ClientID, AMULETCLEEVER) ? 20 : 1;
 		GameServer()->GiveItem(m_ClientID, MONEYBAG, GetBag);
@@ -1212,7 +1212,7 @@ void CPlayer::ResetUpgrade(int ClientID)
 		AccUpgrade()->m_Speed = AccUpgrade()->m_Health = AccUpgrade()->m_Damage = AccUpgrade()->m_HPRegen = AccUpgrade()->m_Mana = 0;
 		AccUpgrade()->m_AmmoRegen = AccUpgrade()->m_Ammo = AccUpgrade()->m_Spray = 0;
 
-		AccUpgrade()->m_Upgrade += Back;
+		GiveUpPoint(Back);
 		GameServer()->UpdateUpgrades(ClientID);
 	}
 }
@@ -1375,4 +1375,10 @@ void CPlayer::UpdateSnap()
 	default:
 		break;
 	}
+}
+
+void CPlayer::GiveUpPoint(int Num)
+{
+	GameServer()->SendChatTarget_Localization(GetCID(), CHATCATEGORY_DEFAULT, _("你获得了 升级点x{int:num}"), "num", &Num);
+	AccUpgrade()->m_Upgrade += Num;
 }
