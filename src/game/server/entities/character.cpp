@@ -192,9 +192,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	{
 		OpenClassChooser();
 	}
-	
-	if(Server()->GetItemSettings(GetPlayer()->GetCID(), TITLEGUARD))
-		m_Health = (int)(GetPlayer()->AccData()->m_Level * 50);
+
 
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
@@ -1733,6 +1731,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 			if(m_pPlayer->GetBotType() == BOT_L1MONSTER)
 			{
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 50;
+					GameServer()->UpdateStats(From);
+				}
 				if(!GameServer()->m_CityStart)
 				{
 					CreateDropRandom(AHAPPY, 1, 2000, From, Force/(50+randforce));
@@ -1740,8 +1743,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					CreateDropRandom(APAIN, 1, 2000, From, Force/(50+randforce));
 					CreateDropRandom(ABLINK, 1, 2000, From, Force/(50+randforce));
 					CreateDropRandom(ASUPRRISE, 1, 2000, From, Force/(50+randforce));
-					CreateDropRandom(PIGPORNO, 1, 40, From, Force/(50+randforce));
+					if(random_prob(1.0f/40))
+						CreateDropRandom(PIGPORNO, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYPIG, 1, 20, From, Force/(50+randforce));
 					CreateDropRandom(LEATHER, 1, 60, From, Force/(50+randforce));
+
 				}
 				else if(GameServer()->m_CityStart == 1)
 				{
@@ -1752,10 +1759,22 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L2MONSTER)
 			{
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 100;
+					GameServer()->UpdateStats(From);
+				}
 				if(!GameServer()->m_CityStart)
 				{
-					CreateDropRandom(KWAHGANDON, 1, 44, From, Force/(50+randforce));
-					CreateDropRandom(FOOTKWAH, 1, 44, From, Force/(40+randforce));
+					if(random_prob(1.0f/44))
+						CreateDropRandom(KWAHGANDON, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYKWAHHEAD, 1, 20, From, Force/(50+randforce));
+					
+					if(random_prob(1.0f/44))
+						CreateDropRandom(FOOTKWAH, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYKWAHFEET, 1, 20, From, Force/(50+randforce));
 				}
 				else if(GameServer()->m_CityStart == 1)
 				{
@@ -1765,9 +1784,17 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L3MONSTER)
 			{
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 300;
+					GameServer()->UpdateStats(From);
+				}
 				if(!GameServer()->m_CityStart)
 				{
-					CreateDropRandom(HEADBOOMER, 1, 42, From, Force/(50+randforce));
+					if(random_prob(1.0f/44))
+						CreateDropRandom(HEADBOOMER, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYBOOMERBODY, 1, 20, From, Force/(50+randforce));
 				}
 				else if(GameServer()->m_CityStart == 1)
 				{
@@ -1778,8 +1805,16 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 			if(pFrom && m_pPlayer->GetBotType() == BOT_GUARD)
 			{
-				CreateDropRandom(GUARDHEAD, 1, 20, From, Force/(50+randforce));
-				CreateDropRandom(PIGPORNO, 4, 100, From, Force/(50+randforce));
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 10;
+					GameServer()->UpdateStats(From);
+				}
+				if(random_prob(1.0f/80))
+					CreateDropRandom(GUARDHEAD, 1, false, From, Force/(50+randforce));
+				else
+					CreateDropRandom(DIRTYGUARDHEAD, 1, false, From, Force/(50+randforce));
+				CreateDropRandom(PIGPORNO, 4, false, From, Force/(50+randforce));
 			}
 		}
 
@@ -1807,6 +1842,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(FORMULAEARRINGS, 1, 90, i, Force/(35+randforce));
 							CreateDropRandom(FORMULAWEAPON, 1, 90, i, Force/(40+randforce));
 							CreateDropRandom(RANDOMCRAFTITEM, 1, 15, i, Force/(45+randforce));
+							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 20;
+							GameServer()->UpdateStats(From);
 							break;
 						
 						case BOT_BOSSVAMPIRE:
@@ -1814,18 +1851,25 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(BOOKEXPMIN, 1, 15, i, Force/(45+randforce));
 							CreateDropRandom(BOOKMONEYMIN, 1, 80, i, Force/(45+randforce));
 							CreateDropRandom(CLANBOXEXP, 1, 50, i, Force/(45+randforce));
+							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 25;
+							GameServer()->UpdateStats(From);
 							break;
 
 						case BOT_BOSSPIGKING:
 							CreateDropRandom(MONEYBAG, random_int(50, 200), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(1, 3), false, i, Force/(35+randforce));
 							CreateDropRandom(WOOD, random_int(20, 30), 15, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 10;
+							GameServer()->UpdateStats(From);
 							break;
 
 						case BOT_BOSSGUARD:
 							CreateDropRandom(MONEYBAG, random_int(500, 1000), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(5, 10), false, i, Force/(35+randforce));
+							CreateDropRandom(GUARDHEAD, 3, false, i, Force/(35+randforce));
 							CreateDropRandom(GUARDHAMFRAG, random_int(1, 4), 25, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->AccUpgrade()->m_Upgrade += 20;
+							GameServer()->UpdateStats(From);
 							break;
 
 						default:
@@ -2132,6 +2176,9 @@ void CCharacter::ClassSpawnAttributes()
 	if (Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEDNTHP))
 		m_Health *= 70;
 
+	if(Server()->GetItemSettings(GetPlayer()->GetCID(), TITLEGUARD))
+		m_Health += (int)(GetPlayer()->AccData()->m_Level * 50);
+
 	// 新手保护，禁用 PvP
 	m_pPlayer->m_AntiPvpSmall = false;
 	if(m_pPlayer->AccData()->m_Level < 20)
@@ -2392,7 +2439,7 @@ void CCharacter::CreateDropItem(int ItemID, int Count, int HowID, int Enchant)
 
 void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, vec2 Force)
 {
-	if(!IsAlive())
+	if(!IsAlive() || HowID >= MAX_PLAYERS)
 		return; 
 	
 	if(!Random) 
@@ -2401,10 +2448,13 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 		return;
 	}
 	if (Server()->GetItemSettings(HowID, TITLEPPP))
-		Random += 20;
+		Random -= 20;
 	
-	if(Random > 100)
+	if(Random > 100 && random_prob(0.5f)) // Example: 0.05% or 1%
 		Random = 100;
+
+	if(Random < 1)
+		Random = 1;
 	
 	if(random_prob(1.0f/(float)Random))
 		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);

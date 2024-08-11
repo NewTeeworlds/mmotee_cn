@@ -18,6 +18,8 @@
 
 #include "playerdata.h"
 
+#include <ctime>
+
 enum
 {
 	RESET,
@@ -1087,17 +1089,7 @@ void CGameContext::OnTick()
 	AreaTick();
 	BossTick();
 
-#ifdef CONF_DEBUG
-	if (g_Config.m_DbgDummies)
-	{
-		for (int i = 0; i < g_Config.m_DbgDummies; i++)
-		{
-			CNetObj_PlayerInput Input = {0};
-			Input.m_Direction = (i & 1) ? -1 : 1;
-			m_apPlayers[MAX_CLIENTS - i - 1]->OnPredictedInput(&Input);
-		}
-	}
-#endif
+	DailyQuestTick();
 }
 
 // Server hooks
@@ -1656,7 +1648,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				{
 					switch (m_apPlayers[ClientID]->AccData()->m_Quest)
 					{
-						case 1:
+						case EMainQuests::QUEST1_PIGGY1:
 						{
 							if (Server()->GetItemCount(ClientID, PIGPORNO) < EMainQuestNeed::QUEST1)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
@@ -1671,7 +1663,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
-						case 2:
+						case EMainQuests::QUEST2_PIGGY2:
 						{
 							if (Server()->GetItemCount(ClientID, PIGPORNO) < EMainQuestNeed::QUEST2)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
@@ -1686,7 +1678,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
-						case 3:
+						case EMainQuests::QUEST3_KWAH1:
 						{
 							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST3)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
@@ -1701,7 +1693,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
-						case 4:
+						case EMainQuests::QUEST4_KWAH2:
 						{
 							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST4)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
@@ -1716,7 +1708,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
-						case 5:
+						case EMainQuests::QUEST5_PIGGYNKWAHSTEP1:
 						{
 							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST5 || Server()->GetItemCount(ClientID, PIGPORNO) < EMainQuestNeed::QUEST3)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
@@ -1732,7 +1724,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
-						case 6:
+						case EMainQuests::QUEST6_KWAHSTEP1:
 						{
 							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST6 || Server()->GetItemCount(ClientID, FOOTKWAH) < EMainQuestNeed::QUEST6)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
@@ -1749,7 +1741,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
-						case 7:
+						case EMainQuests::QUEST7_BADGUARD:
 						{
 							if (Server()->GetItemCount(ClientID, GUARDHEAD) < EMainQuestNeed::QUEST7)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
@@ -1764,12 +1756,68 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
+						case EMainQuests::QUEST8_BADGUARD:
+						{
+							if (Server()->GetItemCount(ClientID, DIRTYGUARDHEAD) < EMainQuestNeed::QUEST8)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += 500;
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, DIRTYGUARDHEAD, EMainQuestNeed::QUEST8, -1);
+								UpdateStats(ClientID);
+							}
+						}
+						break;
+
+						case EMainQuests::QUEST9_BADGUARD:
+						{
+							if (Server()->GetItemCount(ClientID, GUARDHEAD) < EMainQuestNeed::QUEST9)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += 3000;
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, GUARDHEAD, EMainQuestNeed::QUEST9, -1);
+								UpdateStats(ClientID);
+							}
+						}
+						break;
+
 						default:
 							break;
 					}
 					ResetVotes(ClientID, MAINQUEST);
 
 					return;
+				}
+
+				else if (str_comp(aCmd, "passdayquest") == 0)
+				{
+					int Quest = m_apPlayers[ClientID]->m_SelectQuest;
+					int Sub = m_apPlayers[ClientID]->m_SelectSubQuest;
+					int Get = GetDailyQuestUpgr(Quest, Sub);
+					switch (Quest)
+					{
+					case EDailyQuests::QUESTTYPE1_COLLECT:
+					{
+						int Item = GetDailyQuestItem(Quest, Sub);
+						int Need = GetDailyQuestNeed(Quest, Sub);
+						if (Server()->GetItemCount(ClientID, Item) < Need)
+							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+						else
+						{
+							Server()->RemItem(ClientID, Item, Need, -1);
+							m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += Get;
+							Server()->SetItemSettingsCount(ClientID, COLLECTQUEST, GetDailyID());
+						}
+						break;
+					}
+
+					default:
+						break;
+					}
+					ResetVotes(ClientID, DAYQUEST);
 				}
 
 				// ПРОКАЧКА ФУНКЦИИ
@@ -2626,6 +2674,36 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					{
 						m_apPlayers[ClientID]->m_SortedSelectTop = i;
 						ResetVotes(ClientID, TOPMENU);
+						return;
+					}
+				}
+
+				for (int i = 0; i < EDailyQuests::NUM_DAILY_QUEST; i++)
+				{
+					char aBuf[16];
+					str_format(aBuf, sizeof(aBuf), "que%d", i);
+					if (str_comp(aCmd, aBuf) == 0)
+					{
+						if(m_apPlayers[ClientID]->m_SelectQuest == i)
+							m_apPlayers[ClientID]->m_SelectQuest = -1;
+						else
+							m_apPlayers[ClientID]->m_SelectQuest = i;
+						ResetVotes(ClientID, DAYQUEST);
+						return;
+					}
+				}
+
+				for (int i = 0; i < 4; i++)
+				{
+					char aBuf[16];
+					str_format(aBuf, sizeof(aBuf), "sque%d", i);
+					if (str_comp(aCmd, aBuf) == 0)
+					{
+						if(m_apPlayers[ClientID]->m_SelectSubQuest == i)
+							m_apPlayers[ClientID]->m_SelectSubQuest = -1;
+						else
+							m_apPlayers[ClientID]->m_SelectSubQuest = i;
+						ResetVotes(ClientID, DAYQUEST);
 						return;
 					}
 				}
@@ -4012,8 +4090,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote("", "null", ClientID);
 
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "修改"));
-			if (Server()->GetItemCount(ClientID, RAREEVENTHAMMER))
-				CreateNewShop(ClientID, RAREEVENTHAMMER, 1, 0, 0);
 
 			CreateNewShop(ClientID, JUMPIMPULS, 1, 0, 0);
 			CreateNewShop(ClientID, ENDEXPLOSION, 1, 0, 0);
@@ -4026,6 +4102,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "锤子"));
 			CreateNewShop(ClientID, HAMMERAUTO, 1, 0, 0);
 			CreateNewShop(ClientID, LAMPHAMMER, 1, 0, 0);
+			CreateNewShop(ClientID, RAREEVENTHAMMER, 1, 0, 0);
 			AddVote("", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "手枪"));
 			CreateNewShop(ClientID, GUNAUTO, 1, 0, 0);
@@ -4371,8 +4448,10 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				}
 			}
 			if (!Found)
-				AddVote_Localization(ClientID, "null", "正义照耀在MMOTee的世界里，罪恶暂时离开了这个世界\(^o^)/~");
-
+			{
+				AddVote_Localization(ClientID, "null", "正义照耀在MMOTee的世界里");
+				AddVote_Localization(ClientID, "null", "罪恶暂时离开了这个世界\\(^o^)/~");
+			}
 			AddBack(ClientID);
 			return;
 		}
@@ -4603,9 +4682,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					case EMainQuests::QUEST1_PIGGY1:
 					{
 						int Need = EMainQuestNeed::QUEST1, Counts = Server()->GetItemCount(ClientID, PIGPORNO);
-						AddVote_Localization(ClientID, "null", "可爱的佩奇 I");
-						AddVote_Localization(ClientID, "null", "拿起你的杀猪刀朝可爱的小猪砍去，");
-						AddVote_Localization(ClientID, "null", "你将有机会会获得它的肉。");
+						AddVote_Localization(ClientID, "null", "第一阶仪式 I");
+						AddVote_Localization(ClientID, "null", "我需要一些没有被污染的猪肉..");
+						AddVote_Localization(ClientID, "null", "那些猪大多被污染了，你或许需要多杀一些。");
 						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
 						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}, 解锁Boss:捣蛋猪", "got", "4000经验/200000白银");
 					}
@@ -4614,9 +4693,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					case EMainQuests::QUEST2_PIGGY2:
 					{
 						int Need = EMainQuestNeed::QUEST2, Counts = Server()->GetItemCount(ClientID, PIGPORNO);
-						AddVote_Localization(ClientID, "null", "可爱的佩奇 II");
-						AddVote_Localization(ClientID, "null", "拿起你的杀猪刀朝可爱的小猪砍去，");
-						AddVote_Localization(ClientID, "null", "你将有机会会获得它的肉。");
+						AddVote_Localization(ClientID, "null", "第一阶仪式 II");
+						AddVote_Localization(ClientID, "null", "我估错了所需的数量");
+						AddVote_Localization(ClientID, "null", "我还需要更多的干净猪肉");
 						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
 						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "4000经验/250000白银");
 					}
@@ -4625,9 +4704,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					case EMainQuests::QUEST3_KWAH1:
 					{
 						int Need = EMainQuestNeed::QUEST3, Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
-						AddVote_Localization(ClientID, "null", "Kwah I");
-						AddVote_Localization(ClientID, "null", "杀死盘踞在矿坑中部的kwah们,");
-						AddVote_Localization(ClientID, "null", "把它们的头给我带过来!");
+						AddVote_Localization(ClientID, "null", "第一阶仪式 III");
+						AddVote_Localization(ClientID, "null", "猪肉已经不足以满足祂了");
+						AddVote_Localization(ClientID, "null", "我需要Kwah的头，尚未被污染的");
 						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
 						AddVote_Localization(ClientID, "null", "任务奖励: {str:got},解锁Boss:Slime", "got", "8000经验/500000白银");
 					}
@@ -4636,9 +4715,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					case EMainQuests::QUEST4_KWAH2:
 					{
 						int Need = EMainQuestNeed::QUEST4, Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
-						AddVote_Localization(ClientID, "null", "Kwah II");
-						AddVote_Localization(ClientID, "null", "杀死盘踞在矿坑中部的kwah们,");
-						AddVote_Localization(ClientID, "null", "把它们的头给我带过来!");
+						AddVote_Localization(ClientID, "null", "第一阶仪式 IV");
+						AddVote_Localization(ClientID, "null", "Kwah的头效果很好");
+						AddVote_Localization(ClientID, "null", "祂还需要更多");
 						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
 						AddVote_Localization(ClientID, "null", "任务奖励: {str:got},解锁Boss:吸血鬼", "got", "8000经验/550000白银");
 					}
@@ -4649,8 +4728,14 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						int Need = EMainQuestNeed::QUEST5;
 						int Counts = Server()->GetItemCount(ClientID, PIGPORNO);
 						int Counts2 = Server()->GetItemCount(ClientID, KWAHGANDON);
-						AddVote_Localization(ClientID, "null", "佩奇与Kwah [第一步] - 猪肉, Kwah 头 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
-						AddVote_Localization(ClientID, "null", "你一共有 {str:got} 个所需物品", "got", "Kwah 耳环, 1000000白银");
+						AddVote_Localization(ClientID, "null", "登阶 [第一步]");
+						AddVote_Localization(ClientID, "null", "成功了！哈哈哈哈哈！");
+						AddVote_Localization(ClientID, "null", "现在..我们可以...");
+						AddVote(" ", "null", ClientID);
+						AddVote_Localization(ClientID, "null", "更进一步");
+						AddVote(" ", "null", ClientID);
+						AddVote_Localization(ClientID, "null", "任务需求: 猪肉, Kwah 头 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "Kwah 耳环, 1000000白银");
 					}
 					break;
 					
@@ -4659,9 +4744,14 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						int Need = EMainQuestNeed::QUEST6;
 						int Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
 						int Counts2 = Server()->GetItemCount(ClientID, FOOTKWAH);
-						AddVote_Localization(ClientID, "null", "Kwah [第一步] - Kwah 头, Kwah 脚 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
-						AddVote_Localization(ClientID, "null", "你一共有 {str:got} 个所需物品", "got", "武器的蓝图, 1050000白银");
-						AddVote_Localization(ClientID, "null", "+ 称号 ♥任务_#");
+						AddVote_Localization(ClientID, "null", "登阶 [第二步]");
+						AddVote_Localization(ClientID, "null", "我看见祂了!");
+						AddVote_Localization(ClientID, "null", "我看见祂了!!!");
+						AddVote_Localization(ClientID, "null", "啊啊啊啊啊啊啊啊啊");
+						AddVote_Localization(ClientID, "null", "更多！更多！！");
+						AddVote_Localization(ClientID, "null", "任务需求: Kwah 头, Kwah 脚 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "武器的蓝图, 1050000白银");
+						AddVote_Localization(ClientID, "null", "+ 称号:眷属");
 					}
 					break;
 					
@@ -4669,13 +4759,36 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					{
 						int Need = EMainQuestNeed::QUEST7;
 						int Counts = Server()->GetItemCount(ClientID, GUARDHEAD);
-						AddVote_Localization(ClientID, "null", _("贪污的守卫 - 守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
-						AddVote_Localization(ClientID, "null", _("守卫贪了我900万卷心菜!"));
-						AddVote_Localization(ClientID, "null", _("虽然守卫会复活..."));
-						AddVote_Localization(ClientID, "null", _("但他也会痛！"));
-						AddVote_Localization(ClientID, "null", _("杀了他，把他的头(复数)带回来给我！"));
-						AddVote_Localization(ClientID, "null", _("已获得：守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("第二阶仪式 I"));
+						AddVote_Localization(ClientID, "null", _("VVDieevruiumtm 5 5 4"));
+						AddVote_Localization(ClientID, "null", _("任务需求：守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
 						AddVote_Localization(ClientID, "null", _("任务奖励：称号-守卫, Boss:守卫"));
+					}
+					break;
+
+					case EMainQuests::QUEST8_BADGUARD:
+					{
+						int Need = EMainQuestNeed::QUEST8;
+						int Counts = Server()->GetItemCount(ClientID, DIRTYGUARDHEAD);
+						AddVote_Localization(ClientID, "null", _("第二阶仪式 II"));
+						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
+						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
+						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
+						AddVote_Localization(ClientID, "null", _("任务需求：被污染的守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("任务奖励: 升级点1000"));
+					}
+					break;
+
+					case EMainQuests::QUEST9_BADGUARD:
+					{
+						int Need = EMainQuestNeed::QUEST8;
+						int Counts = Server()->GetItemCount(ClientID, GUARDHEAD);
+						AddVote_Localization(ClientID, "null", _("第二阶仪式 III"));
+						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了Lmg"));
+						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了aiå"));
+						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了dg"));
+						AddVote_Localization(ClientID, "null", _("任务需求：守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("任务奖励: 升级点3000"));
 					}
 					break;
 					
@@ -4719,12 +4832,78 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		case DAYQUEST:
 		{
 			m_apPlayers[ClientID]->m_LastVotelist = QUESTMENU;
+			int RandomNumber = m_DailyQuest.m_RandomNumber;
+
 			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
 			AddVote_Localization(ClientID, "null", "每日任务!");
+			AddVote_Localization(ClientID, "null", "今日任务序列：{int:randomNum}", "randomNum", &RandomNumber);
 			AddVote("", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "功能尚未完成..");
-			AddVote_Localization(ClientID, "null", "发送你的创意到ilovejel@163.com");
-			AddVote_Localization(ClientID, "null", "如果被采用了将有丰厚奖励");
+			AddVote_Localization(ClientID, "que0", "☞ 收集任务");
+			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE1_COLLECT)
+			{
+				if(Server()->GetItemSettings(ClientID, COLLECTQUEST) == GetDailyID())
+					AddVote_Localization(ClientID, "que0", "- 收集任务已完成");
+				else
+				{
+					int Item = GetDailyQuestItem(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);;
+					int Num = GetDailyQuestNeed(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
+					int Upgr = GetDailyQuestUpgr(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
+					int Have = Server()->GetItemCount(ClientID, Item);
+
+					AddVote_Localization(ClientID, "sque0", "- 农业经济");
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT1)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+						AddVote("", "null", ClientID);
+					}
+
+					if(random_prob(0.005))
+						AddVote_Localization(ClientID, "sque2", "- 食品...?");
+					else
+						AddVote_Localization(ClientID, "sque1", "- 食品");
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT2)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+						AddVote("", "null", ClientID);
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT3)
+					{
+						AddVote_Localization(ClientID, "null", "Vivit为DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "Vivit神DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "Vivit献DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "Vivit上DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "THA{str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("enruw奖ails：???升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- S贡品S -");
+						AddVote("", "null", ClientID);
+					}
+
+					AddVote_Localization(ClientID, "sque3", "- 矿业经济");
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT4)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+						AddVote("", "null", ClientID);
+					}
+				}
+				AddVote("", "null", ClientID);
+			}
+			AddVote_Localization(ClientID, "que1", "☞ 击杀任务");
+			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE2_KILL)
+			{
+				AddVote("", "null", ClientID);
+			}
+			AddVote_Localization(ClientID, "que2", "☞ 挑战任务");
+			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+			{
+				AddVote("", "null", ClientID);
+			}
 			AddBack(ClientID);
 		}
 		break;
@@ -5298,6 +5477,7 @@ void CGameContext::OnInit(int MapID)
 		Server()->GetTopClanHouse();
 		Server()->InitMaterialID();
 	}
+	RefreshDailyQuest(GetRealTime());
 }
 
 void CGameContext::OnShutdown()
@@ -5930,4 +6110,131 @@ void CGameContext::SendChatTarget_World(int To, int Category, const char *pText,
 
 	Buffer.clear();
 	va_end(VarArgs);
+}
+
+void CGameContext::DailyQuestTick()
+{
+	if(GetRealTime()->tm_hour != m_DailyQuest.m_LastHour)
+	{
+		tm *pTime = GetRealTime();
+		if(m_DailyQuest.m_LastHour > pTime->tm_hour)
+		{
+			RefreshDailyQuest(pTime);
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("每日任务已更新！"));
+		}
+		m_DailyQuest.m_LastHour = pTime->tm_hour;
+	}
+}
+
+void CGameContext::RefreshDailyQuest(tm *pTime)
+{
+	srand(GetDailyID());
+	m_DailyQuest.m_RandomNumber = rand();
+}
+
+tm *CGameContext::GetRealTime()
+{
+	time_t nowtime;
+	time(&nowtime);
+	return localtime(&nowtime);
+}
+
+int CGameContext::GetDailyQuestItem(int Quest, int SubType)
+{
+	int RandomNumber = m_DailyQuest.m_RandomNumber;
+	if(Quest == EDailyQuests::QUESTTYPE1_COLLECT)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::COLLECT1:
+		{
+			int Items[] = {POTATO, TOMATE, CARROT, CABBAGE};
+			return Items[RandomNumber%4];
+		}
+
+		case EDailyQuests::COLLECT2:
+		{
+			int Items[] = {PIGPORNO, KWAHGANDON, HEADBOOMER, FOOTKWAH};
+			return Items[RandomNumber%4];
+		}
+
+		case EDailyQuests::COLLECT3:
+		{
+			int Items[] = {DIRTYPIG, DIRTYKWAHHEAD, DIRTYBOOMERBODY, DIRTYKWAHFEET, DIRTYGUARDHEAD, GUARDHEAD};
+			return Items[RandomNumber%6];
+		}
+
+		case EDailyQuests::COLLECT4:
+		{
+			int Items[] = {COOPERORE, IRONORE, GOLDORE, DIAMONDORE, DRAGONORE, IRON, STANNUM};
+			return Items[RandomNumber%7];
+		}
+
+		default:
+			break;
+		}
+	}
+	return 1;
+}
+
+int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
+{
+	int RandomNumber = m_DailyQuest.m_RandomNumber;
+	if(Quest == EDailyQuests::QUESTTYPE1_COLLECT)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::COLLECT1:
+			return (RandomNumber%10 + 8) * 10000000;
+
+		case EDailyQuests::COLLECT2:
+			return RandomNumber%50+30;
+
+		case EDailyQuests::COLLECT3:
+			if(RandomNumber%6 == 4 || RandomNumber%6 == 5)
+				return RandomNumber%300;
+			return RandomNumber%2000+300;
+
+		case EDailyQuests::COLLECT4:
+			return (RandomNumber%23 + 8) * 100000;
+		
+		default:
+			break;
+		}
+	}
+	return 1145141919;
+}
+
+int CGameContext::GetDailyQuestUpgr(int Quest, int SubType)
+{
+	int RandomNumber = m_DailyQuest.m_RandomNumber;
+	if(Quest == EDailyQuests::QUESTTYPE1_COLLECT)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::COLLECT1:
+			return 100;
+
+		case EDailyQuests::COLLECT2:
+			return 200;
+
+		case EDailyQuests::COLLECT3:
+			if(RandomNumber%6 == 4 || RandomNumber%6 == 5)
+				return RandomNumber%2000 + 1000;
+			return RandomNumber%1000;
+
+		case EDailyQuests::COLLECT4:
+			return 150;
+		
+		default:
+			break;
+		}
+	}
+	return 1;
+}
+
+int CGameContext::GetDailyID()
+{
+	tm *pTime = GetRealTime();
+	return pTime->tm_year + pTime->tm_mday + pTime->tm_mon + pTime->tm_yday + pTime->tm_wday + pTime->tm_mday;
 }

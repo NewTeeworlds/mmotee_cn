@@ -122,6 +122,8 @@ if(CMAKE_GENERATOR STREQUAL "Ninja")
   add_c_compiler_flag_if_supported(OUR_FLAGS -fcolor-diagnostics)
 endif()
 
+add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wsign-compare)
+
 if(NOT MSVC)
   # Protect the stack pointer.
   # -fstack-protector-all doesn't work on MinGW.

@@ -276,7 +276,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			if(Server()->GetItemCount(ClientID, MINECORE) && ItemDrop >= 7 && random_prob(0.75f))
 			{
-				int DragonExtra = min(10, Server()->GetItemCount(ClientID, MINECORE)/10);
+				int DragonExtra = min(10, int(Server()->GetItemCount(ClientID, MINECORE)/10));
 				GameServer()->GiveItem(ClientID, DRAGONORE, DragonExtra);
 				GameServer()->SendChatTarget_Localization(ClientID, -1, _("[{str:name}] 额外获得{int:dragon}个龙矿"), "name", Server()->GetItemName(ClientID, MINECORE), "dragon", &DragonExtra, NULL);
 			}
@@ -291,7 +291,7 @@ void CPickup::StartFarm(int ClientID)
 			}
 			GameServer()->GiveItem(ClientID, MINEREXP, 1);
 			
-			if(random_prob(min(100, (Server()->GetItemCount(ClientID, MINECORE) + 1)) * 0.008f))
+			if(random_prob(min(100, int(Server()->GetItemCount(ClientID, MINECORE) + 1)) * 0.008f))
 				GameServer()->GiveItem(ClientID, STANNUM, 1);
 
 			// 加经验
@@ -329,7 +329,7 @@ void CPickup::StartFarm(int ClientID)
 
 		if(Server()->GetItemSettings(ClientID, TITLEGLF))
 			Temp *= 2;
-		Temp += min(65, Server()->GetItemCount(ClientID, WOODCORE) * 5);
+		Temp += min(65, int(Server()->GetItemCount(ClientID, WOODCORE)) * 5);
 		
 		m_Drop += Temp;
 

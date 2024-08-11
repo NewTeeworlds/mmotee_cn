@@ -111,6 +111,8 @@ enum EMainQuestNeed
 	QUEST5 = 100,
 	QUEST6 = 120,
 	QUEST7 = 50,
+	QUEST8 = 500,
+	QUEST9 = 200,
 };
 
 enum EMainQuests
@@ -123,6 +125,8 @@ enum EMainQuests
 	QUEST5_PIGGYNKWAHSTEP1,
 	QUEST6_KWAHSTEP1,
 	QUEST7_BADGUARD,
+	QUEST8_BADGUARD,
+	QUEST9_BADGUARD,
 	END_MAIN_QUEST,
 
 	NUM_MAIN_QUEST = END_MAIN_QUEST - START_MAIN_QUEST - 1,
@@ -130,12 +134,15 @@ enum EMainQuests
 
 enum EDailyQuests
 {
-	START_DAILY_QUEST = 0,
-	QUESTTYPE1_COLLECT,
+	QUESTTYPE1_COLLECT = 0,
 	QUESTTYPE2_KILL,
-	END_DAILY_QUEST,
+	QUESTTYPE3_CHALLENGE,
+	NUM_DAILY_QUEST,
 
-	NUM_DAILY_QUEST = END_DAILY_QUEST - START_DAILY_QUEST - 1,
+	COLLECT1 = 0,
+	COLLECT2,
+	COLLECT3,
+	COLLECT4,
 };
 
 enum
@@ -388,6 +395,22 @@ public:
 	virtual void SyncPlayer(int ClientID, class CPlayer *pPlayer);
 
 	int m_CityStart;
+
+	tm *GetRealTime();
+	void DailyQuestTick();
+	void RefreshDailyQuest(tm *pTime);
+
+	struct DailyQuest
+	{
+		int m_LastHour;
+		int m_RandomNumber;
+	} m_DailyQuest;
+
+	int GetDailyQuestItem(int Quest, int SubType);
+	int GetDailyQuestNeed(int Quest, int SubType);
+	int GetDailyQuestUpgr(int Quest, int SubType);
+	int GetDailyID();
+	
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState

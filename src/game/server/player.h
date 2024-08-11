@@ -92,6 +92,8 @@ public:
 	int m_SelectItem;
 	int m_SelectItemType;
 	int m_SelectArmor;
+	int m_SelectQuest;
+	int m_SelectSubQuest;
 
 	int m_LastVotelist;
 

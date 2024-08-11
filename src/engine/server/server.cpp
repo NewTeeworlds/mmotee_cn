@@ -2417,7 +2417,7 @@ const char *CServer::GetItemDesc_en(int ItemID)
 		return "(invalid)";
 	else return ItemName_en[ItemID].i_desc;
 }
-int CServer::GetItemCount(int ClientID, int ItemID)
+unsigned long long int CServer::GetItemCount(int ClientID, int ItemID)
 {
 	if(ClientID >= MAX_PLAYERS)
 		return 0;
@@ -3054,4 +3054,10 @@ void CServer::SyncPlayer(int ClientID, class CPlayer *pPlayer)
 	{
 		pGameServer.second->SyncPlayer(ClientID, pPlayer);
 	}
+}
+
+void CServer::Execute(const char *pSql)
+{
+	CSqlJob* pJob = new CSqlJob_Server_Execute(this, (char *)pSql);
+	pJob->Start();
 }

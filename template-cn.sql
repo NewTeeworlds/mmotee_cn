@@ -225,8 +225,8 @@ LOCK TABLES `tw_uItemList` WRITE;
 /*!40000 ALTER TABLE `tw_uItemList` DISABLE KEYS */;
 INSERT INTO `tw_uItemList` VALUES 
 (1,4,'钱袋','- 随机获取5-20000白银'),
-(2,3,'猪肉','- 任务物品'),
-(3,3,'Kwah 的头','- 任务物品'),
+(2,3,'干净的猪肉','- 任务物品'),
+(3,3,'干净的Kwah头','- 任务物品'),
 (4,1,'钩子伤害','- 武器/武器加成'),
 (5,1,'手枪','- 武器'),
 (6,1,'霰弹枪','- 武器'),
@@ -255,13 +255,13 @@ INSERT INTO `tw_uItemList` VALUES
 (29,1,'霰弹枪模块：爆炸','- 让你的子弹爆炸!'),
 (30,1,'激光枪模块：爆炸','- 让你的激光爆炸!'),
 (31,1,'弹夹','- 所有武器最大子弹上限+5'),
-(32,5,'Boomer 的尸体','用于合成'),
+(32,5,'干净的Boomer尸体','用于合成'),
 (33,2,'神器-Boomer的戒指','神器 | 生命上限+5%/用于合成'),
 (34,5,'耳环蓝图','用于合成耳环'),
 (35,5,'武器蓝图','用于合成'),
 (36,1,'模块：Slime 的霰弹枪','- 让你的子弹能够反弹!'),
 (37,1,'神器-Kwah的耳环','跳跃段数+1'),
-(38,5,'Kwah 的脚','用于合成'),
+(38,5,'干净的Kwah脚','用于合成'),
 (39,4,'黄金书(10分钟)','黄金获取*2'),
 (40,4,'经验书(10分钟)','经验获取*2'),
 (41,2,'双重联合戒指','神器｜让守卫的愤怒值每秒额外-10'),
@@ -382,7 +382,14 @@ INSERT INTO `tw_uItemList` VALUES
 (156,5,'核心基座','- 用于合成核心'),
 (157,1,'神器-繁林核心','- 单次伐木进度+5%/个'),
 (158,1,'神器-髓岩核心','- 挖矿时概率补偿龙矿，锡矿概率增加'),
-(159,1,'每日任务','- 任务进度');
+(159,10,'收集任务','- 进度'),
+(160,5,'被污染的猪肉','- 用于合成'),
+(161,5,'被污染的Kwah头','- 用于合成'),
+(162,5,'被污染的Boomer尸体','用于合成'),
+(163,5,'被污染的Kwah脚','用于合成'),
+(164,10,'击杀任务','- 进度'),
+(165,10,'挑战任务','- 进度'),
+(166,5,'被污染的守卫头','用于合成');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
 UNLOCK TABLES
 
@@ -569,7 +576,14 @@ INSERT INTO `tw_uItemList_en` VALUES
 (156,5,'Core Base','- For crafting cores'),
 (157,1,'Rare Forest Core','- Cut Wood faster 75%'),
 (158,1,'Rare Rock Core','- get more dragon & exp when mining'),
-(159,6,'Daily Quest','- Check Daily Quest');
+(159,3,'CollectQuest','- Progress'),
+(160,3,'DirtyPigMeat','- Craft'),
+(161,3,'DirtyKwahHead','- Craft'),
+(162,5,'DirtyBoomerBody','Craft'),
+(163,5,'DirtyKwahFeet','Craft'),
+(164,10,'KillQuest','- Progress'),
+(165,10,'ChallengeQuest','- Progress'),
+(166,5,'DirtyGuardHead','- Craft');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;
@@ -589,7 +603,7 @@ CREATE TABLE `tw_uItems` (
   `item_type` int(11) NOT NULL,
   `item_owner` bigint(20) NOT NULL DEFAULT '0',
   `item_settings` bigint(20) NOT NULL DEFAULT '0',
-  `item_count` int(11) NOT NULL DEFAULT '0',
+  `item_count` bigint(32) NOT NULL DEFAULT '0',
   `item_enchant` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`it_id`) USING BTREE,
   KEY `item_owner` (`item_owner`) USING BTREE,

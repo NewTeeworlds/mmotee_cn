@@ -269,6 +269,14 @@ enum Items
 	COREBASE,
 	WOODCORE,
 	MINECORE,
+	COLLECTQUEST,
+	DIRTYPIG,
+	DIRTYKWAHHEAD,
+	DIRTYBOOMERBODY,
+	DIRTYKWAHFEET,
+	KILLQUEST,
+	CHALLENGEQUEST,
+	DIRTYGUARDHEAD,
 	MAX_ITEM,
 	// 1 - Weapon Upgradins, 2 - Rare Artifacts, 3 - Quest Item's, 4 - Useds Items, 5 - Crafted Item
 	// Sufix S - SettingsItem
@@ -398,7 +406,7 @@ public:
 	virtual const char *GetItemName_en(int ItemID) = 0;
 	virtual const char *GetItemDesc(int ClientID, int ItemID) = 0;
 	virtual const char *GetItemDesc_en(int ItemID) = 0;
-	virtual int GetItemCount(int ClientID, int ItemID) = 0;
+	virtual unsigned long long int GetItemCount(int ClientID, int ItemID) = 0;
 	virtual int GetItemSettings(int ClientID, int ItemID) = 0;
 	virtual int GetItemType(int ClientID, int ItemID) = 0;
 	virtual void SetItemSettings(int ClientID, int ItemID, int ItemType = 0) = 0;
@@ -628,6 +636,8 @@ public:
 	// Инициализация сохранения
 	virtual void InitClientDB(int ClientID) = 0;
 	virtual void UpdateStats(int ClientID, int Type = 0) = 0;
+
+	virtual void Execute(const char *pSql) = 0;
 	
 //#endif
 	virtual void Ban(int i, int Seconds, const char* pReason) = 0;

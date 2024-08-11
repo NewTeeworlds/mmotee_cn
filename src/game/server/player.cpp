@@ -35,7 +35,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_SpecTick = Server()->Tick();
 
 	m_Bot = (ClientID >= g_Config.m_SvMaxClients - MAX_BOTS);
-	m_BotType = m_BotSubType = m_SelectItem = m_SelectArmor = -1;
+	m_BotType = m_BotSubType = m_SelectItem = m_SelectArmor = m_SelectQuest = m_SelectSubQuest = -1;
 
 	m_Authed = IServer::AUTHED_NO;
 	int *pIdMap = Server()->GetIdMap(m_ClientID);
@@ -959,7 +959,7 @@ void CPlayer::TryRespawn()
 	if (IsBot())
 	{
 		// жирный бот рандом
-		if (random_prob(0.1f))
+		if (random_prob(0.01f))
 			m_BigBot = true;
 		else
 			m_BigBot = false;
@@ -972,19 +972,27 @@ void CPlayer::TryRespawn()
 
 			if (GameServer()->m_CityStart == 1)
 			{
-				AccData()->m_Level = m_BigBot ? 280 + random_int(0, 3) : 250;
+				AccData()->m_Level = m_BigBot ? 600 + random_int(0, 3) : 250;
 				AccUpgrade()->m_Health = 100 + AccData()->m_Level * 20;
 				AccUpgrade()->m_Damage = AccData()->m_Level + 50;
 			}
 			else
 			{
-				AccData()->m_Level = m_BigBot ? 10 + random_int(0, 3) : 5;
-				AccUpgrade()->m_Health = m_BigBot ? AccData()->m_Level : 0;
+				AccData()->m_Level = m_BigBot ? 400 + random_int(0, 3) : 5;
+				AccUpgrade()->m_Health = m_BigBot ? AccData()->m_Level*3 : 0;
 				if (m_BigBot)
 				{
 					Server()->SetMaxAmmo(m_ClientID, INFWEAPON_GUN, 10);
 					Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_GUN, 100);
 					Server()->SetFireDelay(m_ClientID, INFWEAPON_GUN, 800);
+
+					Server()->SetMaxAmmo(m_ClientID, INFWEAPON_SHOTGUN, 10);
+					Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_SHOTGUN, 100);
+					Server()->SetFireDelay(m_ClientID, INFWEAPON_SHOTGUN, 800);
+
+					Server()->SetMaxAmmo(m_ClientID, INFWEAPON_GRENADE, 10);
+					Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_GRENADE, 100);
+					Server()->SetFireDelay(m_ClientID, INFWEAPON_GRENADE, 800);
 				}
 			}
 			break;
@@ -993,15 +1001,30 @@ void CPlayer::TryRespawn()
 
 			if (GameServer()->m_CityStart == 1)
 			{
-				AccData()->m_Level = m_BigBot ? 370 + random_int(0, 3) : 350 + random_int(0, 3);
+				AccData()->m_Level = m_BigBot ? 700 + random_int(0, 3) : 350 + random_int(0, 3);
 				AccUpgrade()->m_Health = 100 + AccData()->m_Level * 2;
 				AccUpgrade()->m_Damage = AccData()->m_Level + 50;
 			}
 			else
 			{
-				AccData()->m_Level = m_BigBot ? 140 : 125 + random_int(0, 3);
-				AccUpgrade()->m_Health = 100 + AccData()->m_Level;
-				AccUpgrade()->m_Damage = AccData()->m_Level / 2;
+				AccData()->m_Level = m_BigBot ? 500 : 125 + random_int(0, 3);
+				AccUpgrade()->m_Health = 100 + AccData()->m_Level*2;
+				AccUpgrade()->m_Damage = m_BigBot ? AccData()->m_Level*5 : AccData()->m_Level / 2;
+
+				if (m_BigBot)
+				{
+					Server()->SetMaxAmmo(m_ClientID, INFWEAPON_GUN, 10);
+					Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_GUN, 100);
+					Server()->SetFireDelay(m_ClientID, INFWEAPON_GUN, 800);
+
+					Server()->SetMaxAmmo(m_ClientID, INFWEAPON_SHOTGUN, 10);
+					Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_SHOTGUN, 100);
+					Server()->SetFireDelay(m_ClientID, INFWEAPON_SHOTGUN, 800);
+
+					Server()->SetMaxAmmo(m_ClientID, INFWEAPON_GRENADE, 10);
+					Server()->SetAmmoRegenTime(m_ClientID, INFWEAPON_GRENADE, 100);
+					Server()->SetFireDelay(m_ClientID, INFWEAPON_GRENADE, 800);
+				}
 			}
 			break;
 		case BOT_L3MONSTER:
@@ -1015,9 +1038,9 @@ void CPlayer::TryRespawn()
 			}
 			else
 			{
-				AccData()->m_Level = m_BigBot ? 250 + random_int(0, 3) : 200 + random_int(0, 3);
+				AccData()->m_Level = m_BigBot ? 800 + random_int(0, 3) : 200 + random_int(0, 3);
 				AccUpgrade()->m_Health = 100 + AccData()->m_Level;
-				AccUpgrade()->m_Damage = AccData()->m_Level;
+				AccUpgrade()->m_Damage = m_BigBot ? AccData()->m_Level*50 : AccData()->m_Level;
 			}
 			break;
 		case BOT_BOSSSLIME:
@@ -1235,7 +1258,7 @@ const char *CPlayer::TitleGot()
 		}
 	}
 	else if (Server()->GetItemSettings(m_ClientID, TITLEQUESTS))
-		return "1阶段";
+		return "眷属";
 	else if (Server()->GetItemSettings(m_ClientID, BOSSDIE))
 		return "Boss克星";
 	else if (Server()->GetItemSettings(m_ClientID, PIGPIG))
