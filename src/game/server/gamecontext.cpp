@@ -6355,7 +6355,7 @@ int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
 	}
 	else if(Quest == EDailyQuests::QUESTTYPE2_KILL)
 	{
-		return (RandomNumber*17)%500+200;
+		return (RandomNumber*17)%500+500;
 	}
 	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
 	{
@@ -6371,7 +6371,7 @@ int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
 			return (RandomNumber%23 + 8) * 10000000;
 
 		case EDailyQuests::CHALLENGE4:
-			return (RandomNumber%23 + 8) * 100;
+			return (RandomNumber%23 + 19) * 200;
 
 		default:
 			break;
@@ -6388,10 +6388,10 @@ int CGameContext::GetDailyQuestUpgr(int Quest, int SubType)
 		switch (SubType)
 		{
 		case EDailyQuests::COLLECT1:
-			return 100;
+			return 50;
 
 		case EDailyQuests::COLLECT2:
-			return 200;
+			return 70;
 
 		case EDailyQuests::COLLECT3:
 			if(RandomNumber%6 == 4 || RandomNumber%6 == 5)
@@ -6407,7 +6407,7 @@ int CGameContext::GetDailyQuestUpgr(int Quest, int SubType)
 	}
 	else if (Quest == EDailyQuests::QUESTTYPE2_KILL)
 	{
-		return RandomNumber%100 + 200;
+		return RandomNumber%100 + 150;
 	}
 	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
 	{
