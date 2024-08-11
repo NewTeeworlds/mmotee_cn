@@ -540,7 +540,7 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 
 	int Time = m_BossStartTick / Server()->TickSpeed();
 	SendMOTD_Localization(ClientID, "Boss:{str:name}\n生命值:玩家等级*{int:hp}\n{str:guide}\n\n等待玩家进入Boss战，还剩下 {int:siska} 秒.",
-						  "name", GetBossName(m_BossType), "hp", &arghealth, "guide", Buffer.buffer(), "siska", &Time);
+						  "name", GetBotName(m_BossType), "hp", &arghealth, "guide", Buffer.buffer(), "siska", &Time);
 
 	Buffer.clear();
 }
@@ -717,10 +717,10 @@ void CGameContext::SendBroadcast_LBossed(int To, int Priority, int LifeSpan)
 		int getl = (int)getlv;
 
 		SendBroadcast_Localization(To, Priority, LifeSpan, _("{str:sdata}\n({int:getl}%)\nBoss: {str:name} 生命值: {int:hp}/{int:hpstart}\n我的生命值 {int:yhp}/{int:yhps}"),
-								   "sdata", LevelString(100, (int)getlv, 5, ':', ' '), "getl", &getl, "name", GetBossName(m_BossType), "hp", &Optexp, "hpstart", &Optmem, "yhp", &m_apPlayers[To]->m_Health, "yhps", &m_apPlayers[To]->m_HealthStart, NULL);
+								   "sdata", LevelString(100, (int)getlv, 5, ':', ' '), "getl", &getl, "name", GetBotName(m_BossType), "hp", &Optexp, "hpstart", &Optmem, "yhp", &m_apPlayers[To]->m_Health, "yhps", &m_apPlayers[To]->m_HealthStart, NULL);
 	}
 	else
-		SendBroadcast_Localization(To, Priority, LifeSpan, _("太棒了! 玩家最终取得了胜利! Boss {str:name} 已经倒下!"), "name", GetBossName(m_BossType), NULL);
+		SendBroadcast_Localization(To, Priority, LifeSpan, _("太棒了! 玩家最终取得了胜利! Boss {str:name} 已经倒下!"), "name", GetBotName(m_BossType), NULL);
 }
 
 void CGameContext::SendBroadcast_Localization_P(int To, int Priority, int LifeSpan, int Number, const char *pText, ...)
@@ -872,7 +872,7 @@ void CGameContext::BossTick()
 		m_BossStartTick = 0;
 		m_BossStart = false;
 
-		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("Boss战的玩家都死亡了, boss {str:name} 最终胜利了"), "name", GetBossName(m_BossType), NULL);
+		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("Boss战的玩家都死亡了, boss {str:name} 最终胜利了"), "name", GetBotName(m_BossType), NULL);
 
 		m_BossType = 0;
 		DeleteBotBoss();
@@ -1797,12 +1797,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					int Quest = m_apPlayers[ClientID]->m_SelectQuest;
 					int Sub = m_apPlayers[ClientID]->m_SelectSubQuest;
 					int Get = GetDailyQuestUpgr(Quest, Sub);
+					int Item = GetDailyQuestItem(Quest, Sub);
+					int Need = GetDailyQuestNeed(Quest, Sub);
+					
 					switch (Quest)
 					{
 					case EDailyQuests::QUESTTYPE1_COLLECT:
 					{
-						int Item = GetDailyQuestItem(Quest, Sub);
-						int Need = GetDailyQuestNeed(Quest, Sub);
 						if (Server()->GetItemCount(ClientID, Item) < Need)
 							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
 						else
@@ -1811,6 +1812,38 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 							m_apPlayers[ClientID]->GiveUpPoint(Get);
 							Server()->SetItemSettingsCount(ClientID, COLLECTQUEST, GetDailyID());
 						}
+						break;
+					}
+
+					case EDailyQuests::QUESTTYPE2_KILL:
+					{
+						if (Server()->GetItemCount(ClientID, KILLQUEST) < Need)
+							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+						else
+						{
+							m_apPlayers[ClientID]->GiveUpPoint(Get);
+							Server()->SetItemSettingsCount(ClientID, KILLQUEST, GetDailyID());
+						}
+						break;
+					}
+
+					case EDailyQuests::QUESTTYPE3_CHALLENGE:
+					{
+						if(Sub == EDailyQuests::CHALLENGE4)
+						{
+							if (Server()->GetItemCount(ClientID, CHALLENGEQUEST) < Need)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+						}
+						else
+						{
+							if (Server()->GetItemCount(ClientID, Item) < Need)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+								Server()->RemItem(ClientID, Item, Need, -1);
+						}
+
+						m_apPlayers[ClientID]->GiveUpPoint(Get);
+						Server()->SetItemSettingsCount(ClientID, CHALLENGEQUEST, GetDailyID());
 						break;
 					}
 
@@ -4790,7 +4823,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 					case EMainQuests::QUEST9_BADGUARD:
 					{
-						int Need = EMainQuestNeed::QUEST8;
+						int Need = EMainQuestNeed::QUEST9;
 						int Counts = Server()->GetItemCount(ClientID, GUARDHEAD);
 						AddVote_Localization(ClientID, "null", _("第二阶仪式 III"));
 						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了Lmg"));
@@ -4842,24 +4875,34 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		{
 			m_apPlayers[ClientID]->m_LastVotelist = QUESTMENU;
 			int RandomNumber = m_DailyQuest.m_RandomNumber;
+			int Item = GetDailyQuestItem(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
+			int Num = GetDailyQuestNeed(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
+			int Upgr = GetDailyQuestUpgr(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
 
 			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
 			AddVote_Localization(ClientID, "null", "每日任务!");
 			AddVote_Localization(ClientID, "null", "今日任务序列：{int:randomNum}", "randomNum", &RandomNumber);
 			AddVote("", "null", ClientID);
 			AddVote_Localization(ClientID, "que0", "☞ 收集任务");
+			AddVote_Localization(ClientID, "que1", "☞ 击杀任务");
+			AddVote_Localization(ClientID, "que2", "☞ 挑战任务");
+
 			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE1_COLLECT)
 			{
+				AddVote("", "null", ClientID);
 				if(Server()->GetItemSettings(ClientID, COLLECTQUEST) == GetDailyID())
 					AddVote_Localization(ClientID, "que0", "- 收集任务已完成");
 				else
 				{
-					int Item = GetDailyQuestItem(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);;
-					int Num = GetDailyQuestNeed(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
-					int Upgr = GetDailyQuestUpgr(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
 					int Have = Server()->GetItemCount(ClientID, Item);
 
 					AddVote_Localization(ClientID, "sque0", "- 农业经济");
+					if(random_prob(0.005))
+						AddVote_Localization(ClientID, "sque2", "- 食品...?");
+					else
+						AddVote_Localization(ClientID, "sque1", "- 食品");
+					AddVote_Localization(ClientID, "sque3", "- 矿业经济");
+					AddVote("", "null", ClientID);
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT1)
 					{
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
@@ -4868,10 +4911,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote("", "null", ClientID);
 					}
 
-					if(random_prob(0.005))
-						AddVote_Localization(ClientID, "sque2", "- 食品...?");
-					else
-						AddVote_Localization(ClientID, "sque1", "- 食品");
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT2)
 					{
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
@@ -4892,7 +4931,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote("", "null", ClientID);
 					}
 
-					AddVote_Localization(ClientID, "sque3", "- 矿业经济");
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT4)
 					{
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
@@ -4903,14 +4941,68 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				}
 				AddVote("", "null", ClientID);
 			}
-			AddVote_Localization(ClientID, "que1", "☞ 击杀任务");
 			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE2_KILL)
 			{
-				AddVote("", "null", ClientID);
+				if(Server()->GetItemSettings(ClientID, KILLQUEST) == GetDailyID())
+					AddVote_Localization(ClientID, "que0", "- 挑战任务已完成");
+				else
+				{
+					int Have = Server()->GetItemCount(ClientID, KILLQUEST);
+					AddVote_Localization(ClientID, "null", "击杀 {str:iname} [{int:num}/{int:need}]", "iname", GetBotName(Item), "num", &Have, "need", &Num);
+					AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+					AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					AddVote("", "null", ClientID);
+					AddVote("", "null", ClientID);
+				}
 			}
-			AddVote_Localization(ClientID, "que2", "☞ 挑战任务");
 			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE3_CHALLENGE)
 			{
+				AddVote("", "null", ClientID);
+				if(Server()->GetItemSettings(ClientID, CHALLENGEQUEST) == GetDailyID())
+					AddVote_Localization(ClientID, "que0", "- 挑战任务已完成");
+				else
+				{
+					int Have = Server()->GetItemCount(ClientID, Item);
+
+					AddVote_Localization(ClientID, "sque0", "- 农业经济");
+					if(random_prob(0.01f))
+						AddVote_Localization(ClientID, "sque1", "- 祭品");
+					AddVote_Localization(ClientID, "sque2", "- 矿业经济");
+					AddVote_Localization(ClientID, "sque3", "- 击杀挑战");
+					AddVote("", "null", ClientID);
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE1)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+						AddVote("", "null", ClientID);
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE2)
+					{
+						AddVote_Localization(ClientID, "null", "VDD献上 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 贡品");
+						AddVote("", "null", ClientID);
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE3)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+						AddVote("", "null", ClientID);
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE4)
+					{
+						Have = Server()->GetItemCount(ClientID, CHALLENGEQUEST);
+						AddVote_Localization(ClientID, "null", "击杀 {str:iname} [{int:num}/{int:need}]", "iname", GetBotName(Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+						AddVote("", "null", ClientID);
+					}
+				}
 				AddVote("", "null", ClientID);
 			}
 			AddBack(ClientID);
@@ -5041,11 +5133,11 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 void CGameContext::AddNewBossVote(int ClientID, const char *NanDu, const char *Reward, int Boss)
 {
-	AddVote_Localization(ClientID, "null", "Boss名: {str:name}", "name", GetBossName(Boss));
+	AddVote_Localization(ClientID, "null", "Boss名: {str:name}", "name", GetBotName(Boss));
 	AddVote_Localization(ClientID, "null", "难度: {str:nandu}", "nandu", NanDu);
 	AddVote_Localization(ClientID, "null", "奖励: {str:reward}", "reward", Reward);
-	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSONLY, "- 挑战{str:name}!", "name", GetBossName(Boss));
-	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSSOLO, "..或者单挑{str:name}!(点我单挑)", "name", GetBossName(Boss));
+	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSONLY, "- 挑战{str:name}!", "name", GetBotName(Boss));
+	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSSOLO, "..或者单挑{str:name}!(点我单挑)", "name", GetBotName(Boss));
 	AddVote("--------------------", "null", ClientID);
 	AddVote("  ", "null", ClientID);
 }
@@ -5974,8 +6066,8 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 	if (WaitTime > 10)
 	{
 		SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 创建了Boss战, Boss 是 {str:names}"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("欲加入的玩家, 请进入Boss房(boss room)"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 创建了Boss战, Boss 是 {str:names}"), "name", Server()->ClientName(ClientID), "names", GetBotName(m_BossType), NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("欲加入的玩家, 请进入Boss房(boss room)"), "name", Server()->ClientName(ClientID), "names", GetBotName(m_BossType), NULL);
 		SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	}
 }
@@ -6029,10 +6121,22 @@ int CGameContext::GetBossCount()
 	return Count;
 }
 
-const char *CGameContext::GetBossName(int BossType)
+const char *CGameContext::GetBotName(int BotType)
 {
-	switch (BossType)
+	switch (BotType)
 	{
+	case BOT_L1MONSTER:
+		return "猪";
+		break;
+	
+	case BOT_L2MONSTER:
+		return "Kwah";
+		break;
+
+	case BOT_L3MONSTER:
+		return "Boomer";
+		break;
+
 	case BOT_BOSSSLIME:
 		return "Slime";
 		break;
@@ -6139,6 +6243,9 @@ void CGameContext::RefreshDailyQuest(tm *pTime)
 {
 	srand(GetDailyID());
 	m_DailyQuest.m_RandomNumber = rand();
+	Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 159");
+	Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 164");
+	Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 165");
 }
 
 tm *CGameContext::GetRealTime()
@@ -6183,6 +6290,43 @@ int CGameContext::GetDailyQuestItem(int Quest, int SubType)
 			break;
 		}
 	}
+	else if(Quest == EDailyQuests::QUESTTYPE2_KILL)
+	{
+		int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD};
+		return Items[(RandomNumber*17)%7];
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::CHALLENGE1:
+		{
+			int Items[] = {POTATO, TOMATE, CARROT, CABBAGE};
+			return Items[RandomNumber%4];
+		}
+
+		case EDailyQuests::CHALLENGE2:
+		{
+			int Items[] = {PIGPORNO, KWAHGANDON, HEADBOOMER, FOOTKWAH, DIRTYPIG, DIRTYKWAHHEAD, DIRTYBOOMERBODY, DIRTYKWAHFEET, DIRTYGUARDHEAD, GUARDHEAD};
+			return Items[RandomNumber%10];
+		}
+
+		case EDailyQuests::CHALLENGE3:
+		{
+			int Items[] = {COOPERORE, IRONORE, GOLDORE, DIAMONDORE, DRAGONORE, IRON, STANNUM};
+			return Items[RandomNumber%7];
+		}
+
+		case EDailyQuests::CHALLENGE4:
+		{
+			int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD};
+			return Items[(RandomNumber*18)%7];
+		}
+
+		default:
+			break;
+		}
+	}
 	return 1;
 }
 
@@ -6194,7 +6338,7 @@ int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
 		switch (SubType)
 		{
 		case EDailyQuests::COLLECT1:
-			return (RandomNumber%10 + 8) * 10000000;
+			return (RandomNumber%10 + 8) * 1000000;
 
 		case EDailyQuests::COLLECT2:
 			return RandomNumber%50+30;
@@ -6207,6 +6351,30 @@ int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
 		case EDailyQuests::COLLECT4:
 			return (RandomNumber%23 + 8) * 100000;
 		
+		default:
+			break;
+		}
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE2_KILL)
+	{
+		return (RandomNumber*17)%500+200;
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::CHALLENGE1:
+			return (RandomNumber%10 + 8) * 10000000;
+
+		case EDailyQuests::CHALLENGE2:
+			return RandomNumber%1000+2000;
+
+		case EDailyQuests::CHALLENGE3:
+			return (RandomNumber%23 + 8) * 10000000;
+
+		case EDailyQuests::CHALLENGE4:
+			return (RandomNumber%23 + 8) * 100;
+
 		default:
 			break;
 		}
@@ -6234,6 +6402,32 @@ int CGameContext::GetDailyQuestUpgr(int Quest, int SubType)
 
 		case EDailyQuests::COLLECT4:
 			return 150;
+		
+		default:
+			break;
+		}
+	}
+	else if (Quest == EDailyQuests::QUESTTYPE2_KILL)
+	{
+		return RandomNumber%100 + 200;
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::CHALLENGE1:
+			return 1000;
+
+		case EDailyQuests::CHALLENGE2:
+			return 1000;
+
+		case EDailyQuests::CHALLENGE3:
+			return 1000;
+
+		case EDailyQuests::CHALLENGE4:
+			if(RandomNumber%6 == 4 || RandomNumber%6 == 5)
+				return 1000;
+			return RandomNumber%1000+400;
 		
 		default:
 			break;

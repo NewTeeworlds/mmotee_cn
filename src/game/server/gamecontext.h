@@ -143,6 +143,11 @@ enum EDailyQuests
 	COLLECT2,
 	COLLECT3,
 	COLLECT4,
+
+	CHALLENGE1 = 0,
+	CHALLENGE2,
+	CHALLENGE3,
+	CHALLENGE4,
 };
 
 enum
@@ -290,7 +295,7 @@ public:
 	int GetBossCount();
 	int GetBossLeveling();
 	int GetAreaCount();
-	const char *GetBossName(int BossType);
+	const char *GetBotName(int BotType);
 	int m_WinWaitBoss;
 	int m_BossStartTick;
 	bool m_BossStart;

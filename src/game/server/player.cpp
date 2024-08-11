@@ -492,7 +492,7 @@ void CPlayer::Tick()
 			else if (GameServer()->m_BossStartTick > 10 * Server()->TickSpeed())
 			{
 				int Time = GameServer()->m_BossStartTick / Server()->TickSpeed();
-				GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("等待玩家加入Boss战 {sec:siska}. Boss:{str:name}"), "siska", &Time, "name", GameServer()->GetBossName(GameServer()->m_BossType), NULL);
+				GameServer()->SendBroadcast_Localization(m_ClientID, 101, 100, _("等待玩家加入Boss战 {sec:siska}. Boss:{str:name}"), "siska", &Time, "name", GameServer()->GetBotName(GameServer()->m_BossType), NULL);
 			}
 			else if (Server()->Tick() % (1 * Server()->TickSpeed()) == 0 && GameServer()->m_BossStartTick > 100)
 				GameServer()->SendGuide(m_ClientID, GameServer()->m_BossType);

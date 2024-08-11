@@ -1306,7 +1306,7 @@ void CCharacter::Die(int Killer, int Weapon)
 		if(m_pPlayer->IsBoss() && !GameServer()->m_WinWaitBoss)
 		{
 			int CountWin = GameServer()->GetBossCount();
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Boss {str:bossn} 被{int:cwin}个玩家击败."), "bossn", GameServer()->GetBossName(GameServer()->m_BossType), "cwin", &CountWin, NULL);			
+			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Boss {str:bossn} 被{int:cwin}个玩家击败."), "bossn", GameServer()->GetBotName(GameServer()->m_BossType), "cwin", &CountWin, NULL);			
 			
 			GameServer()->m_WinWaitBoss = 1000;
 		}
@@ -1315,7 +1315,7 @@ void CCharacter::Die(int Killer, int Weapon)
 		if(m_pPlayer->m_InBossed)
 		{	
 			m_pPlayer->m_InBossed = false;
-			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你被 Boss {str:name}击败."), "name", GameServer()->GetBossName(GameServer()->m_BossType), NULL);
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你被 Boss {str:name}击败."), "name", GameServer()->GetBotName(GameServer()->m_BossType), NULL);
 		}
 	}
 
@@ -1866,7 +1866,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 						case BOT_BOSSGUARD:
 							CreateDropRandom(MONEYBAG, random_int(500, 1000), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(5, 10), false, i, Force/(35+randforce));
-							CreateDropRandom(GUARDHEAD, 3, false, i, Force/(35+randforce));
+							CreateDropRandom(GUARDHEAD, 5, false, i, Force/(35+randforce));
+							CreateDropRandom(DIRTYGUARDHEAD, 10, false, i, Force/(35+randforce)	);
 							CreateDropRandom(GUARDHAMFRAG, random_int(1, 4), 25, i, Force/(12+randforce));
 							GameServer()->m_apPlayers[From]->GiveUpPoint(20);
 							GameServer()->UpdateStats(From);
@@ -2441,10 +2442,11 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 {
 	if(!IsAlive() || HowID >= MAX_PLAYERS)
 		return; 
-	
+
+	vec2 DropPos = vec2(m_Pos.x, m_Pos.y - 28.f);
 	if(!Random) 
 	{
-		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
+		new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
 		return;
 	}
 	if (Server()->GetItemSettings(HowID, TITLEPPP))
@@ -2457,7 +2459,7 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 		Random = 1;
 	
 	if(random_prob(1.0f/(float)Random))
-		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
+		new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
 }
 
 void CCharacter::TakeItemChar(int ClientID)
