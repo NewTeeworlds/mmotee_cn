@@ -99,14 +99,14 @@ void CKwah::TickBotAI()
     m_BotClientIDFix = -1;
     
    
-	int Dists = distance(LockBotPos, m_Pos);
+	int Dists = distance(m_LockBotPos, m_Pos);
 	if (Dists < LessDist)
 		LessDist = Dists;
 
 	
 	if (Dists >= 400.0f)
 	{
-		vec2 DirPlayer = normalize(LockBotPos - m_Pos);
+		vec2 DirPlayer = normalize(m_LockBotPos - m_Pos);
 		if (DirPlayer.x < 0)
 			m_BotDir = -1;
 		else 

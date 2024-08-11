@@ -128,7 +128,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Pos = Pos;
 	
 	if(m_pPlayer->IsBot())
-		LockBotPos = m_Pos;
+		m_LockBotPos = m_Pos;
 	
 	if(m_pPlayer->AccData()->m_Jail)
 	{
@@ -1708,6 +1708,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	// check for death
 	if(m_Health <= 0)
 	{
+		if(GameServer()->GetDailyQuestItem(EDailyQuests::QUESTTYPE2_KILL, -1) == m_pPlayer->GetBotType())
+			GameServer()->GiveItem(From, KILLQUEST, 1);
+		if(GameServer()->GetDailyQuestItem(EDailyQuests::QUESTTYPE3_CHALLENGE, EDailyQuests::CHALLENGE4) == m_pPlayer->GetBotType())
+			GameServer()->GiveItem(From, CHALLENGEQUEST, 1);
+
 		int randforce = random_int(0, 30);
 		if(pFrom)
 		{
@@ -1733,7 +1738,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->GiveUpPoint(50);
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(1,20));
 					GameServer()->UpdateStats(From);
 				}
 				if(!GameServer()->m_CityStart)
@@ -1761,7 +1766,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->GiveUpPoint(100);
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(10,20));
 					GameServer()->UpdateStats(From);
 				}
 				if(!GameServer()->m_CityStart)
@@ -1786,7 +1791,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->GiveUpPoint(300);
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(20,50));
 					GameServer()->UpdateStats(From);
 				}
 				if(!GameServer()->m_CityStart)
@@ -1807,7 +1812,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->GiveUpPoint(10);
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(20,40));
 					GameServer()->UpdateStats(From);
 				}
 				if(random_prob(1.0f/80))
@@ -1820,6 +1825,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 		if(m_pPlayer->IsBoss())
 		{
+			int BossCount = GameServer()->GetBossCount();
 			for(int i = 0; i < MAX_PLAYERS; ++i)
 			{
 				randforce = random_int(0, 80);
@@ -1842,7 +1848,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(FORMULAEARRINGS, 1, 90, i, Force/(35+randforce));
 							CreateDropRandom(FORMULAWEAPON, 1, 90, i, Force/(40+randforce));
 							CreateDropRandom(RANDOMCRAFTITEM, 1, 15, i, Force/(45+randforce));
-							GameServer()->m_apPlayers[From]->GiveUpPoint(20);
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(100/BossCount));
 							GameServer()->UpdateStats(From);
 							break;
 						
@@ -1851,7 +1857,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(BOOKEXPMIN, 1, 15, i, Force/(45+randforce));
 							CreateDropRandom(BOOKMONEYMIN, 1, 80, i, Force/(45+randforce));
 							CreateDropRandom(CLANBOXEXP, 1, 50, i, Force/(45+randforce));
-							GameServer()->m_apPlayers[From]->GiveUpPoint(25);
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(25/BossCount));
 							GameServer()->UpdateStats(From);
 							break;
 
@@ -1859,7 +1865,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(MONEYBAG, random_int(50, 200), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(1, 3), false, i, Force/(35+randforce));
 							CreateDropRandom(WOOD, random_int(20, 30), 15, i, Force/(12+randforce));
-							GameServer()->m_apPlayers[From]->GiveUpPoint(10);
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
 							GameServer()->UpdateStats(From);
 							break;
 
@@ -1869,7 +1875,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(GUARDHEAD, 5, false, i, Force/(35+randforce));
 							CreateDropRandom(DIRTYGUARDHEAD, 10, false, i, Force/(35+randforce)	);
 							CreateDropRandom(GUARDHAMFRAG, random_int(1, 4), 25, i, Force/(12+randforce));
-							GameServer()->m_apPlayers[From]->GiveUpPoint(20);
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(20/BossCount));
 							GameServer()->UpdateStats(From);
 							break;
 

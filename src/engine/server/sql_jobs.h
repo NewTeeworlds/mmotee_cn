@@ -2748,11 +2748,11 @@ public:
 	{
 		try
 		{
-			pSqlServer->executeSqlQuery(m_aSql);
+			pSqlServer->executeSql(m_aSql);
 		}
 		catch (sql::SQLException const &e)
 		{
-			dbg_msg("sql", "Error", e.what());
+			dbg_msg("sql", "Error (%s)", e.what());
 			return false;
 		}
 		return true;

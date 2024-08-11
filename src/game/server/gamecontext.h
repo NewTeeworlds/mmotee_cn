@@ -403,7 +403,7 @@ public:
 
 	tm *GetRealTime();
 	void DailyQuestTick();
-	void RefreshDailyQuest(tm *pTime);
+	void RefreshDailyQuest(tm *pTime, bool Reset = false);
 
 	struct DailyQuest
 	{

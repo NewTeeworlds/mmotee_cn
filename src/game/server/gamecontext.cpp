@@ -3180,6 +3180,8 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 	{
 		if (ItemID == FARMLEVEL || ItemID == MINEREXP || ItemID == LOADEREXP)
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[专长] {str:items}"), "items", Server()->GetItemName(ClientID, ItemID), NULL);
+		else if(ItemID == KILLQUEST || ItemID == CHALLENGEQUEST)
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:items}"), "items", Server()->GetItemName(ClientID, ItemID), NULL);
 		else
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 获得了 {str:items}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID), NULL);
 	}
@@ -4908,7 +4910,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
-						AddVote("", "null", ClientID);
 					}
 
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT2)
@@ -4916,7 +4917,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
-						AddVote("", "null", ClientID);
 					}
 
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT3)
@@ -4928,7 +4928,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "THA{str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("enruw奖ails：???升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- S贡品S -");
-						AddVote("", "null", ClientID);
 					}
 
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT4)
@@ -4936,9 +4935,9 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
-						AddVote("", "null", ClientID);
 					}
 				}
+				AddVote("", "null", ClientID);
 				AddVote("", "null", ClientID);
 			}
 			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE2_KILL)
@@ -4975,7 +4974,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
-						AddVote("", "null", ClientID);
 					}
 
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE2)
@@ -4983,7 +4981,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "VDD献上 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- 贡品");
-						AddVote("", "null", ClientID);
 					}
 
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE3)
@@ -4991,7 +4988,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
-						AddVote("", "null", ClientID);
 					}
 
 					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE4)
@@ -5000,7 +4996,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 						AddVote_Localization(ClientID, "null", "击杀 {str:iname} [{int:num}/{int:need}]", "iname", GetBotName(Item), "num", &Have, "need", &Num);
 						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
 						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
-						AddVote("", "null", ClientID);
 					}
 				}
 				AddVote("", "null", ClientID);
@@ -6232,20 +6227,23 @@ void CGameContext::DailyQuestTick()
 		tm *pTime = GetRealTime();
 		if(m_DailyQuest.m_LastHour > pTime->tm_hour)
 		{
-			RefreshDailyQuest(pTime);
+			RefreshDailyQuest(pTime, true);
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("每日任务已更新！"));
 		}
 		m_DailyQuest.m_LastHour = pTime->tm_hour;
 	}
 }
 
-void CGameContext::RefreshDailyQuest(tm *pTime)
+void CGameContext::RefreshDailyQuest(tm *pTime, bool Reset)
 {
 	srand(GetDailyID());
 	m_DailyQuest.m_RandomNumber = rand();
-	Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 159");
-	Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 164");
-	Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 165");
+	if(Reset)
+	{
+		Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 159");
+		Server()->Execute("UPDATE tw_uItems SET item_count = 0,item_settings = 0 WHERE il_id = 164");
+		Server()->Execute("UPDATE tw_uItems SET item_count = 0,item_settings = 0 WHERE il_id = 165");
+	}
 }
 
 tm *CGameContext::GetRealTime()

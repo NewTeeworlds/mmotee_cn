@@ -142,8 +142,6 @@ private:
 	int m_DartOldVelAmount;
 	
 	int m_WaterJumpLifeSpan;
-	bool HookPass;
-	vec2 HookPosGet;
 	
 	// the player core for the physics
 public:
@@ -236,7 +234,7 @@ public:
 	void PressF3orF4(int ClientID, int Vote);
 	void CreatePickupDraw(int Num, int Type, int SubType, bool Changing);
 	void DeleteAllPickup();
-	vec2 LockBotPos;
+	vec2 m_LockBotPos;
 /* INFECTION MODIFICATION END *****************************************/
 	void HandleMapZone_Bonus();
 	void HandleMapZone_chMap();

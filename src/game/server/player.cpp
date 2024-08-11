@@ -959,7 +959,7 @@ void CPlayer::TryRespawn()
 	if (IsBot())
 	{
 		// жирный бот рандом
-		if (random_prob(0.01f))
+		if (random_prob(0.0025f))
 			m_BigBot = true;
 		else
 			m_BigBot = false;
