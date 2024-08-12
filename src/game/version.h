@@ -3,7 +3,7 @@
 #ifndef GAME_VERSION_H
 #define GAME_VERSION_H
 #include "generated/nethash.cpp"
-#define MMOTEE_VERSION "0.5.0"
+#define MMOTEE_VERSION "0.6.0"
 #define GAME_VERSION "0.6.4 " MMOTEE_VERSION
 #define GAME_NETVERSION "0.6" //GAME_NETVERSION_HASH
 // 下面的这行,只要加入就报错,而且也没引用,干脆删了得了
