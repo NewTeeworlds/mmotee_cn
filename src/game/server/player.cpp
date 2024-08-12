@@ -15,6 +15,7 @@
 #include <game/server/entities/bots/bosspig.h>
 #include <game/server/entities/bots/bossguard.h>
 #include <game/server/entities/bots/farmer.h>
+#include <game/server/entities/bots/bosszombie-skelet.h>
 
 MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS * ENGINE_MAX_MAPS + MAX_CLIENTS)
 
@@ -757,6 +758,8 @@ void CPlayer::Snap(int SnappingClient)
 			case BOT_BOSSVAMPIRE:
 			case BOT_BOSSPIGKING:
 			case BOT_BOSSGUARD:
+			case BOT_BOSSZOMBIE:
+			case BOT_BOSSSKELET:
 				str_format(pSendName, sizeof(pSendName), "%s[%d\%]", Server()->ClientName(m_ClientID), (int)getlv);
 				break;
 			case BOT_NPCW:
@@ -1066,12 +1069,18 @@ void CPlayer::TryRespawn()
 			AccData()->m_Level = 300 + random_int(3, 13);
 			m_BigBot = true;
 			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 2);
-			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
+			AccUpgrade()->m_Damage += (int)(AccData()->m_Level * 5);
 			break;
 		case BOT_BOSSGUARD:
 			m_pCharacter = new (AllocMemoryCell) CBossGuard(&GameServer()->m_World);
 			AccData()->m_Level = 2000 + random_int(0, 100);
-			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 20);
+			AccUpgrade()->m_Damage += (int)(AccData()->m_Level * 20);
+			m_BigBot = true;
+			break;
+		case BOT_BOSSZOMBIE:
+		case BOT_BOSSSKELET:
+			m_pCharacter = new (AllocMemoryCell) CBossZS(&GameServer()->m_World);
+			AccData()->m_Level = 2000 + random_int(0, 1000);
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:
@@ -1307,6 +1316,8 @@ bool CPlayer::IsBoss()
 	case BOT_BOSSVAMPIRE:
 	case BOT_BOSSPIGKING:
 	case BOT_BOSSGUARD:
+	case BOT_BOSSZOMBIE:
+	case BOT_BOSSSKELET:
 		return true;
 	
 	default:

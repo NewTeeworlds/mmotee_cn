@@ -665,6 +665,12 @@ void CCharacter::FireWeapon()
 			bool Electro = Server()->GetItemSettings(m_pPlayer->GetCID(), ELECTROLASER) != 0;
 			bool Lightning = Server()->GetItemSettings(m_pPlayer->GetCID(), LIGHTNINGLASER) != 0;
 
+			if(GetPlayer()->GetBotType() == BOT_BOSSZOMBIE || GetPlayer()->GetBotType() == BOT_BOSSSKELET)
+				Electro = true;
+			
+			if(GetPlayer()->GetBotType() == BOT_BOSSSKELET)
+				Lightning = true;
+			
 			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade()->m_Spray/3;
 			if(ShotSpread > 10)
 				ShotSpread = 10;
@@ -930,21 +936,27 @@ void CCharacter::Tick()
 			switch (m_pPlayer->GetBotType())
 			{
 			case BOT_BOSSSLIME:
-				m_Health = 10+GameServer()->GetBossLeveling()*500;
+				m_Health += 10+GameServer()->GetBossLeveling()*500;
 				break;
 			
 			case BOT_BOSSVAMPIRE:
-				m_Health = 10+GameServer()->GetBossLeveling()*1000;
+				m_Health += 10+GameServer()->GetBossLeveling()*1000;
 				break;
 
 			case BOT_BOSSPIGKING:
-				m_Health = 10+GameServer()->GetBossLeveling()*100;
-				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling();
+				m_Health += 10+GameServer()->GetBossLeveling()*100;
+				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling();
 				break;
 
 			case BOT_BOSSGUARD:
-				m_Health = 10+GameServer()->GetBossLeveling()*1250;
-				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*50;
+				m_Health += 10+GameServer()->GetBossLeveling()*1250;
+				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling()*5;
+				break;
+
+			case BOT_BOSSZOMBIE:
+			case BOT_BOSSSKELET:
+				m_Health += 10+GameServer()->GetBossLeveling()*1500;
+				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling();
 				break;
 
 			default:
@@ -1920,6 +1932,24 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							GameServer()->UpdateStats(From);
 							break;
 
+						case BOT_BOSSZOMBIE:
+							CreateDropRandom(MONEYBAG, random_int(50, 100), false, i, Force/(50+randforce));
+							CreateDropRandom(ZOMBIEEYE, random_int(3, 5), false, i, Force/(35+randforce));
+							CreateDropRandom(ZOMBIEBRAIN, 1, 40, From, Force/(50+randforce));
+							CreateDropRandom(DRAGONORE, random_int(20, 30), false, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
+							GameServer()->UpdateStats(From);
+							break;
+
+						case BOT_BOSSSKELET:
+							CreateDropRandom(MONEYBAG, random_int(50, 100), false, i, Force/(50+randforce));
+							CreateDropRandom(SKELETSBONE, random_int(3, 5), false, i, Force/(35+randforce));
+							CreateDropRandom(SKELETSKULL, random_int(1, 2), false, i, Force/(35+randforce));
+							CreateDropRandom(DRAGONORE, random_int(20, 30), false, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
+							GameServer()->UpdateStats(From);
+							break;
+
 						default:
 							break;
 						}
@@ -2307,6 +2337,15 @@ void CCharacter::ClassSpawnAttributes()
 				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 0);
 	
 				GiveWeapon(WEAPON_HAMMER, 10000);
+				break;
+			
+			case BOT_BOSSZOMBIE:
+			case BOT_BOSSSKELET:
+				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 99999);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 10);
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 40000);
+
+				GiveWeapon(WEAPON_RIFLE, -1);
 				break;
 			
 			default:

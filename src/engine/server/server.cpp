@@ -2241,6 +2241,12 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType, int CitySt
 	case BOT_BOSSGUARD:
 		str_copy(m_aClients[ClientID].m_aName, "GUARD", MAX_NAME_LENGTH);
 		break;
+	case BOT_BOSSZOMBIE:
+		str_copy(m_aClients[ClientID].m_aName, "Zombie", MAX_NAME_LENGTH);
+		break;
+	case BOT_BOSSSKELET:
+		str_copy(m_aClients[ClientID].m_aName, "Skelet", MAX_NAME_LENGTH);
+		break;
 	case BOT_FARMER:
 		str_copy(m_aClients[ClientID].m_aName, "Nesquik", MAX_NAME_LENGTH);
 		break;

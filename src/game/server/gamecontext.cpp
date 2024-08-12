@@ -534,6 +534,16 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 4% - 守卫锤子碎片"), NULL);
 		break;
 
+	case BOT_BOSSZOMBIE:
+		arghealth = 2000;
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:激光 射速:快\n奖励:\n- 钱袋 x50-100\n- 僵尸的眼睛 x3-5"), NULL);
+		break;
+	
+	case BOT_BOSSSKELET:
+		arghealth = 2000;
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:激光 射速:快\n奖励:\n- 钱袋 x100-200\n- 骷髅的骨头 x3-5\n- 4% - 骷髅的头骨x1"), NULL);
+		break;
+
 	default:
 		break;
 	}
@@ -1756,29 +1766,29 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						}
 						break;
 
-						case EMainQuests::QUEST8_BADGUARD:
+						case EMainQuests::QUEST8_ZOMBIE:
 						{
-							if (Server()->GetItemCount(ClientID, DIRTYGUARDHEAD) < EMainQuestNeed::QUEST8)
+							if (Server()->GetItemCount(ClientID, ZOMBIEBRAIN) < EMainQuestNeed::QUEST8)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
 							else
 							{
 								m_apPlayers[ClientID]->GiveUpPoint(500);
 								m_apPlayers[ClientID]->AccData()->m_Quest++;
-								Server()->RemItem(ClientID, DIRTYGUARDHEAD, EMainQuestNeed::QUEST8, -1);
+								Server()->RemItem(ClientID, ZOMBIEBRAIN, EMainQuestNeed::QUEST8, -1);
 								UpdateStats(ClientID);
 							}
 						}
 						break;
 
-						case EMainQuests::QUEST9_BADGUARD:
+						case EMainQuests::QUEST8_SKELET:
 						{
-							if (Server()->GetItemCount(ClientID, GUARDHEAD) < EMainQuestNeed::QUEST9)
+							if (Server()->GetItemCount(ClientID, SKELETSKULL) < EMainQuestNeed::QUEST9)
 								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
 							else
 							{
 								m_apPlayers[ClientID]->GiveUpPoint(3000);
 								m_apPlayers[ClientID]->AccData()->m_Quest++;
-								Server()->RemItem(ClientID, GUARDHEAD, EMainQuestNeed::QUEST9, -1);
+								Server()->RemItem(ClientID, SKELETSKULL, EMainQuestNeed::QUEST9, -1);
 								UpdateStats(ClientID);
 							}
 						}
@@ -3756,7 +3766,7 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 			"被污染的4种物品(猪、Kwah头、Kwah脚、Boomer尸体)x5000, " \
 			"龙矿x2080424, " \
 			"僵尸的眼睛x100, " \
-			"Skelet的骨头x100", NULL);
+			"骷髅的骨头x100", NULL);
 			return;
 		}
 		Server()->RemItem(ClientID, GUARDHAMMER, 1, -1);
@@ -3786,7 +3796,7 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 			"被污染的4种物品(猪、Kwah头、Kwah脚、Boomer尸体)x5000, " \
 			"龙矿x4240208, " \
 			"僵尸的眼睛x100, " \
-			"Skelet的骨头x100", NULL);
+			"骷髅的骨头x100", NULL);
 			return;
 		}
 		Server()->RemItem(ClientID, DIRTYGUARDHEAD, 50, -1);
@@ -4872,28 +4882,28 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					}
 					break;
 
-					case EMainQuests::QUEST8_BADGUARD:
+					case EMainQuests::QUEST8_ZOMBIE:
 					{
 						int Need = EMainQuestNeed::QUEST8;
-						int Counts = Server()->GetItemCount(ClientID, DIRTYGUARDHEAD);
+						int Counts = Server()->GetItemCount(ClientID, ZOMBIEBRAIN);
 						AddVote_Localization(ClientID, "null", _("第二阶仪式 II"));
 						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
 						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
 						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
-						AddVote_Localization(ClientID, "null", _("任务需求：被污染的守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
-						AddVote_Localization(ClientID, "null", _("任务奖励: 升级点1000"));
+						AddVote_Localization(ClientID, "null", _("任务需求：僵尸的脑子 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("任务奖励: 升级点1000,Boss:Skelet"));
 					}
 					break;
 
-					case EMainQuests::QUEST9_BADGUARD:
+					case EMainQuests::QUEST8_SKELET:
 					{
 						int Need = EMainQuestNeed::QUEST9;
-						int Counts = Server()->GetItemCount(ClientID, GUARDHEAD);
+						int Counts = Server()->GetItemCount(ClientID, SKELETSKULL);
 						AddVote_Localization(ClientID, "null", _("第二阶仪式 III"));
 						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了Lmg"));
 						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了aiå"));
 						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了dg"));
-						AddVote_Localization(ClientID, "null", _("任务需求：守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("任务需求：骷髅的头骨 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
 						AddVote_Localization(ClientID, "null", _("任务奖励: 升级点3000"));
 					}
 					break;
@@ -5130,7 +5140,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					AddNewCraftVote(ClientID, "武器蓝图x25", ENDEXPLOSION);
 					AddVote_Localization(ClientID, "null", "==================");
 					AddVote_Localization(ClientID, "null", _("以下模块的额外需要: 被污染4物品x5000,"));
-					AddVote_Localization(ClientID, "null", _("僵尸眼x100,Skelet骨头x100"));
+					AddVote_Localization(ClientID, "null", _("僵尸眼x100,骷髅的骨头x100"));
 					AddVote_Localization(ClientID, "null", "------------------");
 					AddNewCraftVote(ClientID, "守卫锤子x1,龙矿x208424", ELECTROLASER);
 					AddNewCraftVote(ClientID, "被污染的守卫头x50,龙矿x4240208", LIGHTNINGLASER);
@@ -5187,8 +5197,13 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				AddNewBossVote(ClientID, "极难", "奖励:钱袋, 高级消耗品(概率掉)", BOT_BOSSVAMPIRE);
 			if(m_apPlayers[ClientID]->AccData()->m_Quest > 7)
 				AddNewBossVote(ClientID, "地狱", "奖励:钱袋，猪肉，守卫锤子碎片", BOT_BOSSGUARD);
-			if(m_apPlayers[ClientID]->AccData()->m_Quest <= 1)
-				AddVote_Localization(ClientID, "null", "你需要完成任务来解锁Boss!");
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 7)
+				AddNewBossVote(ClientID, "地狱", "奖励:钱袋，僵尸头/眼睛", BOT_BOSSZOMBIE);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 8)
+				AddNewBossVote(ClientID, "地狱", "奖励:钱袋，骷髅头/眼睛", BOT_BOSSSKELET);
+			AddVote("", "null", ClientID);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest <= 8)
+				AddVote_Localization(ClientID, "null", "完成任务将解锁更多Boss");
 		}
 		break;
 	}
@@ -5772,6 +5787,14 @@ void CGameContext::UpdateBotInfo(int ClientID)
 		else
 			str_copy(NameSkin, "coala", sizeof(NameSkin));
 	}
+	else if (BotType == BOT_BOSSZOMBIE)
+	{
+		str_copy(NameSkin, "twintri", sizeof(NameSkin));
+	}
+	else if (BotType == BOT_BOSSSKELET)
+	{
+		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
+	}
 
 	Server()->ResetBotInfo(ClientID, BotType, BotSubType, m_CityStart);
 	str_copy(m_apPlayers[ClientID]->m_TeeInfos.m_aSkinName, NameSkin, sizeof(m_apPlayers[ClientID]->m_TeeInfos.m_aSkinName));
@@ -6211,6 +6234,14 @@ const char *CGameContext::GetBotName(int BotType)
 	case BOT_BOSSPIGKING:
 		return "捣蛋猪";
 		break;
+	
+	case BOT_BOSSZOMBIE:
+		return "僵尸";
+		break;
+	
+	case BOT_BOSSSKELET:
+		return "骷髅";
+		break;
 
 	case BOT_BOSSGUARD:
 		return "守卫";
@@ -6385,8 +6416,8 @@ int CGameContext::GetDailyQuestItem(int Quest, int SubType)
 
 		case EDailyQuests::CHALLENGE4:
 		{
-			int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD};
-			return Items[(RandomNumber*18)%7];
+			int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD, BOT_BOSSZOMBIE, BOT_BOSSSKELET};
+			return Items[(RandomNumber*18)%9];
 		}
 
 		default:
