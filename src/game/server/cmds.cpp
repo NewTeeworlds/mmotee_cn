@@ -417,6 +417,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	}
 	else if (!strncmp(Msg->m_pMessage, "/goto", 5))
 	{
+		return; // baby mmotee wait me for one year plz...
 		LastChat();
 		int MapID;
 		if (sscanf(Msg->m_pMessage, "/goto %d", &MapID) != 1)
