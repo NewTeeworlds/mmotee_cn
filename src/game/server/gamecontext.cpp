@@ -2151,7 +2151,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 					m_apPlayers[ClientID]->AccUpgrade()->m_Spray++;
 					m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade -= PRICESPRAY;
-					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你的技能成功提升 {int:lv} 级"), NULL);
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你的技能成功提升 1 级"), NULL);
 
 					UpdateUpgrades(ClientID);
 					ResetVotes(ClientID, CLMENU);
@@ -3727,7 +3727,7 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 			return;
 		}
 		Server()->RemItem(ClientID, GUARDHAMFRAG, 10, -1);
-		float RandomProba = 0.94f;
+		float RandomProba = 0.50f;
 		if(Server()->GetItemSettings(ClientID, TITLEHANDCRAFT))
 			RandomProba -= 0.2f;
 
@@ -3737,6 +3737,66 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 										"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
 			return;
 		}
+	}
+	break;
+	case ELECTROLASER:
+	{
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, GUARDHAMMER) < 1 ||
+			Server()->GetItemCount(ClientID, DIRTYPIG) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHFEET) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHHEAD) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYBOOMERBODY) < 5000 ||
+			Server()->GetItemCount(ClientID, DRAGONORE) < 2080424 ||
+			Server()->GetItemCount(ClientID, ZOMBIEEYE) < 100 ||
+			Server()->GetItemCount(ClientID, SKELETSBONE) < 100)
+		{
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", 
+			"守卫锤子x1, " \
+			"被污染的4种物品(猪、Kwah头、Kwah脚、Boomer尸体)x5000, " \
+			"龙矿x2080424, " \
+			"僵尸的眼睛x100, " \
+			"Skelet的骨头x100", NULL);
+			return;
+		}
+		Server()->RemItem(ClientID, GUARDHAMMER, 1, -1);
+		Server()->RemItem(ClientID, DIRTYPIG, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHFEET, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHHEAD, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYBOOMERBODY, 5000, -1);
+		Server()->RemItem(ClientID, DRAGONORE, 2080424, -1);
+		Server()->RemItem(ClientID, ZOMBIEEYE, 100, -1);
+		Server()->RemItem(ClientID, SKELETSBONE, 100, -1);
+	}
+	break;
+	case LIGHTNINGLASER:
+	{
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, DIRTYGUARDHEAD) < 50 ||
+			Server()->GetItemCount(ClientID, DIRTYPIG) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHFEET) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHHEAD) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYBOOMERBODY) < 5000 ||
+			Server()->GetItemCount(ClientID, DRAGONORE) < 4240208 ||
+			Server()->GetItemCount(ClientID, ZOMBIEEYE) < 100 ||
+			Server()->GetItemCount(ClientID, SKELETSBONE) < 100)
+		{
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", 
+			"被污染的守卫头x50, " \
+			"被污染的4种物品(猪、Kwah头、Kwah脚、Boomer尸体)x5000, " \
+			"龙矿x4240208, " \
+			"僵尸的眼睛x100, " \
+			"Skelet的骨头x100", NULL);
+			return;
+		}
+		Server()->RemItem(ClientID, DIRTYGUARDHEAD, 50, -1);
+		Server()->RemItem(ClientID, DIRTYPIG, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHFEET, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHHEAD, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYBOOMERBODY, 5000, -1);
+		Server()->RemItem(ClientID, DRAGONORE, 4240208, -1);
+		Server()->RemItem(ClientID, ZOMBIEEYE, 100, -1);
+		Server()->RemItem(ClientID, SKELETSBONE, 100, -1);
 	}
 	break;
 	}
@@ -4167,6 +4227,8 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote("", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "激光枪"));
 			CreateNewShop(ClientID, EXLASER, 1, 0, 0);
+			CreateNewShop(ClientID, ELECTROLASER, 1, 0, 0);
+			CreateNewShop(ClientID, LIGHTNINGLASER, 1, 0, 0);
 
 			AddVote("························", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "设置"));
@@ -5066,6 +5128,12 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					AddNewCraftVote(ClientID, "手枪x1, 散弹枪x1, 榴弹炮x1, 激光枪x1", WEAPONPRESSED);
 					AddNewCraftVote(ClientID, "武器蓝图x1, Boomer的戒指x1", MODULESHOTGUNSLIME);
 					AddNewCraftVote(ClientID, "武器蓝图x25", ENDEXPLOSION);
+					AddVote_Localization(ClientID, "null", "==================");
+					AddVote_Localization(ClientID, "null", _("以下模块的额外需要: 被污染4物品x5000,"));
+					AddVote_Localization(ClientID, "null", _("僵尸眼x100,Skelet骨头x100"));
+					AddVote_Localization(ClientID, "null", "------------------");
+					AddNewCraftVote(ClientID, "守卫锤子x1,龙矿x208424", ELECTROLASER);
+					AddNewCraftVote(ClientID, "被污染的守卫头x50,龙矿x4240208", LIGHTNINGLASER);
 				}
 				else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 4)
 				{

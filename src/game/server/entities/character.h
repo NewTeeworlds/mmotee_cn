@@ -164,6 +164,11 @@ public:
 	int m_Health;
 	int m_Armor;
 
+	void ElectroShock()
+	{
+		m_Core.m_Vel /= 1.5f;
+	}
+
 private:
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From

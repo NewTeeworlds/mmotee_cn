@@ -29,6 +29,9 @@
 #include "items/pickup.h"
 #include "sword/pizdamet.h"
 
+#include "electro.h"
+#include "lightning.h"
+
 //input count
 struct CInputCount
 {
@@ -659,7 +662,9 @@ void CCharacter::FireWeapon()
 		case WEAPON_RIFLE:
 		{
 			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXLASER) != 0;
-						
+			bool Electro = Server()->GetItemSettings(m_pPlayer->GetCID(), ELECTROLASER) != 0;
+			bool Lightning = Server()->GetItemSettings(m_pPlayer->GetCID(), LIGHTNINGLASER) != 0;
+
 			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade()->m_Spray/3;
 			if(ShotSpread > 10)
 				ShotSpread = 10;
@@ -675,8 +680,44 @@ void CCharacter::FireWeapon()
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 20;
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 				
-				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
+				if(!Electro)
+					new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
+				else
+				{
+					vec2 Start = m_Pos;
+					Start += Direction*50;
+
+					float Reach = 400;
+
+					vec2 To = m_Pos + vec2(cosf(a), sinf(a))*Reach;
+
+					GameServer()->Collision()->IntersectLine(Start, To, 0x0, &To);
+
+					// character collision
+					vec2 At;
+					CCharacter *pHit = GameServer()->m_World.IntersectCharacter(Start, To, 70.0f, At, this);
+					if(pHit)
+					{
+						To = pHit->m_Pos;
+						pHit->ElectroShock();
+						pHit->TakeDamage(Direction, 10, GetPlayer()->GetCID(), WEAPON_RIFLE, TAKEDAMAGEMODE_INFECTION);
+					}
+
+					int A = distance(Start, To) / 100;
+
+					if (A > 4)
+						A = 4;
+
+					if (A < 2)
+						A = 2;
+
+					new CElectro(GameWorld(), Start, To, vec2(cosf(a+i*1.2f), sinf(a+i*1.2f))*40, A);
+				}
+
+				if(Lightning)
+					new CLightning(GameWorld(), m_Pos, vec2(cosf(a), sinf(a)), 200, 100, m_pPlayer->GetCID(), 12, 2);
 			}
+
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 		} break;
 
@@ -2476,7 +2517,7 @@ void CCharacter::TakeItemChar(int ClientID)
 	for(auto *pDrop = (CDropItem*) GameWorld()->FindFirst(ENTTYPE_DROPITEM); pDrop; pDrop = (CDropItem*) pDrop->TypeNext()) {
         if (pDrop) {
             if (distance(pDrop->m_Pos, m_Pos) < 40) {
-                m_ReloadTimer = Server()->TickSpeed();
+                m_ReloadTimer = 5;
                 if (pDrop->TakeItem(ClientID)) {
                     pDrop->Reset();
                     return;
@@ -2646,32 +2687,6 @@ void CCharacter::HandleMapZone_Bonus()
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 			break;
-		case ZONE_INCLAN4:
-			if(!Server()->GetTopHouse(3))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(3) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
-		case ZONE_INCLAN5:
-			if(!Server()->GetTopHouse(4))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(4) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
 		// 公会座椅
 		case ZONE_CHAIRCLAN1:
 			if(!m_ReloadOther)
@@ -2726,52 +2741,6 @@ void CCharacter::HandleMapZone_Bonus()
 
 				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2));
 				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
-
-				m_pPlayer->AccData()->m_Exp += Exp;
-				m_pPlayer->AccData()->m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN4:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
-
-				m_pPlayer->AccData()->m_Exp += Exp;
-				m_pPlayer->AccData()->m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN5:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4))*50);
 
 				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
 				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;

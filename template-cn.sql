@@ -388,7 +388,9 @@ INSERT INTO `tw_uItemList` VALUES
 (163,5,'被污染的Kwah脚','用于合成'),
 (164,10,'击杀任务计数','- 进度'),
 (165,10,'挑战任务计数','- 进度'),
-(166,5,'被污染的守卫头','用于合成');
+(166,5,'被污染的守卫头','用于合成'),
+(167,1,'武器模块: 电子','- 我最喜欢的“法术”'),
+(168,1,'武器模块: 闪电','- ..我搞不懂为什么这不需要魔能');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
 UNLOCK TABLES
 
@@ -582,7 +584,9 @@ INSERT INTO `tw_uItemList_en` VALUES
 (163,5,'DirtyKwahFeet','Craft'),
 (164,10,'KillQuest','- Progress'),
 (165,10,'ChallengeQuest','- Progress'),
-(166,5,'DirtyGuardHead','- Craft');
+(166,5,'DirtyGuardHead','- Craft'),
+(167,1,'Weapon Module: Electro','- My favorite'),
+(168,1,'Weapon Module: Lightning','- ..Too expensive');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;
