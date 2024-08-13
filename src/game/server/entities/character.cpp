@@ -940,27 +940,27 @@ void CCharacter::Tick()
 			switch (m_pPlayer->GetBotType())
 			{
 			case BOT_BOSSSLIME:
-				m_Health += 10+GameServer()->GetBossLeveling()*500;
+				m_Health = 10+GameServer()->GetBossLeveling()*500;
 				break;
 			
 			case BOT_BOSSVAMPIRE:
-				m_Health += 10+GameServer()->GetBossLeveling()*1000;
+				m_Health = 10+GameServer()->GetBossLeveling()*100;
 				break;
 
 			case BOT_BOSSPIGKING:
-				m_Health += 10+GameServer()->GetBossLeveling()*100;
-				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling();
+				m_Health = 10+GameServer()->GetBossCount()*100;
+				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()/GameServer()->GetBossCount();
 				break;
 
 			case BOT_BOSSGUARD:
-				m_Health += 10+GameServer()->GetBossLeveling()*1250;
-				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling()*5;
+				m_Health = 10+GameServer()->GetBossLeveling()*1250;
+				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*5;
 				break;
 
 			case BOT_BOSSZOMBIE:
 			case BOT_BOSSSKELET:
-				m_Health += 10+GameServer()->GetBossLeveling()*1500;
-				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling()/GameServer()->GetBossCount();
+				m_Health = 10+GameServer()->GetBossLeveling()*1500;
+				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()/GameServer()->GetBossCount();
 				break;
 
 			default:
@@ -1677,7 +1677,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			if (probability <= 5.0f) probability = 5.0f;
 			if(random_prob(1.0f/probability))
 			{
-				if(m_pPlayer->GetBotType() == BOT_BOSSSLIME) Freeze(2);
+				if(m_pPlayer->IsBoss()) Freeze(3);
 				else Freeze(1);
 			}
 		}
@@ -1687,7 +1687,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			auto RandProc = (float)(100-m_pPlayer->AccUpgrade()->m_Pasive2*2);
 			if(random_prob(1.0f/RandProc))
 			{
-				if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT)) 
+				if(!Server()->GetItemSettings(m_pPlayer->GetCID(), SCHAT))
 					GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("被动技能不受伤害"), NULL);
 				return true;
 			}
@@ -2341,7 +2341,7 @@ void CCharacter::ClassSpawnAttributes()
 
 				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GUN, 15);
 				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GUN, 1000);
-				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 5000);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 4000);
 	
 				GiveWeapon(WEAPON_HAMMER, 10000);
 				GiveWeapon(WEAPON_GUN, 15);
@@ -2561,7 +2561,12 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 		Random = 1;
 	
 	if(random_prob(1.0f/(float)Random))
-		new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
+	{
+		if(Server()->GetItemCount(HowID, SAUTOPICK) && Server()->GetItemSettings(HowID, SAUTOPICK))
+			Server()->GiveItem(HowID, ItemID, Count);
+		else
+			new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
+	}
 }
 
 void CCharacter::TakeItemChar(int ClientID)
@@ -2662,11 +2667,6 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 	}
 	else if(Server()->GetItemCount(ClientID, SFUNNEL) && Server()->GetItemSettings(ClientID, SFUNNEL) == Emtion)
 	{
-		if(m_pPlayer->m_Mana < 200)
-			return GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你的魔能不足.(200点)"), NULL);
-
-		m_pPlayer->m_Mana -= 200;
-
 		for(auto *pFunnel = (CDoctorFunnel*) GameWorld()->FindFirst(ENTTYPE_FUNNEL); pFunnel; pFunnel = (CDoctorFunnel*) pFunnel->TypeNext())
 		{
 			if(pFunnel->GetOwner() == m_pPlayer->GetCID())
@@ -2677,6 +2677,11 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 				return;
 			}
 		}
+		if(m_pPlayer->m_Mana < 200)
+			return GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你的魔能不足.(200点)"), NULL);
+
+		m_pPlayer->m_Mana -= 200;
+
 		new CDoctorFunnel(GameWorld(), m_Pos, m_pPlayer->GetCID());
 		GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 	}

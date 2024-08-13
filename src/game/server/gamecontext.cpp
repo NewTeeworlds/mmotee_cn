@@ -3203,14 +3203,21 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 	{
 		if (ItemID == FARMLEVEL || ItemID == MINEREXP || ItemID == LOADEREXP)
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[专长] {str:items}"), "items", Server()->GetItemName(ClientID, ItemID), NULL);
-		else if(ItemID == KILLQUEST || ItemID == CHALLENGEQUEST)
+		else if((ItemID == KILLQUEST || ItemID == CHALLENGEQUEST) && !Server()->GetItemSettings(ClientID, SCHAT))
 		{
 			int Count = Server()->GetItemCount(ClientID, ItemID);
 			int Need = GetDailyQuestNeed((ItemID == KILLQUEST) ? EDailyQuests::QUESTTYPE2_KILL : EDailyQuests::QUESTTYPE3_CHALLENGE, (ItemID == KILLQUEST) ? 0 : EDailyQuests::CHALLENGE4);
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:items}[{int:num}/{int:need}]"), 
-			"items", Server()->GetItemName(ClientID, ItemID), 
-			"num", &Count,
-			"need", &Need);
+			if(Count % 50 == 0 && Count < Need)
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:item} [{int:num}/{int:need}]"), 
+				"item", Server()->GetItemName(ClientID, ItemID), 
+				"num", &Count,
+				"need", &Need);
+			
+			if(Count >= Need)
+			{
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, (ItemID == KILLQUEST) ? _("[每日任务] 击杀任务已完成！") : _("[每日任务] 挑战任务已完成！"));
+				CreateSoundGlobal(SOUND_CTF_CAPTURE, ClientID);
+			}
 		}
 		else
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 获得了 {str:items}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID), NULL);
@@ -4042,6 +4049,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				CreateNewShop(ClientID, HOOKDAMAGE, 3, 18, 100);
 				CreateNewShop(ClientID, GUNAUTO, 3, 20, 150);
 				CreateNewShop(ClientID, HAMMERAUTO, 3, 20, 1200);
+				CreateNewShop(ClientID, SAUTOPICK, 3, 20, 3000);
 
 				CreateNewShop(ClientID, EXGUN, 3, 25, 1800);
 				CreateNewShop(ClientID, EXSHOTGUN, 3, 30, 10000);
@@ -4232,7 +4240,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			CreateNewShop(ClientID, RINGNOSELFDMG, 1, 0, 0);
 			CreateNewShop(ClientID, CUSTOMCOLOR, 1, 0, 0);
 			EyeEmoteSettings(ClientID, MODULEEMOTE, "semote");
-			SkillSettings(ClientID, SFUNNEL, "sskillfunnel");
+			CreateNewShop(ClientID, SAUTOPICK, 1, 0, 0);
 			AddVote("", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "锤子"));
 			CreateNewShop(ClientID, HAMMERAUTO, 1, 0, 0);
@@ -4354,6 +4362,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "uskillsword", "☞ (20技能点) 光剑 ({str:act})", "act", Server()->GetItemCount(ClientID, SSWORD) ? "1 魔能(持续消耗) ✔" : "x");
 			SkillSettings(ClientID, SSWORD, "sskillsword");
 			SkillSettings(ClientID, SHEALSUMMER, "sskillsummer");
+			SkillSettings(ClientID, SFUNNEL, "sskillfunnel");
 			AddBack(ClientID);
 			return;
 		}
@@ -5036,7 +5045,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE2_KILL)
 			{
 				if(Server()->GetItemSettings(ClientID, KILLQUEST) == GetDailyID())
-					AddVote_Localization(ClientID, "que0", "- 挑战任务已完成");
+					AddVote_Localization(ClientID, "que0", "- 击杀任务已完成");
 				else
 				{
 					int Have = Server()->GetItemCount(ClientID, KILLQUEST);

@@ -161,8 +161,8 @@ public:
 	
 	int m_NumInputs;
 	int m_Jumped;
-	int m_Health;
-	int m_Armor;
+	long long int m_Health;
+	long long int m_Armor;
 
 	void ElectroShock()
 	{

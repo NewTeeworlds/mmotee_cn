@@ -1062,25 +1062,24 @@ void CPlayer::TryRespawn()
 			m_BigBot = true;
 
 			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
-			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 2);
+			AccUpgrade()->m_Damage = 200;
 			break;
 		case BOT_BOSSPIGKING:
 			m_pCharacter = new (AllocMemoryCell) CBossPig(&GameServer()->m_World);
-			AccData()->m_Level = 300 + random_int(3, 13);
+			AccData()->m_Level = 200 + random_int(3, 13);
 			m_BigBot = true;
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 2);
-			AccUpgrade()->m_Damage += (int)(AccData()->m_Level * 5);
 			break;
 		case BOT_BOSSGUARD:
 			m_pCharacter = new (AllocMemoryCell) CBossGuard(&GameServer()->m_World);
-			AccData()->m_Level = 2000 + random_int(0, 100);
-			AccUpgrade()->m_Damage += (int)(AccData()->m_Level * 20);
+			AccData()->m_Level = 1000 + random_int(0, 100);
+			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 50);
 			m_BigBot = true;
 			break;
 		case BOT_BOSSZOMBIE:
 		case BOT_BOSSSKELET:
 			m_pCharacter = new (AllocMemoryCell) CBossZS(&GameServer()->m_World);
-			AccData()->m_Level = 2000 + random_int(0, 1000);
+			AccData()->m_Level = 1000 + random_int(0, 1000);
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:
