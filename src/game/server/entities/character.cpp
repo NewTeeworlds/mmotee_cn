@@ -85,7 +85,7 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_PoisonTick = 0;
 	m_HealTick = 0;
 	m_InAirTick = 0;
-	m_InWater = 0;
+	m_InWater = false;
 	m_BonusTick = 0;
 	m_WaterJumpLifeSpan = 0;
 	m_NinjaVelocityBuff = 0;
@@ -93,6 +93,7 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_NinjaAmmoBuff = 0;
 
 	m_SummonByBoss = false;
+	m_InSpace = false;
 }
 
 bool CCharacter::FindPortalPosition(vec2 Pos, vec2& Res)
@@ -124,6 +125,7 @@ void CCharacter::Reset()
 
 bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 {
+	m_Recoil = vec2(0, 0);
 	m_EmoteStop = -1;
 	m_LastAction = -1;
 	m_LastNoAmmoSound = -1;
@@ -379,7 +381,7 @@ void CCharacter::UpdateTuningParam()
 		pTuningParams->m_HookDragSpeed = 0.0f;
 		pTuningParams->m_HookDragAccel = 1.0f;
 	}
-	if(m_InWater == 1)
+	if(m_InWater)
 	{
 		pTuningParams->m_Gravity = -0.05f;
 		pTuningParams->m_GroundFriction = 0.95f;
@@ -391,6 +393,24 @@ void CCharacter::UpdateTuningParam()
 		pTuningParams->m_AirControlAccel = 1.5f;
 		//pTuningParams->m_AirJumpImpulse = 0.0f;
 	}
+
+	if(m_InSpace)
+	{
+		pTuningParams->m_Gravity = 0.f;
+		pTuningParams->m_GroundControlSpeed = 250.0f / Server()->TickSpeed();
+		pTuningParams->m_GroundJumpImpulse = 5.0f;
+		pTuningParams->m_AirControlSpeed = 250.0f / Server()->TickSpeed();
+		pTuningParams->m_AirJumpImpulse = 5.0f;
+		if(m_InWater)
+		{
+			pTuningParams->m_Gravity = pTuningParams->m_Gravity - 0.05f;
+			pTuningParams->m_GroundFriction = 0.95f;
+			pTuningParams->m_GroundControlAccel = 1.5f;
+			pTuningParams->m_AirFriction = 0.95f;
+			pTuningParams->m_AirControlAccel = 1.5f;
+		}
+	}
+
 	if(m_SlipperyTick > 0)
 	{
 		pTuningParams->m_GroundFriction = 1.0f;
@@ -479,6 +499,7 @@ void CCharacter::FireWeapon()
 		return;
 	}
 
+	float SelfKnockback = 0.f;
 	vec2 ProjStartPos = m_Pos+Direction*m_ProximityRadius*0.75f;
 
 	switch(m_ActiveWeapon)
@@ -498,7 +519,12 @@ void CCharacter::FireWeapon()
 			// ---------- 检查玩家职业是 Berserk(狂战士) 还是 Assasins(刺客)
 			int Range = 0;
 			if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_BERSERK)	Range = m_pPlayer->AccUpgrade()->m_HammerRange*20;
-			else if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS) Range = 100;
+			else if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS) 
+			{
+				Range = 100;
+				if(m_InSpace)
+					SelfKnockback -= 0.5f;
+			}
 		
 			// reset objects Hit
 			m_NumObjectsHit = 0;
@@ -566,6 +592,8 @@ void CCharacter::FireWeapon()
 					Direction,
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime),
 					g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, Explode, 10, -1, WEAPON_GUN);
+			
+			SelfKnockback += 1.f;
 
 			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
@@ -609,6 +637,8 @@ void CCharacter::FireWeapon()
 					vec2(cosf(a), sinf(a))*Speed, 
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime*2), 20, Explode, 10, -1, WEAPON_SHOTGUN);
 				}
+
+				SelfKnockback += 0.2f;
 			}
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), -1);
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
@@ -657,6 +687,8 @@ void CCharacter::FireWeapon()
 						vec2(cosf(a), sinf(a))*Speed, 
 						(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime), 
 						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+
+					SelfKnockback += 1.f;
 				}
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), -1);
 			}
@@ -689,6 +721,8 @@ void CCharacter::FireWeapon()
 				a += Spreading[i + 20-ShotSpread/2];
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 20;
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
+
+				SelfKnockback += 0.5f;
 				
 				if(!Electro)
 					new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
@@ -751,6 +785,8 @@ void CCharacter::FireWeapon()
 			
 		m_ReloadTimer = g_pData->m_Weapons.m_aId[m_ActiveWeapon].m_Firedelay * Server()->TickSpeed() / ReloadTime;
 	}
+
+	m_Recoil -= Direction * SelfKnockback;
 }
 
 void CCharacter::SaturateVelocity(vec2 Force, float MaxSpeed)
@@ -996,6 +1032,17 @@ void CCharacter::Tick()
 			m_AntiPVP = false;
 			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITANTIPVP);
 		}
+
+		if(PlayerPos == ZONE_INSPACE && !m_InSpace) {
+			m_InSpace = true;
+			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 100, INSPACE);
+		}
+		
+		if(PlayerPos == ZONE_LEAVESPACE && m_InSpace){
+			m_InSpace = false;
+			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 101, 50, EXITSPACE);
+		}
+
 		// 防止机器人(Pig, Kwah, Boomer等怪物)进入 non-PvP 区域
 		if(PlayerPos == ZONE_PVP && m_pPlayer->IsBot() && m_pPlayer->GetBotType() != BOT_GUARD)
 		{
@@ -1049,7 +1096,7 @@ void CCharacter::Tick()
 		}
 	}
 	
-	if(!m_InWater && !IsGrounded() && (m_Core.m_HookState != HOOK_GRABBED || m_Core.m_HookedPlayer != -1))
+	if(!m_InWater && !m_InSpace && !IsGrounded() && (m_Core.m_HookState != HOOK_GRABBED || m_Core.m_HookedPlayer != -1))
 	{
 		m_InAirTick++;
 	}
@@ -1079,6 +1126,9 @@ void CCharacter::Tick()
 	UpdateTuningParam();
 
 	m_Core.m_Input = m_Input;
+	
+	m_Core.m_Vel += m_Recoil*0.7f;
+	m_Recoil *= 0.5f;
 	
 	CCharacterCore::CParams CoreTickParams(&m_pPlayer->m_NextTuningParams);
 	CoreTickParams.m_HookMode = m_HookMode;
@@ -1556,6 +1606,8 @@ int CCharacter::Unjail(int PlayerID) //手动救某人出监狱
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 {
+	m_Recoil += Force;
+
 	CPlayer *pFrom = GameServer()->m_apPlayers[From];
 	CCharacter *pChr = GameServer()->m_apPlayers[From]->GetCharacter();
 
@@ -2070,7 +2122,7 @@ void CCharacter::Snap(int SnappingClient)
 			else if(Server()->GetItemCount(m_pPlayer->GetCID(), AEVIL))
 				EmoteNormal = EMOTE_ANGRY;
 		}
-		if(m_InWater)
+		if(m_InWater || m_InSpace)
 			EmoteNormal = EMOTE_BLINK;
 	}
 

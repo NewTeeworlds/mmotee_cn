@@ -674,6 +674,12 @@ void CGameContext::SendBroadcast_LStat(int To, int Priority, int LifeSpan, int T
 	case INCREATEBOSS:
 		Server()->Localization()->Format_L(Buffer, pLanguage, _("你好{str:name}(*′▽｀)ノノ! 你现在可以在投票里挑战Boss了！"), "name", Server()->ClientName(To), NULL), Buffer.append("\n");
 		break;
+	case INSPACE:
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("你进入了太空，注意氧气消耗."), NULL), Buffer.append("\n");
+		break;
+	case EXITSPACE:
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("你离开了太空."), NULL), Buffer.append("\n");
+		break;
 	default:
 		Buffer.clear();
 	}
@@ -6370,6 +6376,21 @@ void CGameContext::RefreshDailyQuest(tm *pTime, bool Reset)
 	m_DailyQuest.m_RandomNumber = rand();
 	if(Reset)
 	{
+		for (int i = 0; i < MAX_PLAYERS; i++)
+		{
+			CPlayer *pP = m_apPlayers[i];
+			if(!pP || pP->IsBot())
+				continue;
+
+			Server()->RemItem(i, COLLECTQUEST, Server()->GetItemCount(i, COLLECTQUEST), -1);
+			Server()->RemItem(i, KILLQUEST, Server()->GetItemCount(i, KILLQUEST), -1);
+			Server()->RemItem(i, CHALLENGEQUEST, Server()->GetItemCount(i, CHALLENGEQUEST), -1);
+			Server()->SetItemSettingsCount(i, COLLECTQUEST, 0);
+			Server()->SetItemSettingsCount(i, KILLQUEST, 0);
+			Server()->SetItemSettingsCount(i, CHALLENGEQUEST, 0);
+
+			UpdateStats(i);
+		}
 		Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 159");
 		Server()->Execute("UPDATE tw_uItems SET item_count = 0,item_settings = 0 WHERE il_id = 164");
 		Server()->Execute("UPDATE tw_uItems SET item_count = 0,item_settings = 0 WHERE il_id = 165");
@@ -6393,7 +6414,7 @@ int CGameContext::GetDailyQuestItem(int Quest, int SubType)
 		case EDailyQuests::COLLECT1:
 		{
 			int Items[] = {POTATO, TOMATE, CARROT, CABBAGE};
-			return Items[RandomNumber%4];
+			return Items[(long long int)RandomNumber%4];
 		}
 
 		case EDailyQuests::COLLECT2:
@@ -6421,7 +6442,7 @@ int CGameContext::GetDailyQuestItem(int Quest, int SubType)
 	else if(Quest == EDailyQuests::QUESTTYPE2_KILL)
 	{
 		int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD};
-		return Items[(RandomNumber*17)%7];
+		return Items[((long long int)(RandomNumber/17))%7];
 	}
 	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
 	{
@@ -6448,7 +6469,7 @@ int CGameContext::GetDailyQuestItem(int Quest, int SubType)
 		case EDailyQuests::CHALLENGE4:
 		{
 			int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD, BOT_BOSSZOMBIE, BOT_BOSSSKELET};
-			return Items[(RandomNumber*18)%9];
+			return Items[((long long int)(RandomNumber/18))%9];
 		}
 
 		default:
@@ -6485,7 +6506,7 @@ int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
 	}
 	else if(Quest == EDailyQuests::QUESTTYPE2_KILL)
 	{
-		return (RandomNumber*17)%500+500;
+		return (((long long int)RandomNumber/2))%500+500;
 	}
 	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
 	{
@@ -6501,7 +6522,7 @@ int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
 			return (RandomNumber%23 + 8) * 10000000;
 
 		case EDailyQuests::CHALLENGE4:
-			return (RandomNumber%23 + 19) * 200;
+			return (RandomNumber%23 + 19) * 4000;
 
 		default:
 			break;

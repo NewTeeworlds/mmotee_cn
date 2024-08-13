@@ -280,7 +280,7 @@ void CPlayer::BasicAuthedTick()
 		AccData()->m_Exp -= AccData()->m_Level * GetNeedForUp();
 		AccData()->m_Level++;
 		AccUpgrade()->m_SkillPoint += 1;
-		GiveUpPoint(100);
+		GiveUpPoint(10);
 		needexp = AccData()->m_Level * GetNeedForUp();
 		int GetBag = Server()->GetItemCount(m_ClientID, AMULETCLEEVER) ? 20 : 1;
 		GameServer()->GiveItem(m_ClientID, MONEYBAG, GetBag);

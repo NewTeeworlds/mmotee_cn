@@ -68,6 +68,8 @@ enum
 	INCRAFT,
 	INQUEST,
 	EXITANTIPVP,
+	INSPACE,
+	EXITSPACE,
 	INCREATEBOSS,
 };
 
@@ -408,7 +410,7 @@ public:
 	struct DailyQuest
 	{
 		int m_LastHour;
-		int m_RandomNumber;
+		long long int m_RandomNumber;
 	} m_DailyQuest;
 
 	int GetDailyQuestItem(int Quest, int SubType);

@@ -198,6 +198,8 @@ private:
 	
 	vec2 m_SpawnPosition;
 
+	vec2 m_Recoil;
+
 public:
 	int m_PositionLockTick;
 	bool m_PositionLocked;
@@ -207,7 +209,7 @@ public:
 	int m_Poison;
 	int m_PoisonFrom;
 	int m_HookMode;
-	int m_InWater;
+	bool m_InWater;
 	int m_NinjaVelocityBuff;
 	int m_NinjaStrengthBuff;
 	int m_NinjaAmmoBuff;
@@ -216,6 +218,7 @@ public:
 	bool m_InWork;
 	bool m_InBoss;
 	bool m_InChangMap;
+	bool m_InSpace;
 
 public:
 	void DestroyChildEntities();
