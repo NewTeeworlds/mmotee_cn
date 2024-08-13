@@ -2463,6 +2463,18 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					ResetVotes(ClientID, CLMENU);
 					return;
 				}
+				else if (str_comp(aCmd, "sskillfunnel") == 0)
+				{
+					int Get = Server()->GetItemSettings(ClientID, SFUNNEL) + 1;
+					if (Get > 7)
+						Server()->SetItemSettingsCount(ClientID, SFUNNEL, 0);
+					else
+						Server()->SetItemSettingsCount(ClientID, SFUNNEL, Get);
+
+					UpdateStats(ClientID);
+					ResetVotes(ClientID, CLMENU);
+					return;
+				}
 				else if (str_comp(aCmd, "semote") == 0)
 				{
 					int Get = Server()->GetItemSettings(ClientID, MODULEEMOTE) + 1;
@@ -3191,7 +3203,14 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 		if (ItemID == FARMLEVEL || ItemID == MINEREXP || ItemID == LOADEREXP)
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[专长] {str:items}"), "items", Server()->GetItemName(ClientID, ItemID), NULL);
 		else if(ItemID == KILLQUEST || ItemID == CHALLENGEQUEST)
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:items}"), "items", Server()->GetItemName(ClientID, ItemID), NULL);
+		{
+			int Count = Server()->GetItemCount(ClientID, ItemID);
+			int Need = GetDailyQuestNeed((ItemID == KILLQUEST) ? EDailyQuests::QUESTTYPE2_KILL : EDailyQuests::QUESTTYPE3_CHALLENGE, (ItemID == KILLQUEST) ? 0 : EDailyQuests::CHALLENGE4);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:items}[{int:num}/{int:need}]"), 
+			"items", Server()->GetItemName(ClientID, ItemID), 
+			"num", &Count,
+			"need", &Need);
+		}
 		else
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 获得了 {str:items}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID), NULL);
 	}
@@ -4333,6 +4352,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "uskillsword", "☞ (20技能点) 光剑 ({str:act})", "act", Server()->GetItemCount(ClientID, SSWORD) ? "1 魔能(持续消耗) ✔" : "x");
 			SkillSettings(ClientID, SSWORD, "sskillsword");
 			SkillSettings(ClientID, SHEALSUMMER, "sskillsummer");
+			SkillSettings(ClientID, SFUNNEL, "sskillfunnel");
 			AddBack(ClientID);
 			return;
 		}

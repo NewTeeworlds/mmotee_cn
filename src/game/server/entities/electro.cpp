@@ -22,21 +22,8 @@ CElectro::CElectro(CGameWorld *pGameWorld, vec2 Start, vec2 End, vec2 Offset, in
 		
 		GameServer()->Collision()->IntersectLine(P, P+R+Offset, 0x0, &P);
 		
-		//P += vec2(frandom()-frandom(), frandom()-frandom())*42.0f;
-		//P += Offset;
-		
 		new CElectro(GameWorld(), Start, P, Offset * 0.5f, Left-1);
 		new CElectro(GameWorld(), P, End, Offset * 0.5f, Left-1);
-		
-		/*
-		float a = Angle + (frandom()-frandom()) * 1.11f;
-		float l = 40.0f;
-		
-		//vec2 P2 = vec2(sin(a) * l, cos(a) * l);
-		vec2 P2 = vec2(cosf(a), sinf(a)) * l;
-		
-		new CElectro(GameWorld(), P, P + P2, Angle, 0);
-		*/
 	}
 }
 

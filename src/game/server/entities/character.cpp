@@ -32,6 +32,8 @@
 #include "electro.h"
 #include "lightning.h"
 
+#include "doctor-funnel.h"
+
 //input count
 struct CInputCount
 {
@@ -2643,6 +2645,21 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 				}
 			}
 		}
+	}
+	else if(Server()->GetItemCount(ClientID, SFUNNEL) && Server()->GetItemSettings(ClientID, SFUNNEL) == Emtion)
+	{
+		for(auto *pFunnel = (CDoctorFunnel*) GameWorld()->FindFirst(ENTTYPE_FUNNEL); pFunnel; pFunnel = (CDoctorFunnel*) pFunnel->TypeNext())
+		{
+			if(pFunnel->GetOwner() == m_pPlayer->GetCID())
+			{
+				pFunnel->m_FunnelState++;
+				if (pFunnel->m_FunnelState >= CDoctorFunnel::NUM_STATE)
+					pFunnel->m_FunnelState = CDoctorFunnel::STATE_FOLLOW;
+				return;
+			}
+		}
+		new CDoctorFunnel(GameWorld(), m_Pos, m_pPlayer->GetCID());
+		GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 	}
 }
 

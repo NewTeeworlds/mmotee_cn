@@ -145,4 +145,8 @@ MACRO_CONFIG_INT(MtLabourDay, mt_labourday, 0, 0, 1, CFGFLAG_SERVER, "Labour day
 
 MACRO_CONFIG_STR(SvWarningPassword, sv_warning_password, 32, "", CFGFLAG_SERVER, "If someone use this password, fuck him off.")
 
+MACRO_CONFIG_INT(InfDoctorGrenadeLifeSpan, inf_doctor_grenade_life_span, 2, 0, 100, CFGFLAG_SERVER, "Doctor grenade life span")
+MACRO_CONFIG_INT(InfDoctorFunnelDamage, inf_doctor_funnel_damage, 1, -100, 100, CFGFLAG_SERVER, "Damage of funnel laser")
+MACRO_CONFIG_INT(InfDoctorMaxPowerBattery, inf_doctor_max_power_battery, 3000, -1, 10000, CFGFLAG_SERVER, "Max power battery of funnel(50 = 1s)")
+
 #endif
