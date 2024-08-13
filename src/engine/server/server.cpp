@@ -1317,7 +1317,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, bool Extended, int
 	p.AddString(GetMapName(), 32);
 
 	// gametype
-	p.AddString("MMOTee-Azataz-F", 16);
+	p.AddString(GameServer()->GameType(), 16);
 
 	// flags
 	int i = 0;

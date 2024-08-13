@@ -36,6 +36,9 @@ void CFeya::Reset()
 
 void CFeya::Snap(int SnappingClient)
 {	
+	if(NetworkClipped(SnappingClient))
+		return;
+
 	float AngleStart = (2.0f * pi * Server()->Tick()/static_cast<float>(Server()->TickSpeed()))/10.0f;
 	float AngleStep = (2.0f * pi / CFeya::NUM_SIDE);
 	float R = 10.0f;
