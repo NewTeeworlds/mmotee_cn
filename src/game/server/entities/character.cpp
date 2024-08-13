@@ -1917,7 +1917,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(FORMULAEARRINGS, 1, 90, i, Force/(35+randforce));
 							CreateDropRandom(FORMULAWEAPON, 1, 90, i, Force/(40+randforce));
 							CreateDropRandom(RANDOMCRAFTITEM, 1, 15, i, Force/(45+randforce));
-							GameServer()->m_apPlayers[From]->GiveUpPoint(int(100/BossCount));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(20/BossCount));
 							GameServer()->UpdateStats(From);
 							break;
 						
