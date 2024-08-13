@@ -1881,7 +1881,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			{
 				if(m_pPlayer->m_BigBot)
 				{
-					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(20,40));
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(1,5));
 					GameServer()->UpdateStats(From);
 				}
 				if(random_prob(1.0f/80))
@@ -1944,7 +1944,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(GUARDHEAD, 5, false, i, Force/(35+randforce));
 							CreateDropRandom(DIRTYGUARDHEAD, 10, false, i, Force/(35+randforce)	);
 							CreateDropRandom(GUARDHAMFRAG, random_int(1, 4), 25, i, Force/(12+randforce));
-							GameServer()->m_apPlayers[From]->GiveUpPoint(int(20/BossCount));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
 							GameServer()->UpdateStats(From);
 							break;
 

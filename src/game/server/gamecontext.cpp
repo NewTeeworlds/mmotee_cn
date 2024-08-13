@@ -6015,8 +6015,8 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 		}
 		else if (ItemID == SKILLUPBOX)
 		{
-			m_apPlayers[ClientID]->GiveUpPoint(10 * Count);
-			m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint += 10 * Count;
+			m_apPlayers[ClientID]->GiveUpPoint(50 * Count);
+			m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint += 50 * Count;
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你使用了物品:{str:items}x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
 			UpdateUpgrades(ClientID);
 		}
