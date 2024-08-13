@@ -3213,10 +3213,11 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 				"num", &Count,
 				"need", &Need);
 			
-			if(Count >= Need)
+			if(Count == Need)
 			{
 				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, (ItemID == KILLQUEST) ? _("[每日任务] 击杀任务已完成！") : _("[每日任务] 挑战任务已完成！"));
-				CreateSoundGlobal(SOUND_CTF_CAPTURE, ClientID);
+				if(m_apPlayers[ClientID]->GetCharacter())
+					CreateSound(m_apPlayers[ClientID]->GetCharacter()->m_Pos, SOUND_CTF_CAPTURE);
 			}
 		}
 		else
