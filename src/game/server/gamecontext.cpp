@@ -4232,6 +4232,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			CreateNewShop(ClientID, RINGNOSELFDMG, 1, 0, 0);
 			CreateNewShop(ClientID, CUSTOMCOLOR, 1, 0, 0);
 			EyeEmoteSettings(ClientID, MODULEEMOTE, "semote");
+			SkillSettings(ClientID, SFUNNEL, "sskillfunnel");
 			AddVote("", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "锤子"));
 			CreateNewShop(ClientID, HAMMERAUTO, 1, 0, 0);
@@ -4353,7 +4354,6 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "uskillsword", "☞ (20技能点) 光剑 ({str:act})", "act", Server()->GetItemCount(ClientID, SSWORD) ? "1 魔能(持续消耗) ✔" : "x");
 			SkillSettings(ClientID, SSWORD, "sskillsword");
 			SkillSettings(ClientID, SHEALSUMMER, "sskillsummer");
-			SkillSettings(ClientID, SFUNNEL, "sskillfunnel");
 			AddBack(ClientID);
 			return;
 		}

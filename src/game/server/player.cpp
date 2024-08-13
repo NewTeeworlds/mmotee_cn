@@ -1261,7 +1261,7 @@ const char *CPlayer::TitleGot()
 		case 8:
 			return "神级VIP8";
 		case 9:
-			return "VIP180";
+			return "180元";
 		default:
 			return "#人上人#";
 		}

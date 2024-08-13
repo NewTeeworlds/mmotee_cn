@@ -2662,6 +2662,11 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 	}
 	else if(Server()->GetItemCount(ClientID, SFUNNEL) && Server()->GetItemSettings(ClientID, SFUNNEL) == Emtion)
 	{
+		if(m_pPlayer->m_Mana < 200)
+			return GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你的魔能不足.(200点)"), NULL);
+
+		m_pPlayer->m_Mana -= 200;
+
 		for(auto *pFunnel = (CDoctorFunnel*) GameWorld()->FindFirst(ENTTYPE_FUNNEL); pFunnel; pFunnel = (CDoctorFunnel*) pFunnel->TypeNext())
 		{
 			if(pFunnel->GetOwner() == m_pPlayer->GetCID())
