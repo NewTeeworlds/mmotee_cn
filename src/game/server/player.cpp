@@ -1052,7 +1052,7 @@ void CPlayer::TryRespawn()
 
 			m_BigBot = true;
 
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 2)*(GameServer()->GetBossLeveling()/GameServer()->GetBossCount());
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 2)*(GameServer()->GetBossLeveling());
 			AccUpgrade()->m_Damage = 100*GameServer()->GetBossLeveling();
 			break;
 		case BOT_BOSSVAMPIRE:
@@ -1061,14 +1061,14 @@ void CPlayer::TryRespawn()
 
 			m_BigBot = true;
 
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 2)*(GameServer()->GetBossLeveling()/GameServer()->GetBossCount());
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 2)*(GameServer()->GetBossLeveling());
 			AccUpgrade()->m_Damage = 200*GameServer()->GetBossLeveling();
 			break;
 		case BOT_BOSSPIGKING:
 			m_pCharacter = new (AllocMemoryCell) CBossPig(&GameServer()->m_World);
 			AccData()->m_Level = 200 + random_int(3, 13);
 			
-			AccUpgrade()->m_Damage = (GameServer()->GetBossLeveling()/GameServer()->GetBossCount())*10;
+			AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*10;
 			m_BigBot = true;
 			break;
 		case BOT_BOSSGUARD:
@@ -1082,8 +1082,8 @@ void CPlayer::TryRespawn()
 		case BOT_BOSSSKELET:
 			m_pCharacter = new (AllocMemoryCell) CBossZS(&GameServer()->m_World);
 			AccData()->m_Level = 1000 + random_int(0, 1000);
-			AccUpgrade()->m_Damage = (GameServer()->GetBossLeveling()/GameServer()->GetBossCount())*20;
-			AccUpgrade()->m_Health = (GameServer()->GetBossLeveling()/GameServer()->GetBossCount())*25;
+			AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*20;
+			AccUpgrade()->m_Health = GameServer()->GetBossLeveling()*25;
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:
