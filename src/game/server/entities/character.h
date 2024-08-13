@@ -169,6 +169,8 @@ public:
 		m_Core.m_Vel /= 1.5f;
 	}
 
+	bool m_SummonByBoss;
+
 private:
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From

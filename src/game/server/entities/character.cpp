@@ -91,6 +91,8 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_NinjaVelocityBuff = 0;
 	m_NinjaStrengthBuff = 0;
 	m_NinjaAmmoBuff = 0;
+
+	m_SummonByBoss = false;
 }
 
 bool CCharacter::FindPortalPosition(vec2 Pos, vec2& Res)
@@ -958,7 +960,7 @@ void CCharacter::Tick()
 			case BOT_BOSSZOMBIE:
 			case BOT_BOSSSKELET:
 				m_Health += 10+GameServer()->GetBossLeveling()*1500;
-				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling();
+				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling()/GameServer()->GetBossCount();
 				break;
 
 			default:
@@ -1364,6 +1366,17 @@ void CCharacter::Die(int Killer, int Weapon)
 			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Boss {str:bossn} 被{int:cwin}个玩家击败."), "bossn", GameServer()->GetBotName(GameServer()->m_BossType), "cwin", &CountWin, NULL);			
 			
 			GameServer()->m_WinWaitBoss = 1000;
+
+			for (int i = MAX_PLAYERS; i < MAX_CLAN_LENGTH; i++)
+			{
+				CPlayer *pP = GameServer()->m_apPlayers[i];
+				if(!pP || !pP->GetCharacter())
+					continue;
+
+				if(pP->IsBot() && pP->GetBotType() == BOT_L2MONSTER && pP->GetCharacter()->m_SummonByBoss)
+					pP->GetCharacter()->Die_Bot();
+			}
+			
 		}
 		
 		// 如果玩家死了，就会离开boss房间
@@ -1458,7 +1471,8 @@ void CCharacter::Die_Bot() //机器人(如 Pig)因为进入 non-PvP 区域而判
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
 	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 	
-
+	if(m_SummonByBoss)
+		GameServer()->m_BossSummonNum--;
 }
 
 
@@ -2327,7 +2341,7 @@ void CCharacter::ClassSpawnAttributes()
 
 				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GUN, 15);
 				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GUN, 1000);
-				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 500);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 5000);
 	
 				GiveWeapon(WEAPON_HAMMER, 10000);
 				GiveWeapon(WEAPON_GUN, 15);
@@ -2345,7 +2359,7 @@ void CCharacter::ClassSpawnAttributes()
 			case BOT_BOSSSKELET:
 				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 99999);
 				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 10);
-				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 40000);
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 3000);
 
 				GiveWeapon(WEAPON_RIFLE, -1);
 				break;

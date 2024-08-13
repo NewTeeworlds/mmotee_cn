@@ -25,6 +25,7 @@ CBossZS::CBossZS(CGameWorld *pWorld)
 	m_BotTimeLastSound = Server()->Tick();
 	m_BotTimeLastChat = Server()->Tick();
 	m_BotJumpTry = false;
+	m_SummonTick = 0;
 }
 
 void CBossZS::Tick()
@@ -36,7 +37,7 @@ void CBossZS::Tick()
 bool CBossZS::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {		
 	if (CCharacter::TakeDamage(Force, Dmg, From, Weapon, 0))
-	{		
+	{
 		m_BotTimeLastDamage = Server()->Tick();
 		return true;
 	}
@@ -239,4 +240,33 @@ void CBossZS::TickBotAI()
 	m_LatestPrevInput = m_LatestInput;
 	m_LatestInput = m_Input;
 	m_BotLastPos = m_Pos;
+
+	if(m_SummonTick <= 0)
+	{
+		if(GameServer()->m_BossSummonNum >= 6)
+			return;
+
+		for (int i = MAX_PLAYERS; i < MAX_CLIENTS; i++)
+		{
+			CPlayer *pPlayer = GameServer()->m_apPlayers[i];
+			if (!pPlayer || !pPlayer->GetCharacter())
+				continue;
+
+			// 如果是Kwah，就把它召唤到Boss战场地
+			if (pPlayer->IsBot() && random_prob(0.5f) && !pPlayer->GetCharacter()->m_SummonByBoss && pPlayer->GetBotType() == BOT_L2MONSTER)
+			{
+				GameServer()->m_BossSummonNum++;
+				pPlayer->GetCharacter()->m_SummonByBoss = true;
+				pPlayer->GetCharacter()->m_Core.m_Pos = m_Pos;
+				pPlayer->GetCharacter()->m_Core.m_Pos.y += 24;
+				pPlayer->GetCharacter()->m_LockBotPos = m_Pos;
+				continue;
+			}
+		}
+		// 在5-20秒后再次召唤
+		m_SummonTick = random_int(5, 20)*Server()->TickSpeed(); 
+	}
+	m_SummonTick--;
+	if(IsFrozen())
+		m_SummonTick -= 2;
 }

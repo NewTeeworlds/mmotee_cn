@@ -49,6 +49,7 @@ void CGameContext::Construct(int Resetting)
 	m_BossStartTick = 0;
 	m_WinWaitBoss = 0;
 	m_ChatResponseTargetID = -1;
+	m_BossSummonNum = 0;
 }
 
 CGameContext::CGameContext(int Resetting)

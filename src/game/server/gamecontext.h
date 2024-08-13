@@ -416,6 +416,8 @@ public:
 	int GetDailyQuestUpgr(int Quest, int SubType);
 	int GetDailyID();
 	
+	int m_BossSummonNum;
+
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState

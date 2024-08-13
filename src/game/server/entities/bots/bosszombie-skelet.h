@@ -36,6 +36,7 @@ private:
     float m_BotTimeLastDamage;
     float m_BotTimeLastSound;
     bool m_BotJumpTry;
+    int m_SummonTick;
 
 	void TickBotAI();
 	//void PlaySound();
