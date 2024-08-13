@@ -305,7 +305,7 @@
 			"value": "[ZONE]PVP Disabled."
 		},
 		{
-			"key": "地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽",
+			"key": "地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽, 王小睿",
 			"value": "Map edit：天际, 卖鱼强, Ninecloud, Flower\nDevelopers: 天上的星星, Flower, Ninecloud\nServer Admins: Flower, 籽抽"
 		},
 		{
@@ -313,7 +313,7 @@
 			"value": "You're not the owner or you don't have enough money."
 		},
 		{
-			"key": "武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 20% - 守卫锤子碎片",
+			"key": "武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 4% - 守卫锤子碎片",
 			"value": "Weapon:Hammer  Fire Speed:♾\nBonus:\n- MoneyBag x500-1000\n- PigMeet\n- 20% - Guard Hammer Frag"
 		},
 		{

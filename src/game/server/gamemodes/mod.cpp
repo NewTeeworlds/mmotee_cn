@@ -18,7 +18,7 @@
 CGameControllerMOD::CGameControllerMOD(class CGameContext *pGameServer)
 : IGameController(pGameServer)
 {
-	m_pGameType = "MMOTee-Azataz-F";
+	m_pGameType = "MMOTee-fAzataz";
 	m_pHeroFlag = 0;
 }
 

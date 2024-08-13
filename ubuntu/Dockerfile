@@ -4,7 +4,7 @@ RUN sed -i 's/\(archive\|security\).ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /
 #RUN sed -i 's|security.debian.org/debian-security|mirrors.ustc.edu.cn/debian-security|g' /etc/apt/sources.list
 RUN apt update -y && apt install vim curl mariadb-client libmysqlcppconn-dev libicu-dev gcc g++ pkg-config libssl-dev python build-essential -y
 #RUN apt install wget unzip -y 
-RUN git clone --depth=1 https://hub.fastgit.org/phone-burner/mmotee_cn
+RUN git clone --depth=1 https://github.com/NewTeeworlds/mmotee_cn
 RUN cd mmotee_cn
 RUN mkdir build && cd build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Debug

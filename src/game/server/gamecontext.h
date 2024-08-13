@@ -102,7 +102,7 @@ enum
 	HMAXSPREAD = 30,
 };
 
-enum
+enum EMainQuestNeed
 {
 	QUEST1 = 20,
 	QUEST2 = 40,
@@ -110,7 +110,44 @@ enum
 	QUEST4 = 80,
 	QUEST5 = 100,
 	QUEST6 = 120,
-	QUEST7 = 3,
+	QUEST7 = 50,
+	QUEST8 = 50,
+	QUEST9 = 50,
+};
+
+enum EMainQuests
+{
+	START_MAIN_QUEST = 0,
+	QUEST1_PIGGY1,
+	QUEST2_PIGGY2,
+	QUEST3_KWAH1,
+	QUEST4_KWAH2,
+	QUEST5_PIGGYNKWAHSTEP1,
+	QUEST6_KWAHSTEP1,
+	QUEST7_BADGUARD,
+	QUEST8_ZOMBIE,
+	QUEST8_SKELET,
+	END_MAIN_QUEST,
+
+	NUM_MAIN_QUEST = END_MAIN_QUEST - START_MAIN_QUEST - 1,
+};
+
+enum EDailyQuests
+{
+	QUESTTYPE1_COLLECT = 0,
+	QUESTTYPE2_KILL,
+	QUESTTYPE3_CHALLENGE,
+	NUM_DAILY_QUEST,
+
+	COLLECT1 = 0,
+	COLLECT2,
+	COLLECT3,
+	COLLECT4,
+
+	CHALLENGE1 = 0,
+	CHALLENGE2,
+	CHALLENGE3,
+	CHALLENGE4,
 };
 
 enum
@@ -258,7 +295,7 @@ public:
 	int GetBossCount();
 	int GetBossLeveling();
 	int GetAreaCount();
-	const char *GetBossName(int BossType);
+	const char *GetBotName(int BotType);
 	int m_WinWaitBoss;
 	int m_BossStartTick;
 	bool m_BossStart;
@@ -363,6 +400,24 @@ public:
 	virtual void SyncPlayer(int ClientID, class CPlayer *pPlayer);
 
 	int m_CityStart;
+
+	tm *GetRealTime();
+	void DailyQuestTick();
+	void RefreshDailyQuest(tm *pTime, bool Reset = false);
+
+	struct DailyQuest
+	{
+		int m_LastHour;
+		int m_RandomNumber;
+	} m_DailyQuest;
+
+	int GetDailyQuestItem(int Quest, int SubType);
+	int GetDailyQuestNeed(int Quest, int SubType);
+	int GetDailyQuestUpgr(int Quest, int SubType);
+	int GetDailyID();
+	
+	int m_BossSummonNum;
+
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState

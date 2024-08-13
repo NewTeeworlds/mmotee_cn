@@ -4,10 +4,10 @@
 struct SAccData
 {
     int m_Level;
-    unsigned long int m_Exp;
+    unsigned long long m_Exp;
     int m_Class = 0;
-    int m_Money;
-    unsigned long int m_Gold;
+    unsigned long long m_Money;
+    unsigned long long m_Gold;
     int m_Donate;
     unsigned long int m_ClanAdded;
     int m_Quest;

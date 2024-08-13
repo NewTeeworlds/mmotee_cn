@@ -18,6 +18,8 @@
 
 #include "playerdata.h"
 
+#include <ctime>
+
 enum
 {
 	RESET,
@@ -47,6 +49,7 @@ void CGameContext::Construct(int Resetting)
 	m_BossStartTick = 0;
 	m_WinWaitBoss = 0;
 	m_ChatResponseTargetID = -1;
+	m_BossSummonNum = 0;
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -373,47 +376,57 @@ void CGameContext::AddVoteMenu_Localization(int To, int MenuID, int Type, const 
 			Buffer.clear();
 			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), pText, VarArgs);
 
-			if (Type == MENUONLY)
+			switch (Type)
 			{
-				char Buf[8];
-				str_format(Buf, sizeof(Buf), "menu%d", MenuID);
-				AddVote(Buffer.buffer(), Buf, i);
-			}
-			else if (Type == SETTINGSONLY)
-			{
-				char Buf[8];
-				str_format(Buf, sizeof(Buf), "set%d", MenuID);
-				AddVote(Buffer.buffer(), Buf, i);
-			}
-			else if (Type == BUYITEMONLY)
-			{
-				char Buf[8];
-				str_format(Buf, sizeof(Buf), "bon%d", MenuID);
-				AddVote(Buffer.buffer(), Buf, i);
-			}
-			else if (Type == SELLITEMWORK)
-			{
-				char Buf[8];
-				str_format(Buf, sizeof(Buf), "seli%d", MenuID);
-				AddVote(Buffer.buffer(), Buf, i);
-			}
-			else if (Type == CRAFTONLY)
-			{
-				char Buf[8];
-				str_format(Buf, sizeof(Buf), "cra%d", MenuID);
-				AddVote(Buffer.buffer(), Buf, i);
-			}
-			else if (Type == CREATEBOSSONLY)
-			{
-				char Buf[8];
-				str_format(Buf, sizeof(Buf), "cb%d", MenuID);
-				AddVote(Buffer.buffer(), Buf, i);
-			}
-			else if (Type == CREATEBOSSSOLO)
-			{
-				char Buf[8];
-				str_format(Buf, sizeof(Buf), "cbs%d", MenuID);
-				AddVote(Buffer.buffer(), Buf, i);
+				case MENUONLY:
+				{
+					char Buf[8];
+					str_format(Buf, sizeof(Buf), "menu%d", MenuID);
+					AddVote(Buffer.buffer(), Buf, i);
+				}
+				break;
+				case SETTINGSONLY:
+				{
+					char Buf[8];
+					str_format(Buf, sizeof(Buf), "set%d", MenuID);
+					AddVote(Buffer.buffer(), Buf, i);
+				}
+				break;
+				case BUYITEMONLY:
+				{
+					char Buf[8];
+					str_format(Buf, sizeof(Buf), "bon%d", MenuID);
+					AddVote(Buffer.buffer(), Buf, i);
+				}
+				break;
+				case SELLITEMWORK:
+				{
+					char Buf[8];
+					str_format(Buf, sizeof(Buf), "seli%d", MenuID);
+					AddVote(Buffer.buffer(), Buf, i);
+				}
+				break;
+				case CRAFTONLY:
+				{
+					char Buf[8];
+					str_format(Buf, sizeof(Buf), "cra%d", MenuID);
+					AddVote(Buffer.buffer(), Buf, i);
+				}
+				break;
+				case CREATEBOSSONLY:
+				{
+					char Buf[8];
+					str_format(Buf, sizeof(Buf), "cb%d", MenuID);
+					AddVote(Buffer.buffer(), Buf, i);
+				}
+				break;
+				case CREATEBOSSSOLO:
+				{
+					char Buf[8];
+					str_format(Buf, sizeof(Buf), "cbs%d", MenuID);
+					AddVote(Buffer.buffer(), Buf, i);
+				}
+				break;
 			}
 		}
 	}
@@ -519,7 +532,17 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 
 	case BOT_BOSSGUARD:
 		arghealth = 1250;
-		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 20% - 守卫锤子碎片"), NULL);
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 4% - 守卫锤子碎片"), NULL);
+		break;
+
+	case BOT_BOSSZOMBIE:
+		arghealth = 2000;
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:激光 射速:快\n奖励:\n- 钱袋 x50-100\n- 僵尸的眼睛 x3-5"), NULL);
+		break;
+	
+	case BOT_BOSSSKELET:
+		arghealth = 2000;
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("武器:激光 射速:快\n奖励:\n- 钱袋 x100-200\n- 骷髅的骨头 x3-5\n- 4% - 骷髅的头骨x1"), NULL);
 		break;
 
 	default:
@@ -528,7 +551,7 @@ void CGameContext::SendGuide(int ClientID, int BossType)
 
 	int Time = m_BossStartTick / Server()->TickSpeed();
 	SendMOTD_Localization(ClientID, "Boss:{str:name}\n生命值:玩家等级*{int:hp}\n{str:guide}\n\n等待玩家进入Boss战，还剩下 {int:siska} 秒.",
-						  "name", GetBossName(m_BossType), "hp", &arghealth, "guide", Buffer.buffer(), "siska", &Time);
+						  "name", GetBotName(m_BossType), "hp", &arghealth, "guide", Buffer.buffer(), "siska", &Time);
 
 	Buffer.clear();
 }
@@ -705,10 +728,10 @@ void CGameContext::SendBroadcast_LBossed(int To, int Priority, int LifeSpan)
 		int getl = (int)getlv;
 
 		SendBroadcast_Localization(To, Priority, LifeSpan, _("{str:sdata}\n({int:getl}%)\nBoss: {str:name} 生命值: {int:hp}/{int:hpstart}\n我的生命值 {int:yhp}/{int:yhps}"),
-								   "sdata", LevelString(100, (int)getlv, 5, ':', ' '), "getl", &getl, "name", GetBossName(m_BossType), "hp", &Optexp, "hpstart", &Optmem, "yhp", &m_apPlayers[To]->m_Health, "yhps", &m_apPlayers[To]->m_HealthStart, NULL);
+								   "sdata", LevelString(100, (int)getlv, 5, ':', ' '), "getl", &getl, "name", GetBotName(m_BossType), "hp", &Optexp, "hpstart", &Optmem, "yhp", &m_apPlayers[To]->m_Health, "yhps", &m_apPlayers[To]->m_HealthStart, NULL);
 	}
 	else
-		SendBroadcast_Localization(To, Priority, LifeSpan, _("太棒了! 玩家最终取得了胜利! Boss {str:name} 已经倒下!"), "name", GetBossName(m_BossType), NULL);
+		SendBroadcast_Localization(To, Priority, LifeSpan, _("太棒了! 玩家最终取得了胜利! Boss {str:name} 已经倒下!"), "name", GetBotName(m_BossType), NULL);
 }
 
 void CGameContext::SendBroadcast_Localization_P(int To, int Priority, int LifeSpan, int Number, const char *pText, ...)
@@ -860,7 +883,7 @@ void CGameContext::BossTick()
 		m_BossStartTick = 0;
 		m_BossStart = false;
 
-		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("Boss战的玩家都死亡了, boss {str:name} 最终胜利了"), "name", GetBossName(m_BossType), NULL);
+		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, _("Boss战的玩家都死亡了, boss {str:name} 最终胜利了"), "name", GetBotName(m_BossType), NULL);
 
 		m_BossType = 0;
 		DeleteBotBoss();
@@ -1077,17 +1100,7 @@ void CGameContext::OnTick()
 	AreaTick();
 	BossTick();
 
-#ifdef CONF_DEBUG
-	if (g_Config.m_DbgDummies)
-	{
-		for (int i = 0; i < g_Config.m_DbgDummies; i++)
-		{
-			CNetObj_PlayerInput Input = {0};
-			Input.m_Direction = (i & 1) ? -1 : 1;
-			m_apPlayers[MAX_CLIENTS - i - 1]->OnPredictedInput(&Input);
-		}
-	}
-#endif
+	DailyQuestTick();
 }
 
 // Server hooks
@@ -1291,6 +1304,11 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			{
 				PrivateMessage(pMsg->m_pMessage + 3, ClientID, (Team != CGameContext::CHAT_ALL));
 			}
+			else if (!strncmp(pMsg->m_pMessage, "、", 2) || !strncmp(pMsg->m_pMessage, "\\", 2))
+			{
+				pPlayer->m_pChatCmd->LastChat();
+				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("# 为防止错误输入导致的账号密码泄露，系统已禁止聊天内容以“、”, “\\”开头"), NULL);
+			}
 			else if (pMsg->m_pMessage[0] == '/')
 				pPlayer->m_pChatCmd->ChatCmd(pMsg);
 			else
@@ -1357,7 +1375,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					Buffer.append("\n\n");
 					Server()->Localization()->Format_L(Buffer, pLanguage, _("主要制作人员:\n原作者们:Najvlad, Rem1x, Matodor, Kurosio"), NULL);
 					Buffer.append("\n\n");
-					Server()->Localization()->Format_L(Buffer, pLanguage, _("地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽"), NULL);
+					Server()->Localization()->Format_L(Buffer, pLanguage, _("地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽, 王小睿"), NULL);
 					Buffer.append("\n\n");
 
 					SendMOTD(ClientID, Buffer.buffer());
@@ -1611,7 +1629,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					if (pReason[0] && isdigit(pReason[0]))
 						Get = atoi(pReason);
 
-					if (m_apPlayers[ClientID]->AccData()->m_Gold < Get)
+					if (m_apPlayers[ClientID]->AccData()->m_Gold < (unsigned long)Get)
 						Get = m_apPlayers[ClientID]->AccData()->m_Gold;
 
 					if (Get < 1 || Get > 100000000)
@@ -1639,107 +1657,211 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				// FFS注：此处俄语为 任务相关函数
 				else if (str_comp(aCmd, "passquest") == 0)
 				{
-					if (m_apPlayers[ClientID]->AccData()->m_Quest == 1)
+					switch (m_apPlayers[ClientID]->AccData()->m_Quest)
 					{
-						if (Server()->GetItemCount(ClientID, PIGPORNO) < QUEST1)
-							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
-						else
+						case EMainQuests::QUEST1_PIGGY1:
 						{
-							m_apPlayers[ClientID]->ExpAdd(4000);
-							m_apPlayers[ClientID]->MoneyAdd(200000);
-							m_apPlayers[ClientID]->AccData()->m_Quest++;
-							Server()->RemItem(ClientID, 2, QUEST1, -1);
-							UpdateStats(ClientID);
+							if (Server()->GetItemCount(ClientID, PIGPORNO) < EMainQuestNeed::QUEST1)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->ExpAdd(4000);
+								m_apPlayers[ClientID]->MoneyAdd(200000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, 2, EMainQuestNeed::QUEST1, -1);
+								UpdateStats(ClientID);
+							}
 						}
-					}
+						break;
 
-					if (m_apPlayers[ClientID]->AccData()->m_Quest == 2)
-					{
-						if (Server()->GetItemCount(ClientID, PIGPORNO) < QUEST2)
-							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
-						else
+						case EMainQuests::QUEST2_PIGGY2:
 						{
-							m_apPlayers[ClientID]->ExpAdd(4000);
-							m_apPlayers[ClientID]->MoneyAdd(250000);
-							m_apPlayers[ClientID]->AccData()->m_Quest++;
-							Server()->RemItem(ClientID, 2, QUEST2, -1);
-							UpdateStats(ClientID);
+							if (Server()->GetItemCount(ClientID, PIGPORNO) < EMainQuestNeed::QUEST2)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->ExpAdd(4000);
+								m_apPlayers[ClientID]->MoneyAdd(250000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, 2, EMainQuestNeed::QUEST2, -1);
+								UpdateStats(ClientID);
+							}
 						}
-					}
+						break;
 
-					else if (m_apPlayers[ClientID]->AccData()->m_Quest == 3)
-					{
-						if (Server()->GetItemCount(ClientID, KWAHGANDON) < QUEST3)
-							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
-						else
+						case EMainQuests::QUEST3_KWAH1:
 						{
-							m_apPlayers[ClientID]->ExpAdd(8000);
-							m_apPlayers[ClientID]->MoneyAdd(500000);
-							m_apPlayers[ClientID]->AccData()->m_Quest++;
-							Server()->RemItem(ClientID, 3, QUEST3, -1);
-							UpdateStats(ClientID);
+							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST3)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->ExpAdd(8000);
+								m_apPlayers[ClientID]->MoneyAdd(500000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, 3, EMainQuestNeed::QUEST3, -1);
+								UpdateStats(ClientID);
+							}
 						}
-					}
+						break;
 
-					else if (m_apPlayers[ClientID]->AccData()->m_Quest == 4)
-					{
-						if (Server()->GetItemCount(ClientID, KWAHGANDON) < QUEST4)
-							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
-						else
+						case EMainQuests::QUEST4_KWAH2:
 						{
-							m_apPlayers[ClientID]->ExpAdd(8000);
-							m_apPlayers[ClientID]->MoneyAdd(550000);
-							m_apPlayers[ClientID]->AccData()->m_Quest++;
-							Server()->RemItem(ClientID, 3, QUEST4, -1);
-							UpdateStats(ClientID);
+							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST4)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->ExpAdd(8000);
+								m_apPlayers[ClientID]->MoneyAdd(550000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, 3, EMainQuestNeed::QUEST4, -1);
+								UpdateStats(ClientID);
+							}
 						}
-					}
+						break;
 
-					else if (m_apPlayers[ClientID]->AccData()->m_Quest == 5)
-					{
-						if (Server()->GetItemCount(ClientID, KWAHGANDON) < QUEST5 || Server()->GetItemCount(ClientID, PIGPORNO) < QUEST3)
-							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
-						else
+						case EMainQuests::QUEST5_PIGGYNKWAHSTEP1:
 						{
-							m_apPlayers[ClientID]->MoneyAdd(1000000);
-							m_apPlayers[ClientID]->AccData()->m_Quest++;
-							Server()->RemItem(ClientID, KWAHGANDON, QUEST5, -1);
-							Server()->RemItem(ClientID, PIGPORNO, QUEST5, -1);
-							SendMail(ClientID, 2, EARRINGSKWAH, 1);
-							UpdateStats(ClientID);
+							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST5 || Server()->GetItemCount(ClientID, PIGPORNO) < EMainQuestNeed::QUEST3)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->MoneyAdd(1000000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, KWAHGANDON, EMainQuestNeed::QUEST5, -1);
+								Server()->RemItem(ClientID, PIGPORNO, EMainQuestNeed::QUEST5, -1);
+								SendMail(ClientID, 2, EARRINGSKWAH, 1);
+								UpdateStats(ClientID);
+							}
 						}
-					}
-					else if (m_apPlayers[ClientID]->AccData()->m_Quest == 6)
-					{
-						if (Server()->GetItemCount(ClientID, KWAHGANDON) < QUEST6 || Server()->GetItemCount(ClientID, FOOTKWAH) < QUEST6)
-							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
-						else
+						break;
+
+						case EMainQuests::QUEST6_KWAHSTEP1:
 						{
-							m_apPlayers[ClientID]->MoneyAdd(1050000);
-							m_apPlayers[ClientID]->AccData()->m_Quest++;
-							Server()->RemItem(ClientID, KWAHGANDON, QUEST6, -1);
-							Server()->RemItem(ClientID, FOOTKWAH, QUEST6, -1);
-							SendMail(ClientID, 2, FORMULAWEAPON, 1);
-							SendMail(ClientID, 3, TITLEQUESTS, 1);
-							UpdateStats(ClientID);
+							if (Server()->GetItemCount(ClientID, KWAHGANDON) < EMainQuestNeed::QUEST6 || Server()->GetItemCount(ClientID, FOOTKWAH) < EMainQuestNeed::QUEST6)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->MoneyAdd(1050000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, KWAHGANDON, EMainQuestNeed::QUEST6, -1);
+								Server()->RemItem(ClientID, FOOTKWAH, EMainQuestNeed::QUEST6, -1);
+								SendMail(ClientID, 2, FORMULAWEAPON, 1);
+								SendMail(ClientID, 3, TITLEQUESTS, 1);
+								UpdateStats(ClientID);
+							}
 						}
-					}
-					else if (m_apPlayers[ClientID]->AccData()->m_Quest == 7)
-					{
-						if (Server()->GetItemCount(ClientID, GUARDHEAD) < QUEST7)
-							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
-						else
+						break;
+
+						case EMainQuests::QUEST7_BADGUARD:
 						{
-							m_apPlayers[ClientID]->MoneyAdd(5550000);
-							m_apPlayers[ClientID]->AccData()->m_Quest++;
-							Server()->RemItem(ClientID, GUARDHEAD, QUEST7, -1);
-							SendMail(ClientID, 2, TITLEGUARD, 1);
-							UpdateStats(ClientID);
+							if (Server()->GetItemCount(ClientID, GUARDHEAD) < EMainQuestNeed::QUEST7)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->MoneyAdd(5550000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, GUARDHEAD, EMainQuestNeed::QUEST7, -1);
+								SendMail(ClientID, 2, TITLEGUARD, 1);
+								UpdateStats(ClientID);
+							}
 						}
+						break;
+
+						case EMainQuests::QUEST8_ZOMBIE:
+						{
+							if (Server()->GetItemCount(ClientID, ZOMBIEBRAIN) < EMainQuestNeed::QUEST8)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->GiveUpPoint(500);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, ZOMBIEBRAIN, EMainQuestNeed::QUEST8, -1);
+								UpdateStats(ClientID);
+							}
+						}
+						break;
+
+						case EMainQuests::QUEST8_SKELET:
+						{
+							if (Server()->GetItemCount(ClientID, SKELETSKULL) < EMainQuestNeed::QUEST9)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+							{
+								m_apPlayers[ClientID]->GiveUpPoint(3000);
+								m_apPlayers[ClientID]->AccData()->m_Quest++;
+								Server()->RemItem(ClientID, SKELETSKULL, EMainQuestNeed::QUEST9, -1);
+								UpdateStats(ClientID);
+							}
+						}
+						break;
+
+						default:
+							break;
 					}
-					ResetVotes(ClientID, QUEST);
+					ResetVotes(ClientID, MAINQUEST);
 
 					return;
+				}
+
+				else if (str_comp(aCmd, "passdayquest") == 0)
+				{
+					int Quest = m_apPlayers[ClientID]->m_SelectQuest;
+					int Sub = m_apPlayers[ClientID]->m_SelectSubQuest;
+					int Get = GetDailyQuestUpgr(Quest, Sub);
+					int Item = GetDailyQuestItem(Quest, Sub);
+					int Need = GetDailyQuestNeed(Quest, Sub);
+					
+					switch (Quest)
+					{
+					case EDailyQuests::QUESTTYPE1_COLLECT:
+					{
+						if (Server()->GetItemCount(ClientID, Item) < Need)
+							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+						else
+						{
+							Server()->RemItem(ClientID, Item, Need, -1);
+							m_apPlayers[ClientID]->GiveUpPoint(Get);
+							Server()->SetItemSettingsCount(ClientID, COLLECTQUEST, GetDailyID());
+						}
+						break;
+					}
+
+					case EDailyQuests::QUESTTYPE2_KILL:
+					{
+						if (Server()->GetItemCount(ClientID, KILLQUEST) < Need)
+							return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+						else
+						{
+							m_apPlayers[ClientID]->GiveUpPoint(Get);
+							Server()->SetItemSettingsCount(ClientID, KILLQUEST, GetDailyID());
+						}
+						break;
+					}
+
+					case EDailyQuests::QUESTTYPE3_CHALLENGE:
+					{
+						if(Sub == EDailyQuests::CHALLENGE4)
+						{
+							if (Server()->GetItemCount(ClientID, CHALLENGEQUEST) < Need)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+						}
+						else
+						{
+							if (Server()->GetItemCount(ClientID, Item) < Need)
+								return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("任务还未完成!"), NULL);
+							else
+								Server()->RemItem(ClientID, Item, Need, -1);
+						}
+
+						m_apPlayers[ClientID]->GiveUpPoint(Get);
+						Server()->SetItemSettingsCount(ClientID, CHALLENGEQUEST, GetDailyID());
+						break;
+					}
+
+					default:
+						break;
+					}
+					ResetVotes(ClientID, DAYQUEST);
 				}
 
 				// ПРОКАЧКА ФУНКЦИИ
@@ -2040,7 +2162,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 					m_apPlayers[ClientID]->AccUpgrade()->m_Spray++;
 					m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade -= PRICESPRAY;
-					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你的技能成功提升 {int:lv} 级"), NULL);
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你的技能成功提升 1 级"), NULL);
 
 					UpdateUpgrades(ClientID);
 					ResetVotes(ClientID, CLMENU);
@@ -2342,6 +2464,18 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					ResetVotes(ClientID, CLMENU);
 					return;
 				}
+				else if (str_comp(aCmd, "sskillfunnel") == 0)
+				{
+					int Get = Server()->GetItemSettings(ClientID, SFUNNEL) + 1;
+					if (Get > 7)
+						Server()->SetItemSettingsCount(ClientID, SFUNNEL, 0);
+					else
+						Server()->SetItemSettingsCount(ClientID, SFUNNEL, Get);
+
+					UpdateStats(ClientID);
+					ResetVotes(ClientID, CLMENU);
+					return;
+				}
 				else if (str_comp(aCmd, "semote") == 0)
 				{
 					int Get = Server()->GetItemSettings(ClientID, MODULEEMOTE) + 1;
@@ -2509,11 +2643,11 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					if (m_apPlayers[ClientID]->m_LastChangeInfo && m_apPlayers[ClientID]->m_LastChangeInfo + Server()->TickSpeed() * 3 > Server()->Tick())
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("请稍候..."), NULL);
 
-					int carrot = Server()->GetItemCount(ClientID, CARROT);
-					int tomato = Server()->GetItemCount(ClientID, TOMATE);
-					int potato = Server()->GetItemCount(ClientID, POTATO);
-					int cabbage = Server()->GetItemCount(ClientID, CABBAGE);
-					long long int Get = (long long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35);
+					unsigned long long int carrot = Server()->GetItemCount(ClientID, CARROT);
+					unsigned long long int tomato = Server()->GetItemCount(ClientID, TOMATE);
+					unsigned long long int potato = Server()->GetItemCount(ClientID, POTATO);
+					unsigned long long int cabbage = Server()->GetItemCount(ClientID, CABBAGE);
+					unsigned long long int Get = (unsigned long long int) (carrot * 10 + tomato * 15 + potato * 20 + cabbage * 35) * 0.99f;
 
 					if(Get <= 0)
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("您没有可用于榨汁儿的蔬菜水果!"), NULL);
@@ -2596,6 +2730,36 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					{
 						m_apPlayers[ClientID]->m_SortedSelectTop = i;
 						ResetVotes(ClientID, TOPMENU);
+						return;
+					}
+				}
+
+				for (int i = 0; i < EDailyQuests::NUM_DAILY_QUEST; i++)
+				{
+					char aBuf[16];
+					str_format(aBuf, sizeof(aBuf), "que%d", i);
+					if (str_comp(aCmd, aBuf) == 0)
+					{
+						if(m_apPlayers[ClientID]->m_SelectQuest == i)
+							m_apPlayers[ClientID]->m_SelectQuest = -1;
+						else
+							m_apPlayers[ClientID]->m_SelectQuest = i;
+						ResetVotes(ClientID, DAYQUEST);
+						return;
+					}
+				}
+
+				for (int i = 0; i < 4; i++)
+				{
+					char aBuf[16];
+					str_format(aBuf, sizeof(aBuf), "sque%d", i);
+					if (str_comp(aCmd, aBuf) == 0)
+					{
+						if(m_apPlayers[ClientID]->m_SelectSubQuest == i)
+							m_apPlayers[ClientID]->m_SelectSubQuest = -1;
+						else
+							m_apPlayers[ClientID]->m_SelectSubQuest = i;
+						ResetVotes(ClientID, DAYQUEST);
 						return;
 					}
 				}
@@ -2768,6 +2932,15 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			if(!Server()->GetItemCount(ClientID, SSPAWNSETTINGS))
 				GiveItem(ClientID, SSPAWNSETTINGS, 1);
+
+			if(!Server()->GetItemCount(ClientID, COLLECTQUEST))
+				GiveItem(ClientID, COLLECTQUEST, 1);
+
+			if(!Server()->GetItemCount(ClientID, KILLQUEST))
+				GiveItem(ClientID, KILLQUEST, 1);
+
+			if(!Server()->GetItemCount(ClientID, CHALLENGEQUEST))
+				GiveItem(ClientID, CHALLENGEQUEST, 1);
 
 			pPlayer->UpdateSnap();
 		}
@@ -3030,6 +3203,15 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 	{
 		if (ItemID == FARMLEVEL || ItemID == MINEREXP || ItemID == LOADEREXP)
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[专长] {str:items}"), "items", Server()->GetItemName(ClientID, ItemID), NULL);
+		else if(ItemID == KILLQUEST || ItemID == CHALLENGEQUEST)
+		{
+			int Count = Server()->GetItemCount(ClientID, ItemID);
+			int Need = GetDailyQuestNeed((ItemID == KILLQUEST) ? EDailyQuests::QUESTTYPE2_KILL : EDailyQuests::QUESTTYPE3_CHALLENGE, (ItemID == KILLQUEST) ? 0 : EDailyQuests::CHALLENGE4);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:items}[{int:num}/{int:need}]"), 
+			"items", Server()->GetItemName(ClientID, ItemID), 
+			"num", &Count,
+			"need", &Need);
+		}
 		else
 			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 获得了 {str:items}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID), NULL);
 	}
@@ -3557,7 +3739,7 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 	break;
 	case GOLDTICKET:
 	{
-		if (m_apPlayers[ClientID]->AccData()->m_Gold < 100 * Count)
+		if (m_apPlayers[ClientID]->AccData()->m_Gold < (unsigned long)(100 * Count))
 		{
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "100 黄金", NULL);
 			return;
@@ -3575,7 +3757,7 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 			return;
 		}
 		Server()->RemItem(ClientID, GUARDHAMFRAG, 10, -1);
-		float RandomProba = 0.94f;
+		float RandomProba = 0.50f;
 		if(Server()->GetItemSettings(ClientID, TITLEHANDCRAFT))
 			RandomProba -= 0.2f;
 
@@ -3585,6 +3767,66 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 										"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
 			return;
 		}
+	}
+	break;
+	case ELECTROLASER:
+	{
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, GUARDHAMMER) < 1 ||
+			Server()->GetItemCount(ClientID, DIRTYPIG) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHFEET) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHHEAD) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYBOOMERBODY) < 5000 ||
+			Server()->GetItemCount(ClientID, DRAGONORE) < 2080424 ||
+			Server()->GetItemCount(ClientID, ZOMBIEEYE) < 100 ||
+			Server()->GetItemCount(ClientID, SKELETSBONE) < 100)
+		{
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", 
+			"守卫锤子x1, " \
+			"被污染的4种物品(猪、Kwah头、Kwah脚、Boomer尸体)x5000, " \
+			"龙矿x2080424, " \
+			"僵尸的眼睛x100, " \
+			"骷髅的骨头x100", NULL);
+			return;
+		}
+		Server()->RemItem(ClientID, GUARDHAMMER, 1, -1);
+		Server()->RemItem(ClientID, DIRTYPIG, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHFEET, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHHEAD, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYBOOMERBODY, 5000, -1);
+		Server()->RemItem(ClientID, DRAGONORE, 2080424, -1);
+		Server()->RemItem(ClientID, ZOMBIEEYE, 100, -1);
+		Server()->RemItem(ClientID, SKELETSBONE, 100, -1);
+	}
+	break;
+	case LIGHTNINGLASER:
+	{
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, DIRTYGUARDHEAD) < 50 ||
+			Server()->GetItemCount(ClientID, DIRTYPIG) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHFEET) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYKWAHHEAD) < 5000 ||
+			Server()->GetItemCount(ClientID, DIRTYBOOMERBODY) < 5000 ||
+			Server()->GetItemCount(ClientID, DRAGONORE) < 4240208 ||
+			Server()->GetItemCount(ClientID, ZOMBIEEYE) < 100 ||
+			Server()->GetItemCount(ClientID, SKELETSBONE) < 100)
+		{
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", 
+			"被污染的守卫头x50, " \
+			"被污染的4种物品(猪、Kwah头、Kwah脚、Boomer尸体)x5000, " \
+			"龙矿x4240208, " \
+			"僵尸的眼睛x100, " \
+			"骷髅的骨头x100", NULL);
+			return;
+		}
+		Server()->RemItem(ClientID, DIRTYGUARDHEAD, 50, -1);
+		Server()->RemItem(ClientID, DIRTYPIG, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHFEET, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYKWAHHEAD, 5000, -1);
+		Server()->RemItem(ClientID, DIRTYBOOMERBODY, 5000, -1);
+		Server()->RemItem(ClientID, DRAGONORE, 4240208, -1);
+		Server()->RemItem(ClientID, ZOMBIEEYE, 100, -1);
+		Server()->RemItem(ClientID, SKELETSBONE, 100, -1);
 	}
 	break;
 	}
@@ -3692,25 +3934,28 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 
 	// TODO
 	//  ############################### Основное не авторизированных
-	if (Type == NOAUTH)
+	switch(Type)
 	{
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "info", "制作者名单");
-		AddVote_Localization(ClientID, "help", "游戏如何开始?");
-		AddVote_Localization(ClientID, "null", "- - - - - ");
-		AddVote_Localization(ClientID, "null", "rAzataz 修改 infClass 通过 Kurosio");
-		AddVote_Localization(ClientID, "null", "所有制作者信息在 '作者信息' 内");
-		return;
-	}
-
-	// ############################### Основное меню авторизированных
-	else if (Type == AUTH)
-	{
-		if (m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS)
+		case NOAUTH:
+		{
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "info", "制作者名单");
+			AddVote_Localization(ClientID, "help", "游戏如何开始?");
+			AddVote_Localization(ClientID, "null", "- - - - - ");
+			AddVote_Localization(ClientID, "null", "rAzataz 修改 infClass 通过 Kurosio");
+			AddVote_Localization(ClientID, "null", "所有制作者信息在 '作者信息' 内");
 			return;
+		}
 
-		if (Server()->GetClanID(ClientID) > 0)
-			Server()->UpdClanCount(Server()->GetClanID(ClientID));
+		// ############################### Основное меню авторизированных
+		break;
+		case AUTH:
+		{
+			if (m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS)
+				return;
+
+			if (Server()->GetClanID(ClientID) > 0)
+				Server()->UpdClanCount(Server()->GetClanID(ClientID));
 
 		AddVote_Localization(ClientID, "null", "☪ 账户: {str:Username}", "Username", Server()->ClientUsername(ClientID));
 		AddVote_Localization(ClientID, "null", "ღ 等级: {int:Level} / 经验: {int:Exp}", "Level", &m_apPlayers[ClientID]->AccData()->m_Level, "Exp", &m_apPlayers[ClientID]->AccData()->m_Exp);
@@ -3752,250 +3997,257 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机");
 		}
 
-		if (m_apPlayers[ClientID]->GetShop())
-		{
-			if (Server()->GetItemCount(ClientID, MATERIAL))
+			if (m_apPlayers[ClientID]->GetShop())
 			{
-				int Count = Server()->GetItemCount(ClientID, MATERIAL);
-				int Gold = Count / 5;
-				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你向商店提供了 {int:count} 个材料，获得了 {int:money} 黄金"),
-											"count", &Count, "money", &Gold, NULL);
+				if (Server()->GetItemCount(ClientID, MATERIAL))
+				{
+					int Count = Server()->GetItemCount(ClientID, MATERIAL);
+					int Gold = Count / 5;
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你向商店提供了 {int:count} 个材料，获得了 {int:money} 黄金"),
+												"count", &Count, "money", &Gold, NULL);
 
-				Server()->SetMaterials(0, Server()->GetMaterials(0) + Count);
-				Server()->RemItem(ClientID, MATERIAL, Count, -1);
-				m_apPlayers[ClientID]->AccData()->m_Gold += Gold;
+					Server()->SetMaterials(0, Server()->GetMaterials(0) + Count);
+					Server()->RemItem(ClientID, MATERIAL, Count, -1);
+					m_apPlayers[ClientID]->AccData()->m_Gold += Gold;
+				}
+
+				AddVote("", "null", ClientID);
+
+				// ##################### ПРЕДМЕТЫ
+				AddVote_Localization(ClientID, "null", "✄  {str:psevdo}", "psevdo", LocalizeText(ClientID, "物品"));
+
+				// WEAPON GUN
+				CreateNewShop(ClientID, IGUN, 3, 3, 40);
+				CreateNewShop(ClientID, IGRENADE, 3, 8, 70);
+				CreateNewShop(ClientID, ISHOTGUN, 3, 15, 120);
+				CreateNewShop(ClientID, ILASER, 3, 16, 310);
+				CreateNewShop(ClientID, HYBRIDSG, 3, 120, 40000);
+				AddVote("············", "null", ClientID);
+
+				// #################### УЛУЧШЕНИЯ
+				AddVote_Localization(ClientID, "null", "★  {str:psevdo}", "psevdo", LocalizeText(ClientID, "升级"));
+
+				CreateNewShop(ClientID, HOOKDAMAGE, 3, 18, 100);
+				CreateNewShop(ClientID, GUNAUTO, 3, 20, 150);
+				CreateNewShop(ClientID, HAMMERAUTO, 3, 20, 1200);
+
+				CreateNewShop(ClientID, EXGUN, 3, 25, 1800);
+				CreateNewShop(ClientID, EXSHOTGUN, 3, 30, 10000);
+				CreateNewShop(ClientID, EXLASER, 3, 30, 1000);
+				CreateNewShop(ClientID, MODULEHOOKEXPLODE, 3, 40, 4000);
+
+				CreateNewShop(ClientID, GHOSTGUN, 3, 60, 3000);
+				CreateNewShop(ClientID, GHOSTSHOTGUN, 3, 70, 15000);
+				CreateNewShop(ClientID, GHOSTGRENADE, 3, 70, 15000);
+				CreateNewShop(ClientID, PIZDAMET, 3, 90, 15000);
+
+				CreateNewShop(ClientID, GUNBOUNCE, 3, 90, 20000);
+				CreateNewShop(ClientID, GRENADEBOUNCE, 3, 90, 20000);
+
+				CreateNewShop(ClientID, LAMPHAMMER, 3, 160, 50000);
+
+				// #################### СКИЛЫ
+				int ExtendLimitPrice;
+				ExtendLimitPrice = 10000 * pow(Server()->GetItemCount(ClientID, EXTENDLIMIT), 2);
+				AddVote("············", "null", ClientID);
+				AddVote_Localization(ClientID, "null", "ღ  {str:psevdo}", "psevdo", LocalizeText(ClientID, "提升"));
+				CreateNewShop(ClientID, EXTENDLIMIT, 2, 200, ExtendLimitPrice);
+
+				// #################### ПЕРСОНАЛЬНО
+
+				AddVote("············", "null", ClientID);
+				AddVote_Localization(ClientID, "null", "♫  {str:psevdo}", "psevdo", LocalizeText(ClientID, "个人"));
+				CreateNewShop(ClientID, RESETINGUPGRADE, 3, 1, 30000);
+				CreateNewShop(ClientID, RESETINGSKILL, 3, 1, 8000);
+				CreateNewShop(ClientID, WHITETICKET, 3, 100, 20000);
+				CreateNewShop(ClientID, MOONO2, 3, 100, 5);
+				CreateNewShop(ClientID, BOOKEXPMIN, 2, 1, 100);
+				CreateNewShop(ClientID, CLANTICKET, 2, 15, 2500);
+
+				// #################### РЕДКИЕ
+
+				AddVote("············", "null", ClientID);
+				AddVote_Localization(ClientID, "null", "  {str:psevdo}", "psevdo", LocalizeText(ClientID, "稀有物品"));
+				CreateNewShop(ClientID, AMULETCLEEVER, 3, 1, 1200);
+				AddVote_Localization(ClientID, "null", "使你在升级时获得20个钱袋");
+				CreateNewShop(ClientID, RINGNOSELFDMG, 3, 1, 1000);
+				AddVote_Localization(ClientID, "null", "不会受到自己的伤害（比如爆炸）");
 			}
 
-			AddVote("", "null", ClientID);
-
-			// ##################### ПРЕДМЕТЫ
-			AddVote_Localization(ClientID, "null", "✄  {str:psevdo}", "psevdo", LocalizeText(ClientID, "物品"));
-
-			// WEAPON GUN
-			CreateNewShop(ClientID, IGUN, 3, 3, 40);
-			CreateNewShop(ClientID, IGRENADE, 3, 8, 70);
-			CreateNewShop(ClientID, ISHOTGUN, 3, 15, 120);
-			CreateNewShop(ClientID, ILASER, 3, 16, 310);
-			CreateNewShop(ClientID, HYBRIDSG, 3, 120, 40000);
-			AddVote("············", "null", ClientID);
-
-			// #################### УЛУЧШЕНИЯ
-			AddVote_Localization(ClientID, "null", "★  {str:psevdo}", "psevdo", LocalizeText(ClientID, "升级"));
-
-			CreateNewShop(ClientID, HOOKDAMAGE, 3, 18, 100);
-			CreateNewShop(ClientID, GUNAUTO, 3, 20, 150);
-			CreateNewShop(ClientID, HAMMERAUTO, 3, 20, 1200);
-
-			CreateNewShop(ClientID, EXGUN, 3, 25, 1800);
-			CreateNewShop(ClientID, EXSHOTGUN, 3, 30, 10000);
-			CreateNewShop(ClientID, EXLASER, 3, 30, 1000);
-			CreateNewShop(ClientID, MODULEHOOKEXPLODE, 3, 40, 4000);
-
-			CreateNewShop(ClientID, GHOSTGUN, 3, 60, 3000);
-			CreateNewShop(ClientID, GHOSTSHOTGUN, 3, 70, 15000);
-			CreateNewShop(ClientID, GHOSTGRENADE, 3, 70, 15000);
-			CreateNewShop(ClientID, PIZDAMET, 3, 90, 15000);
-
-			CreateNewShop(ClientID, GUNBOUNCE, 3, 90, 20000);
-			CreateNewShop(ClientID, GRENADEBOUNCE, 3, 90, 20000);
-
-			CreateNewShop(ClientID, LAMPHAMMER, 3, 160, 50000);
-
-			// #################### СКИЛЫ
-			int ExtendLimitPrice;
-			ExtendLimitPrice = 10000 * pow(Server()->GetItemCount(ClientID, EXTENDLIMIT), 2);
-			AddVote("············", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "ღ  {str:psevdo}", "psevdo", LocalizeText(ClientID, "提升"));
-			CreateNewShop(ClientID, EXTENDLIMIT, 2, 200, ExtendLimitPrice);
-
-			// #################### ПЕРСОНАЛЬНО
-
-			AddVote("············", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "♫  {str:psevdo}", "psevdo", LocalizeText(ClientID, "个人"));
-			CreateNewShop(ClientID, RESETINGUPGRADE, 3, 1, 30000);
-			CreateNewShop(ClientID, RESETINGSKILL, 3, 1, 8000);
-			CreateNewShop(ClientID, WHITETICKET, 3, 100, 20000);
-			CreateNewShop(ClientID, MOONO2, 3, 100, 5);
-			CreateNewShop(ClientID, BOOKEXPMIN, 2, 1, 100);
-			CreateNewShop(ClientID, CLANTICKET, 2, 15, 2500);
-
-			// #################### РЕДКИЕ
-
-			AddVote("············", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "  {str:psevdo}", "psevdo", LocalizeText(ClientID, "稀有物品"));
-			CreateNewShop(ClientID, AMULETCLEEVER, 3, 1, 1200);
-			AddVote_Localization(ClientID, "null", "使你在升级时获得20个钱袋");
-			CreateNewShop(ClientID, RINGNOSELFDMG, 3, 1, 1000);
-			AddVote_Localization(ClientID, "null", "不会受到自己的伤害（比如爆炸）");
+			if (m_apPlayers[ClientID]->GetWork())
+			{
+				AddVote("", "null", ClientID);
+				AddVote_Localization(ClientID, "null", "在投票的理由填写处填写出售的个数");
+				CreateSellWorkItem(ClientID, COOPERORE, 1);
+				CreateSellWorkItem(ClientID, IRONORE, 2);
+				CreateSellWorkItem(ClientID, GOLDORE, 2);
+				CreateSellWorkItem(ClientID, DIAMONDORE, 3);
+				CreateSellWorkItem(ClientID, DRAGONORE, 5);
+				CreateSellWorkItem(ClientID, STANNUM, 8);
+			}
+			return;
 		}
 
-		if (m_apPlayers[ClientID]->GetWork())
+		break;
+		case JOBSSET:
 		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "工作与专长");
 			AddVote("", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "在投票的理由填写处填写出售的个数");
-			CreateSellWorkItem(ClientID, COOPERORE, 1);
-			CreateSellWorkItem(ClientID, IRONORE, 2);
-			CreateSellWorkItem(ClientID, GOLDORE, 2);
-			CreateSellWorkItem(ClientID, DIAMONDORE, 3);
-			CreateSellWorkItem(ClientID, DRAGONORE, 5);
-			CreateSellWorkItem(ClientID, STANNUM, 8);
+			int Level = 1 + Server()->GetItemCount(ClientID, FARMLEVEL) / g_Config.m_SvFarmExp;
+			int NeedExp = Level * g_Config.m_SvFarmExp;
+			int Exp = Server()->GetItemCount(ClientID, FARMLEVEL);
+			AddVote_Localization(ClientID, "null", "专长 种地 ({int:exp}/{int:nexp} 等级: {int:lvl})", "exp", &Exp, "nexp", &NeedExp, "lvl", &Level);
+
+			Level = 1 + Server()->GetItemCount(ClientID, MINEREXP) / g_Config.m_SvMinerExp;
+			NeedExp = Level * g_Config.m_SvMinerExp;
+			Exp = Server()->GetItemCount(ClientID, MINEREXP);
+			AddVote_Localization(ClientID, "null", "专长 挖矿 ({int:exp}/{int:nexp} 等级: {int:lvl})", "exp", &Exp, "nexp", &NeedExp, "lvl", &Level);
+
+			Level = 1 + Server()->GetItemCount(ClientID, LOADEREXP) / g_Config.m_SvMaterExp;
+			NeedExp = Level * g_Config.m_SvMaterExp;
+			Exp = Server()->GetItemCount(ClientID, LOADEREXP);
+			AddVote_Localization(ClientID, "null", "专长 萃取 ({int:exp}/{int:nexp} 等级: {int:lvl})", "exp", &Exp, "nexp", &NeedExp, "lvl", &Level);
+
+			AddVote_Localization(ClientID, "null", "专长 伐木工 (光头强不会升级)");
+			AddVote_Localization(ClientID, "null", "专长 摸鱼 (敬请期待)");
+
+			AddBack(ClientID);
+			return;
 		}
-		return;
-	}
 
-	else if (Type == JOBSSET)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "工作与专长");
-		AddVote("", "null", ClientID);
-		int Level = 1 + Server()->GetItemCount(ClientID, FARMLEVEL) / g_Config.m_SvFarmExp;
-		int NeedExp = Level * g_Config.m_SvFarmExp;
-		int Exp = Server()->GetItemCount(ClientID, FARMLEVEL);
-		AddVote_Localization(ClientID, "null", "专长 种地 ({int:exp}/{int:nexp} 等级: {int:lvl})", "exp", &Exp, "nexp", &NeedExp, "lvl", &Level);
+		break;
+		case MAILMENU:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "我的邮箱");
+			AddVote_Localization(ClientID, "getolbonus", "领取在线奖励");
+			Server()->InitMailID(ClientID);
+			AddBack(ClientID);
+			AddVote("", "null", ClientID);
+		}
 
-		Level = 1 + Server()->GetItemCount(ClientID, MINEREXP) / g_Config.m_SvMinerExp;
-		NeedExp = Level * g_Config.m_SvMinerExp;
-		Exp = Server()->GetItemCount(ClientID, MINEREXP);
-		AddVote_Localization(ClientID, "null", "专长 挖矿 ({int:exp}/{int:nexp} 等级: {int:lvl})", "exp", &Exp, "nexp", &NeedExp, "lvl", &Level);
+		break;
+		case ARMORMENU:
+		{
+			m_apPlayers[ClientID]->m_UpdateMenu = Type;
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "我的装备");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☄ {str:psevdo}", "psevdo", LocalizeText(ClientID, "装备"));
 
-		Level = 1 + Server()->GetItemCount(ClientID, LOADEREXP) / g_Config.m_SvMaterExp;
-		NeedExp = Level * g_Config.m_SvMaterExp;
-		Exp = Server()->GetItemCount(ClientID, LOADEREXP);
-		AddVote_Localization(ClientID, "null", "专长 萃取 ({int:exp}/{int:nexp} 等级: {int:lvl})", "exp", &Exp, "nexp", &NeedExp, "lvl", &Level);
+			int Bonus = Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 15), 15);
+			AddVote_Localization(ClientID, "null", "◈ 胸甲 {str:enquip} / 生命值 +{int:hp} 装甲值 +{int:arm}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 15)), "hp", &Bonus, "arm", &Bonus);
+			Bonus = Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 16), 16);
+			AddVote_Localization(ClientID, "null", "◈ 靴子 {str:enquip} / 生命值 +{int:hp} 装甲值 +{int:arm}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 16)), "hp", &Bonus, "arm", &Bonus);
+			Bonus = Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 17), 17);
+			AddVote_Localization(ClientID, "null", "◈ Stabilized {str:enquip} / 伤害 +{int:dmg}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 17)), "dmg", &Bonus);
 
-		AddVote_Localization(ClientID, "null", "专长 伐木工 (光头强不会升级)");
-		AddVote_Localization(ClientID, "null", "专长 摸鱼 (敬请期待)");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☄ {str:psevdo}", "psevdo", LocalizeText(ClientID, "排序与选择"));
+			AddVote_Localization(ClientID, "armor1", "☞ 胸甲 {str:enquip}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 15)));
+			AddVote_Localization(ClientID, "armor2", "☞ 靴子 {str:enquip}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 16)));
+			AddVote_Localization(ClientID, "armor3", "☞ 加成 {str:enquip}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 17)));
 
-		AddBack(ClientID);
-		return;
-	}
+			AddBack(ClientID);
+			AddVote("", "null", ClientID);
 
-	else if (Type == MAILMENU)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "我的邮箱");
-		AddVote_Localization(ClientID, "getolbonus", "领取在线奖励");
-		Server()->InitMailID(ClientID);
-		AddBack(ClientID);
-		AddVote("", "null", ClientID);
-	}
+			if (m_apPlayers[ClientID]->m_SelectArmor == 1)
+				Server()->ListInventory(ClientID, 15);
+			else if (m_apPlayers[ClientID]->m_SelectArmor == 2)
+				Server()->ListInventory(ClientID, 16);
+			else if (m_apPlayers[ClientID]->m_SelectArmor == 3)
+				Server()->ListInventory(ClientID, 17);
+		}
 
-	else if (Type == ARMORMENU)
-	{
-		m_apPlayers[ClientID]->m_UpdateMenu = Type;
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "我的装备");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "☄ {str:psevdo}", "psevdo", LocalizeText(ClientID, "装备"));
+		// ############################### Ачивки и Титулы - 成就与称号还有头衔之类的
+		break;
+		case INTITLE:
+		{
+			m_apPlayers[ClientID]->m_UpdateMenu = Type;
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "成就与称号");
+			AddVote_Localization(ClientID, "null", "你可以使用称号");
+			AddVote_Localization(ClientID, "null", "最后显示更多的称号");
+			AddVote("", "null", ClientID);
+			CreateNewShop(ClientID, BIGCRAFT, 1, 0, 0);
+			CreateNewShop(ClientID, PIGPIG, 1, 0, 0);
+			CreateNewShop(ClientID, BOSSDIE, 1, 0, 0);
+			CreateNewShop(ClientID, TITLESUMMER, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEQUESTS, 1, 0, 0);
+			CreateNewShop(ClientID, X2MONEYEXPVIP, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEENCHANT, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEDNTCRIT, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEDNTHP, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEGUARD, 1, 0, 0);
+			AddVote("", "null", ClientID);
+			CreateNewShop(ClientID, TITLEWORKF, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEWORKM, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEFARMF, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEFARMM, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEHANDCRAFT, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEPPP, 1, 0, 0);
+			CreateNewShop(ClientID, TITLECR, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEPC, 1, 0, 0);
+			CreateNewShop(ClientID, TITLEGLF, 1, 0, 0);
 
-		int Bonus = Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 15), 15);
-		AddVote_Localization(ClientID, "null", "◈ 胸甲 {str:enquip} / 生命值 +{int:hp} 装甲值 +{int:arm}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 15)), "hp", &Bonus, "arm", &Bonus);
-		Bonus = Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 16), 16);
-		AddVote_Localization(ClientID, "null", "◈ 靴子 {str:enquip} / 生命值 +{int:hp} 装甲值 +{int:arm}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 16)), "hp", &Bonus, "arm", &Bonus);
-		Bonus = Server()->GetBonusEnchant(ClientID, Server()->GetItemEnquip(ClientID, 17), 17);
-		AddVote_Localization(ClientID, "null", "◈ Stabilized {str:enquip} / 伤害 +{int:dmg}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 17)), "dmg", &Bonus);
+			AddBack(ClientID);
+			return;
+		}
 
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "☄ {str:psevdo}", "psevdo", LocalizeText(ClientID, "排序与选择"));
-		AddVote_Localization(ClientID, "armor1", "☞ 胸甲 {str:enquip}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 15)));
-		AddVote_Localization(ClientID, "armor2", "☞ 靴子 {str:enquip}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 16)));
-		AddVote_Localization(ClientID, "armor3", "☞ 加成 {str:enquip}", "enquip", Server()->GetItemName(ClientID, Server()->GetItemEnquip(ClientID, 17)));
+		// ############################### Меню настроек - 设置菜单
+		break;
+		case SETTINGS:
+		{
+			m_apPlayers[ClientID]->m_UpdateMenu = Type;
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "这是动态的设置");
+			AddVote_Localization(ClientID, "null", "是提供给私人的升级的");
+			AddVote_Localization(ClientID, "null", "当你购买物品后需要到这里来开启");
+			AddVote("", "null", ClientID);
 
-		AddBack(ClientID);
-		AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "修改"));
 
-		if (m_apPlayers[ClientID]->m_SelectArmor == 1)
-			Server()->ListInventory(ClientID, 15);
-		else if (m_apPlayers[ClientID]->m_SelectArmor == 2)
-			Server()->ListInventory(ClientID, 16);
-		else if (m_apPlayers[ClientID]->m_SelectArmor == 3)
-			Server()->ListInventory(ClientID, 17);
-	}
-
-	// ############################### Ачивки и Титулы - 成就与称号还有头衔之类的
-	else if (Type == INTITLE)
-	{
-		m_apPlayers[ClientID]->m_UpdateMenu = Type;
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "成就与称号");
-		AddVote_Localization(ClientID, "null", "你可以使用称号");
-		AddVote_Localization(ClientID, "null", "最后显示更多的称号");
-		AddVote("", "null", ClientID);
-		CreateNewShop(ClientID, BIGCRAFT, 1, 0, 0);
-		CreateNewShop(ClientID, PIGPIG, 1, 0, 0);
-		CreateNewShop(ClientID, BOSSDIE, 1, 0, 0);
-		CreateNewShop(ClientID, TITLESUMMER, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEQUESTS, 1, 0, 0);
-		CreateNewShop(ClientID, X2MONEYEXPVIP, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEENCHANT, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEDNTCRIT, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEDNTHP, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEGUARD, 1, 0, 0);
-		AddVote("", "null", ClientID);
-		CreateNewShop(ClientID, TITLEWORKF, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEWORKM, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEFARMF, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEFARMM, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEHANDCRAFT, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEPPP, 1, 0, 0);
-		CreateNewShop(ClientID, TITLECR, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEPC, 1, 0, 0);
-		CreateNewShop(ClientID, TITLEGLF, 1, 0, 0);
-
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Меню настроек - 设置菜单
-	else if (Type == SETTINGS)
-	{
-		m_apPlayers[ClientID]->m_UpdateMenu = Type;
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "这是动态的设置");
-		AddVote_Localization(ClientID, "null", "是提供给私人的升级的");
-		AddVote_Localization(ClientID, "null", "当你购买物品后需要到这里来开启");
-		AddVote("", "null", ClientID);
-
-		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "修改"));
-		if (Server()->GetItemCount(ClientID, SNAPDAMAGE))
+			CreateNewShop(ClientID, JUMPIMPULS, 1, 0, 0);
+			CreateNewShop(ClientID, ENDEXPLOSION, 1, 0, 0);
+			CreateNewShop(ClientID, HOOKDAMAGE, 1, 0, 0);
+			CreateNewShop(ClientID, MODULEHOOKEXPLODE, 1, 0, 0);
+			CreateNewShop(ClientID, RINGNOSELFDMG, 1, 0, 0);
+			CreateNewShop(ClientID, CUSTOMCOLOR, 1, 0, 0);
+			EyeEmoteSettings(ClientID, MODULEEMOTE, "semote");
+			SkillSettings(ClientID, SFUNNEL, "sskillfunnel");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "锤子"));
+			CreateNewShop(ClientID, HAMMERAUTO, 1, 0, 0);
+			CreateNewShop(ClientID, LAMPHAMMER, 1, 0, 0);
 			CreateNewShop(ClientID, RAREEVENTHAMMER, 1, 0, 0);
-
-		CreateNewShop(ClientID, JUMPIMPULS, 1, 0, 0);
-		CreateNewShop(ClientID, ENDEXPLOSION, 1, 0, 0);
-		CreateNewShop(ClientID, HOOKDAMAGE, 1, 0, 0);
-		CreateNewShop(ClientID, MODULEHOOKEXPLODE, 1, 0, 0);
-		CreateNewShop(ClientID, RINGNOSELFDMG, 1, 0, 0);
-		CreateNewShop(ClientID, CUSTOMCOLOR, 1, 0, 0);
-		EyeEmoteSettings(ClientID, MODULEEMOTE, "semote");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "锤子"));
-		CreateNewShop(ClientID, HAMMERAUTO, 1, 0, 0);
-		CreateNewShop(ClientID, LAMPHAMMER, 1, 0, 0);
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "手枪"));
-		CreateNewShop(ClientID, GUNAUTO, 1, 0, 0);
-		CreateNewShop(ClientID, GUNBOUNCE, 1, 0, 0);
-		CreateNewShop(ClientID, GHOSTGUN, 1, 0, 0);
-		CreateNewShop(ClientID, EXGUN, 1, 0, 0);
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "散弹枪"));
-		CreateNewShop(ClientID, HYBRIDSG, 1, 0, 0);
-		CreateNewShop(ClientID, GHOSTSHOTGUN, 1, 0, 0);
-		CreateNewShop(ClientID, MODULESHOTGUNSLIME, 1, 0, 0);
-		CreateNewShop(ClientID, EXSHOTGUN, 1, 0, 0);
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "榴弹炮"));
-		CreateNewShop(ClientID, GRENADEBOUNCE, 1, 0, 0);
-		CreateNewShop(ClientID, GHOSTGRENADE, 1, 0, 0);
-		CreateNewShop(ClientID, PIZDAMET, 1, 0, 0);
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "激光枪"));
-		CreateNewShop(ClientID, EXLASER, 1, 0, 0);
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "手枪"));
+			CreateNewShop(ClientID, GUNAUTO, 1, 0, 0);
+			CreateNewShop(ClientID, GUNBOUNCE, 1, 0, 0);
+			CreateNewShop(ClientID, GHOSTGUN, 1, 0, 0);
+			CreateNewShop(ClientID, EXGUN, 1, 0, 0);
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "散弹枪"));
+			CreateNewShop(ClientID, HYBRIDSG, 1, 0, 0);
+			CreateNewShop(ClientID, GHOSTSHOTGUN, 1, 0, 0);
+			CreateNewShop(ClientID, MODULESHOTGUNSLIME, 1, 0, 0);
+			CreateNewShop(ClientID, EXSHOTGUN, 1, 0, 0);
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "榴弹炮"));
+			CreateNewShop(ClientID, GRENADEBOUNCE, 1, 0, 0);
+			CreateNewShop(ClientID, GHOSTGRENADE, 1, 0, 0);
+			CreateNewShop(ClientID, PIZDAMET, 1, 0, 0);
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "激光枪"));
+			CreateNewShop(ClientID, EXLASER, 1, 0, 0);
+			CreateNewShop(ClientID, ELECTROLASER, 1, 0, 0);
+			CreateNewShop(ClientID, LIGHTNINGLASER, 1, 0, 0);
 
 		AddVote("························", "null", ClientID);
 		
@@ -4013,732 +4265,976 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 		Data = Server()->GetSecurity(ClientID) ? "☑" : "☐";
 		AddVote_Localization(ClientID, "sssecurity", "☞ 登录与密码 {str:stat}", "stat", Data);
 
-		Data = Server()->GetItemSettings(ClientID, SANTIPVP) ? "☑" : "☐";
-		AddVote_Localization(ClientID, "ssantipvp", "☞ VIP特权: 禁止PVP {str:stat}", "stat", Data);
+			Data = Server()->GetItemSettings(ClientID, SANTIPVP) ? "☑" : "☐";
+			AddVote_Localization(ClientID, "ssantipvp", "☞ VIP特权: 禁止PVP {str:stat}", "stat", Data);
 
-		Data = Server()->GetItemSettings(ClientID, SSHOWCLAN) ? "☑" : "☐";
-		AddVote_Localization(ClientID, "ssshowclan", "☞ TAB显示公会 {str:stat}", "stat", Data);
+			Data = Server()->GetItemSettings(ClientID, SSHOWCLAN) ? "☑" : "☐";
+			AddVote_Localization(ClientID, "ssshowclan", "☞ TAB显示公会 {str:stat}", "stat", Data);
 
-		if(Server()->GetSpawnInClanHouse(ClientID, 0) || Server()->GetSpawnInClanHouse(ClientID, 1) || Server()->GetSpawnInClanHouse(ClientID, 2))
-		{
-			Data = Server()->GetItemSettings(ClientID, SSPAWNSETTINGS) ? "公会" : "默认";
-			AddVote_Localization(ClientID, "sspawnsettings", "☞ 出生点设置 {str:stat}", "stat", Data);
-		}
-
-		Data = "正常";
-		if (Server()->GetItemSettings(ClientID, SCHAT) == 1)
-			Data = "过滤";
-		else if (Server()->GetItemSettings(ClientID, SCHAT) == 2)
-			Data = "最少";
-		AddVote_Localization(ClientID, "sssetingschat", "☞ 聊天栏提示信息 ({str:stat})", "stat", Data);
-
-		Data = "锤子";
-		if (Server()->GetItemSettings(ClientID, SDROP))
-			Data = "F3";
-		AddVote_Localization(ClientID, "sssetingsdrop", "☞ 拾取物品方法 ({str:stat})", "stat", Data);
-
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Меню хилера
-	else if (Type == CLMENU)
-	{
-		m_apPlayers[ClientID]->m_UpdateMenu = Type;
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "这是升级职业的");
-		AddVote_Localization(ClientID, "null", "被动技能与主动技能");
-		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写升级数");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "统计数据(升级点 - {int:up} / 技能点 - {int:sp})", "up", &m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade, "sp", &m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint);
-		AddVote("············", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "♛ {str:psevdo}", "psevdo", LocalizeText(ClientID, "升级选项"));
-		AddVote_Localization(ClientID, "uhealth", "☞ [{int:sum}] 生命值上限 +40(20升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Health, "bonus", m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER ? "C+10" : "C+0");
-		AddVote_Localization(ClientID, "udamage", "☞ [{int:sum}] 伤害 +1(50升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Damage, "bonus", "C+0");
-		AddVote_Localization(ClientID, "uammoregen", "☞ [{int:sum}] 子弹回复速度 +1(50升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_AmmoRegen, "bonus", "C+0");
-		AddVote_Localization(ClientID, "uammo", "☞ [{int:sum}] 子弹 +1(100升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Ammo, "bonus", "C+0");
-		AddVote_Localization(ClientID, "uhpregen", "☞ [{int:sum}] 生命恢复速度 +1(20升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HPRegen, "bonus", "C+0");
-		AddVote_Localization(ClientID, "uhandle", "☞ [{int:sum}] 射速 +1(50升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Speed, "bonus", "C+0");
-		AddVote_Localization(ClientID, "umana", "☞ [{int:sum}] 魔能 +1(10升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Mana, "bonus", "C+0");
-		AddVote_Localization(ClientID, "uspray", "☞ [{int:sum}] 子弹散射 +1(100升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Spray, "bonus", "C+0");
-		AddVote("············", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "♞ {str:psevdo}", "psevdo", LocalizeText(ClientID, "职业被动技"));
-
-		int Need = HAMMERRANGE;
-		if (m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER)
-		{
-			AddVote_Localization(ClientID, "ushammerrange", "☞ ({int:need}技能点) 生命值 +4% ({str:act}) ({int:sum})", "need", &Need, "act",
-								 m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange);
-			AddVote_Localization(ClientID, "upasive2", "☞ ({int:need}技能点) 伤害减免 +2% ({str:act}) ({int:sum})", "need", &Need, "act",
-								 m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2 ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2);
-		}
-		else if (m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_ASSASINS)
-		{
-			AddVote_Localization(ClientID, "ushammerrange", "☞ ({int:need}技能点) 暴击率 +6.67% ({str:act}) ({int:sum})", "need", &Need, "act",
-								 m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange);
-			AddVote_Localization(ClientID, "upasive2", "☞ ({int:need}技能点) 暴击伤害 +3% ({str:act}) ({int:sum})", "need", &Need, "act",
-								 m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2 ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2);
-		}
-		else if (m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_BERSERK)
-		{
-			AddVote_Localization(ClientID, "ushammerrange", "☞ ({int:need}技能点) 锤子范围 ({str:act}) ({int:sum})", "need", &Need, "act",
-								 m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange);
-			AddVote_Localization(ClientID, "upasive2", "☞ ({int:need}技能点) 伤害 +3% ({str:act}) ({int:sum})", "need", &Need, "act",
-								 m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2 ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2);
-		}
-		AddVote("············", "null", ClientID);
-
-		AddVote_Localization(ClientID, "null", "☭ {str:psevdo}", "psevdo", "主动技能");
-		AddVote_Localization(ClientID, "uskillwall", "☞ (70技能点) 魔能-激光墙 ({str:act})", "act", Server()->GetItemCount(ClientID, SKWALL) ? "30 Mana ✔" : "x");
-
-		SkillSettings(ClientID, SKWALL, "sskillwall");
-		AddVote_Localization(ClientID, "uskillheal", "☞ (60技能点) 治疗 ({str:act})", "act", Server()->GetItemCount(ClientID, SKHEAL) ? "50 魔能 ✔" : "x");
-		SkillSettings(ClientID, SKHEAL, "sskillheal");
-		AddVote_Localization(ClientID, "uskillsword", "☞ (20技能点) 光剑 ({str:act})", "act", Server()->GetItemCount(ClientID, SSWORD) ? "1 魔能(持续消耗) ✔" : "x");
-		SkillSettings(ClientID, SSWORD, "sskillsword");
-		SkillSettings(ClientID, SHEALSUMMER, "sskillsummer");
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Клан основное меню
-	else if (Type == CLAN)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		int ID = Server()->GetClanID(ClientID);
-		int Bank = Server()->GetClan(Clan::Money, Server()->GetClanID(ClientID));
-		int Count = Server()->GetClan(Clan::MemberNum, Server()->GetClanID(ClientID));
-		int Relevance = Server()->GetClan(Clan::Relevance, Server()->GetClanID(ClientID));
-		int MaxCount = Server()->GetClan(Clan::MaxMemberNum, Server()->GetClanID(ClientID));
-
-		Server()->InitClanID(Server()->GetClanID(ClientID), PLUS, "Init", 0, false);
-
-		AddVote_Localization(ClientID, "null", "公会名称: {str:name}(ID:{int:id})", "name", Server()->ClientClan(ClientID), "id", &ID);
-		AddVote_Localization(ClientID, "null", "黄金储量: {int:bank}", "bank", &Bank);
-		AddVote_Localization(ClientID, "null", "会长: {str:leader}", "leader", Server()->LeaderName(Server()->GetClanID(ClientID)));
-		AddVote_Localization(ClientID, "null", "管理员: {str:admin}", "admin", Server()->AdminName(Server()->GetClanID(ClientID)));
-		AddVote_Localization(ClientID, "null", "社会声誉: {int:revl}", "revl", &Relevance);
-		AddVote_Localization(ClientID, "null", "公会人数: {int:count}/{int:maxcount}", "count", &Count, "maxcount", &MaxCount);
-
-		int exp = Server()->GetClan(Clan::Exp, Server()->GetClanID(ClientID));
-		int bonus = Server()->GetClan(Clan::ExpAdd, Server()->GetClanID(ClientID));
-		int level = Server()->GetClan(Clan::Level, Server()->GetClanID(ClientID));
-		int dlvl = Server()->GetClan(Clan::MoneyAdd, Server()->GetClanID(ClientID)) * 100;
-		int maxneed = Server()->GetClan(Clan::Level, Server()->GetClanID(ClientID)) * m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::Level);
-		AddVote_Localization(ClientID, "null", "等级: {int:lvl} 经验 ({int:exp}/{int:maxneed})", "lvl", &level, "exp", &exp, "maxneed", &maxneed);
-		AddVote_Localization(ClientID, "null", "奖金: +{int:exp} 经验. +{int:money} 黄金", "exp", &bonus, "money", &dlvl);
-		AddVote("", "null", ClientID);
-		AddVoteMenu_Localization(ClientID, CMONEY, MENUONLY, "- 捐赠黄金给公会");
-		AddVoteMenu_Localization(ClientID, CSHOP, MENUONLY, "- 公会升级");
-		AddVoteMenu_Localization(ClientID, CHOUSE, MENUONLY, "- 房屋菜单与升级");
-
-		AddVoteMenu_Localization(ClientID, CLANLIST, MENUONLY, "- 公会列表");
-
-		AddVote_Localization(ClientID, "null", "- 公会战（敬请期待）");
-
-		AddVote_Localization(ClientID, "cexit", "- 退出公会!");
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Дом клана
-	else if (Type == CHOUSE)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = CLAN;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "数一数二的公会才能拥有房屋");
-
-		if (Server()->GetHouse(ClientID))
-		{
-			AddVote("", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "房屋设置");
-			AddVote_Localization(ClientID, "chouseopen", "房屋的门 [{str:stat}]", "stat", Server()->GetOpenHouse(Server()->GetOwnHouse(ClientID)) ? "打开" : "关闭");
-			AddVote("", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "公会成员的房屋升级");
-
-			int Count = 499999;
-			AddVote_Localization(ClientID, "uspawnhouse", "- 购买在房屋内的出生点 [{int:price}]", "price", &Count);
-
-			int MaxCount = Server()->GetClan(Clan::ChairLevel, Server()->GetClanID(ClientID));
-			Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::ChairLevel) * 2;
-			AddVote_Localization(ClientID, "uchair", "- 升级挂机所获 [{int:max}*(+1) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
-
-			AddVote("", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "房屋里的家具 - 你的房屋-- 1 级");
-			AddVote("Comming", "null", ClientID);
-		}
-		else
-			AddVote_Localization(ClientID, "null", "你所在的公会还没有房屋呢!");
-
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Лист клана
-	else if (Type == CLANLIST)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = CLAN;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "这是会长处置玩家的菜单");
-		// AddVote_Localization(ClientID, "null", "For open player settings");
-		Server()->ListClan(ClientID, Server()->GetClanID(ClientID));
-		AddBack(ClientID);
-		AddVote("", "null", ClientID);
-		return;
-	}
-
-	// ############################### Выбор действия над игроком с клана
-	else if (Type == CSETTING)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = CLANLIST;
-
-		AddVote_Localization(ClientID, "null", "▶ 选择了玩家 {str:name}", "name", m_apPlayers[ClientID]->m_aSelectPlayer);
-		AddVote_Localization(ClientID, "cgetleader", "▹ 转让公会");
-		bool IsAdmin = false;
-		if (str_comp_nocase(m_apPlayers[ClientID]->m_aSelectPlayer, Server()->AdminName(Server()->GetClanID(ClientID))) == 0)
-		{
-			IsAdmin = true;
-		}
-		if (!IsAdmin)
-		{
-			AddVote_Localization(ClientID, "cgetadmin", "▹ 授予公会管理员");
-		}
-		else
-		{
-			AddVote_Localization(ClientID, "cremadmin", "▹ 移除公会管理员");
-		}
-		AddVote_Localization(ClientID, "ckickoff", "▹ 踢出公会");
-
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Магазин клана
-	else if (Type == CSHOP)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = CLAN;
-
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "公会成员相关的商店");
-		AddVote_Localization(ClientID, "null", "只能由会长来购买");
-		AddVote("", "null", ClientID);
-
-		int Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::MaxMemberNum) * 4;
-		int MaxCount = Server()->GetClan(Clan::MaxMemberNum, Server()->GetClanID(ClientID));
-		AddVote_Localization(ClientID, "null", "公会核心升级");
-		AddVote_Localization(ClientID, "uccount", "- 升级公会最大人数 [{int:maxcount}(+1) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
-
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "升级公会给公会成员的奖金");
-		MaxCount = Server()->GetClan(Clan::ExpAdd, Server()->GetClanID(ClientID));
-		Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::ExpAdd);
-		AddVote_Localization(ClientID, "uaddexp", "- 升级挂机的经验奖励 [{int:max}*(+1) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
-
-		MaxCount = Server()->GetClan(Clan::MoneyAdd, Server()->GetClanID(ClientID));
-		Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::MoneyAdd);
-		AddVote_Localization(ClientID, "uaddmoney", "- 升级挂机的白银奖励 [{int:max}*(+100) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Добавка монет в клан
-	else if (Type == CMONEY)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = CLAN;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "这个菜单可以捐赠黄金给公会");
-		AddVote_Localization(ClientID, "null", "钱是为了大家的");
-		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写数量");
-		AddVote_Localization(ClientID, "null", "为空则默认捐赠1000黄金");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "cm1", "- 捐赠黄金给公会");
-
-		AddBack(ClientID);
-		return;
-	}
-	// ############################### Инвент лист
-	else if (Type == EVENTLIST)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "事件列表");
-		AddVote("", "null", ClientID);
-
-		bool found = false;
-		if (g_Config.m_SvEventSummer)
-		{
-			found = true;
-			AddVote_Localization(ClientID, "null", "事件汇总(summer):");
-			AddVote_Localization(ClientID, "null", "杀死怪物时随机获得合成物品");
-			AddVote_Localization(ClientID, "null", "如果成功的话将会随机合成");
-			AddVote_Localization(ClientID, "null", "你将得到称号与技能汇总(summer)");
-			AddVote("", "null", ClientID);
-		}
-		if (g_Config.m_SvEventHammer)
-		{
-			found = true;
-			AddVote_Localization(ClientID, "null", "事件物品(地上掉的锤子):");
-			AddVote_Localization(ClientID, "null", "当杀死怪物时随机获得一种盒子");
-			AddVote("", "null", ClientID);
-		}
-		if (g_Config.m_SvEventSchool)
-		{
-			found = true;
-			AddVote_Localization(ClientID, "null", "在线奖励(Back to School):");
-			AddVote_Localization(ClientID, "null", "每30分钟你会得到一次在线奖励");
-		}
-		if (!found)
-			AddVote_Localization(ClientID, "null", "肥肠豹潜! 现在没有活动的事件."); // az ——翻译员
-
-		AddBack(ClientID);
-		return;
-	}
-	// ############################### Лист разыскиваемых
-	else if (Type == RESLIST)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "这是被通缉玩家的列表");
-		AddVote_Localization(ClientID, "null", "如果你击败了列表里的玩家");
-		AddVote_Localization(ClientID, "null", "你将会得到回报(白银)，而那个玩家将会被打入大牢");
-		AddVote("", "null", ClientID);
-
-		bool Found = false;
-		for (int i = 0; i < MAX_PLAYERS; ++i)
-		{
-			if (m_apPlayers[i])
+			if(Server()->GetSpawnInClanHouse(ClientID, 0) || Server()->GetSpawnInClanHouse(ClientID, 1) || Server()->GetSpawnInClanHouse(ClientID, 2))
 			{
-				if (m_apPlayers[i]->m_Search)
-				{
-					char aBuf[64];
-					str_format(aBuf, sizeof(aBuf), "-%s (%d 白银)", Server()->ClientName(i), m_apPlayers[i]->AccData()->m_Level * 1000);
-					AddVote(aBuf, "null", ClientID);
-
-					Found = true;
-				}
+				Data = Server()->GetItemSettings(ClientID, SSPAWNSETTINGS) ? "公会" : "默认";
+				AddVote_Localization(ClientID, "sspawnsettings", "☞ 出生点设置 {str:stat}", "stat", Data);
 			}
+
+			Data = "正常";
+			if (Server()->GetItemSettings(ClientID, SCHAT) == 1)
+				Data = "过滤";
+			else if (Server()->GetItemSettings(ClientID, SCHAT) == 2)
+				Data = "最少";
+			AddVote_Localization(ClientID, "sssetingschat", "☞ 聊天栏提示信息 ({str:stat})", "stat", Data);
+
+			Data = "锤子";
+			if (Server()->GetItemSettings(ClientID, SDROP))
+				Data = "F3";
+			AddVote_Localization(ClientID, "sssetingsdrop", "☞ 拾取物品方法 ({str:stat})", "stat", Data);
+
+			AddBack(ClientID);
+			return;
 		}
-		if (!Found)
-			AddVote_Localization(ClientID, "null", "正义照耀在MMOTee，罪恶暂时离开\\(^o^)/~");
 
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Топ меню
-	else if (Type == TOPMENU)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "玩家/公会排名");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "★ 玩家 - {str:psevdo}", "psevdo", LocalizeText(ClientID, "Players"));
-		AddVote_Localization(ClientID, "sort1", "☞ 等级排名");
-		AddVote_Localization(ClientID, "sort2", "☞ 黄金排名");
-		AddVote_Localization(ClientID, "sort3", "☞ 任务排名");
-		AddVote_Localization(ClientID, "sort6", "☞ 击杀排名");
-		AddVote_Localization(ClientID, "sort7", "☞ 竞技场胜利次数排名");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "★ 公会 - {str:psevdo}", "psevdo", LocalizeText(ClientID, "Clans"));
-		AddVote_Localization(ClientID, "sort4", "☞ 等级排名");
-		AddVote_Localization(ClientID, "sort5", "☞ 黄金排名");
-		AddVote_Localization(ClientID, "sort8", "☞ 声誉排名");
-
-		AddBack(ClientID);
-		AddVote("", "null", ClientID);
-
-		if (m_apPlayers[ClientID]->m_SortedSelectTop == 1)
-			Server()->ShowTop10(ClientID, "Level", 1);
-		else if (m_apPlayers[ClientID]->m_SortedSelectTop == 2)
-			Server()->ShowTop10(ClientID, "Gold", 1);
-		else if (m_apPlayers[ClientID]->m_SortedSelectTop == 3)
-			Server()->ShowTop10(ClientID, "Quest", 1);
-		else if (m_apPlayers[ClientID]->m_SortedSelectTop == 4)
-			Server()->ShowTop10Clans(ClientID, "Level", 1);
-		else if (m_apPlayers[ClientID]->m_SortedSelectTop == 5)
-			Server()->ShowTop10Clans(ClientID, "Money", 1);
-		else if (m_apPlayers[ClientID]->m_SortedSelectTop == 6)
-			Server()->ShowTop10(ClientID, "Killing", 1);
-		else if (m_apPlayers[ClientID]->m_SortedSelectTop == 7)
-			Server()->ShowTop10(ClientID, "WinArea", 1);
-		else if (m_apPlayers[ClientID]->m_SortedSelectTop == 8)
-			Server()->ShowTop10Clans(ClientID, "Relevance", 1);
-
-		return;
-	}
-
-	// ############################### Инвентарь
-	else if (Type == INVENTORY)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "这是你的物品栏");
-		AddVote_Localization(ClientID, "null", "选择类型在 () 数量");
-		AddVote("", "null", ClientID);
-
-		int Counts = Server()->GetItemCountType(ClientID, 6);
-		AddVote_Localization(ClientID, "its6", "☞ 专长与工作 ({int:got})", "got", &Counts);
-		Counts = Server()->GetItemCountType(ClientID, 5);
-		AddVote_Localization(ClientID, "its5", "☞ 合成与蓝图 ({int:got})", "got", &Counts);
-		Counts = Server()->GetItemCountType(ClientID, 4);
-		AddVote_Localization(ClientID, "its4", "☞ 消耗品 ({int:got})", "got", &Counts);
-		Counts = Server()->GetItemCountType(ClientID, 3);
-		AddVote_Localization(ClientID, "its3", "☞ 任务与其他 ({int:got})", "got", &Counts);
-		Counts = Server()->GetItemCountType(ClientID, 2);
-		AddVote_Localization(ClientID, "its2", "☞ 稀有物品 ({int:got})", "got", &Counts);
-		Counts = Server()->GetItemCountType(ClientID, 1);
-		AddVote_Localization(ClientID, "its1", "☞ 武器与升级 ({int:got})", "got", &Counts);
-		AddBack(ClientID);
-		AddVote("", "null", ClientID);
-		if (m_apPlayers[ClientID]->m_SelectItemType == 1)
-			Server()->ListInventory(ClientID, 1);
-		else if (m_apPlayers[ClientID]->m_SelectItemType == 2)
-			Server()->ListInventory(ClientID, 2);
-		else if (m_apPlayers[ClientID]->m_SelectItemType == 3)
-			Server()->ListInventory(ClientID, 3);
-		else if (m_apPlayers[ClientID]->m_SelectItemType == 4)
-			Server()->ListInventory(ClientID, 4);
-		else if (m_apPlayers[ClientID]->m_SelectItemType == 5)
-			Server()->ListInventory(ClientID, 5);
-		else if (m_apPlayers[ClientID]->m_SelectItemType == 6)
-			Server()->ListInventory(ClientID, 6);
-		// 1 - Weapon Upgradins, 2 - Rare Artifacts, 3 - Quest Item's, 4 - Useds Items, 5 - Crafted Item, 6 - Work item
-		return;
-	}
-
-	// ############################### Донат меню
-	else if (Type == CDONATE)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "充钱与特权");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "null", _("{int:rmb} 人民币 - {int:donate} 点券"), "rmb", &g_Config.m_InfRmb, "donate", &g_Config.m_InfDonate);
-		AddVote_Localization(ClientID, "null", " ");
-		AddVote_Localization(ClientID, "null", "向管理员 FFS或Minjun 捐赠(打钱)");
-		AddVote_Localization(ClientID, "null", "FFS联系方式, QQ: 1562151175, 微信: teeffs");
-		AddVote_Localization(ClientID, "null", "Minjun联系方式QQ: 2398396911");
-		if(!g_Config.m_SvDonate) AddVote_Localization(ClientID, "null", "服务器目前资金足够,暂时不需要充值");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "$ 你充了 {int:don}", "don", &m_apPlayers[ClientID]->AccData()->m_Donate);
-		AddVote_Localization(ClientID, "null", " ");
-		AddVote_Localization(ClientID, "bvip", "☞ VIP 包 [400]");
-		AddVote_Localization(ClientID, "null", "物品 禁止PVP, 技能点(SP)盒子, 10,000 钱袋");
-		AddVote_Localization(ClientID, "null", "VIP 称号(吃菜经验/打怪掉落X2) + 专属特效");
-		AddVote_Localization(ClientID, "null", "VIP可叠加!");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bsp", "☞ 技能点盒子 [200]");
-		AddVote_Localization(ClientID, "null", "获得 10 升级点 + 10  技能点");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bantipvp", "☞ 物品 禁止PVP [200]");
-		AddVote_Localization(ClientID, "null", "你将会获得禁止PVP设置");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bjuicer", "☞ 物品 榨汁儿机 [200]");
-		AddVote_Localization(ClientID, "null", "一次性吃完所有蔬菜水果");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bcustomized", "☞ 物品 个性化包 [300]");
-		AddVote_Localization(ClientID, "null", "让你使用自己的皮肤和颜色");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote("", "null", ClientID);
-		AddBack(ClientID);
-		return;
-	}
-
-	else if (Type == LABOURDAY)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "劳动节限定");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "null", _("{int:rmb} 人民币 - {int:donate} 点券"), "rmb", &g_Config.m_InfRmb, "donate", &g_Config.m_InfDonate);
-		AddVote_Localization(ClientID, "null", " ");
-		AddVote_Localization(ClientID, "null", "向管理员 FFS或Minjun 捐赠获得点卷");
-		AddVote_Localization(ClientID, "null", "FFS联系方式, QQ: 1562151175, 微信: teeffs");
-		AddVote_Localization(ClientID, "null", "Minjun联系方式QQ: 2398396911");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "$ 你充了 {int:don}", "don", &m_apPlayers[ClientID]->AccData()->m_Donate);
-		AddVote_Localization(ClientID, "null", " ");
-		AddVote_Localization(ClientID, "blabourpack", "☞ 劳动节捆绑包 [1800]");
-		AddVote_Localization(ClientID, "null", "获得以下所有称号");
-		AddVote_Localization(ClientID, "null", "可以节省720点卷");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bwf", "☞ 称号:工人爷爷 [300]");
-		AddVote_Localization(ClientID, "null", "挖矿速度提升100%");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bwm", "☞ 称号:工人奶奶 [300]");
-		AddVote_Localization(ClientID, "null", "挖矿所得增加100%");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bff", "☞ 称号:农民爷爷 [300]");
-		AddVote_Localization(ClientID, "null", "种地速度提升100%");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bfm", "☞ 称号:农民奶奶 [300]");
-		AddVote_Localization(ClientID, "null", "种地所得增加100%");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bsgy", "☞ 称号:手工业 [300]");
-		AddVote_Localization(ClientID, "null", "合成成功率提升20%");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bgshy", "☞ 称号:公私合营: [200]");
-		AddVote_Localization(ClientID, "null", "打怪爆率提升30%");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bwhdgm", "☞ 称号:文化大革命 [100]");
-		AddVote_Localization(ClientID, "null", "杀人不增加愤怒值");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "brmgs", "☞ 称号:人民公社 [220]");
-		AddVote_Localization(ClientID, "null", "吃菜获得的经验*1.5");
-		AddVote_Localization(ClientID, "null", "-----");
-		AddVote_Localization(ClientID, "bdyj", "☞ 称号:大跃进 [200]");
-		AddVote_Localization(ClientID, "null", "移动速度增加，具有'浮夸风'");
-		AddVote("", "null", ClientID);
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Инвентарь действие -- 选择物品后的操作
-	else if (Type == SELITEM)
-	{
-		int SelectItem = m_apPlayers[ClientID]->m_SelectItem;
-		if (Server()->GetItemType(ClientID, SelectItem) == 15 || Server()->GetItemType(ClientID, SelectItem) == 16 || Server()->GetItemType(ClientID, SelectItem) == 17)
-			m_apPlayers[ClientID]->m_LastVotelist = ARMORMENU;
-		else
-			m_apPlayers[ClientID]->m_LastVotelist = INVENTORY;
-
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", Server()->GetItemDesc(ClientID, SelectItem));
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写数量");
-		AddVote_Localization(ClientID, "null", "为空则默认使用一个");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "null", "▶ 你选中了物品 {str:name}", "name", Server()->GetItemName(ClientID, m_apPlayers[ClientID]->m_SelectItem));
-
-		if (Server()->GetItemType(ClientID, SelectItem) == 4)
-			AddVote_Localization(ClientID, "useitem", "▹ 使用该物品");
-
-		if (Server()->GetItemPrice(ClientID, SelectItem, 1) > 0 && m_apPlayers[ClientID]->GetWork())
-			AddVote_Localization(ClientID, "sellitem", "▹ 卖出该物品");
-
-		if (Server()->GetItemType(ClientID, SelectItem) != 6)
-			AddVote_Localization(ClientID, "dropitem", "▹ 丢掉该物品 (╯°Д°)╯");
-
-		if (Server()->GetItemType(ClientID, SelectItem) == 15 || Server()->GetItemType(ClientID, SelectItem) == 16 || Server()->GetItemType(ClientID, SelectItem) == 17)
+		// ############################### Меню хилера
+		break;
+		case CLMENU:
 		{
-			AddVote("", "null", ClientID);
-			AddVote_Localization(ClientID, "enchantitem", "▹ 附魔该物品 (需要 1000 个材料)");
-			AddVote("", "null", ClientID);
-		}
-		AddVote_Localization(ClientID, "destitem", "▹ 摧毁物品 ㄟ( ▔, ▔ )ㄏ ");
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Квесты меню -- 任务相关
-	else if (Type == QUEST)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InQuest())
-		{
-			bool Trying = true;
+			m_apPlayers[ClientID]->m_UpdateMenu = Type;
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
 			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-			AddVote_Localization(ClientID, "null", "任务菜单");
+			AddVote_Localization(ClientID, "null", "这是升级职业的");
+			AddVote_Localization(ClientID, "null", "被动技能与主动技能");
+			AddVote_Localization(ClientID, "null", "在投票的理由填写处填写升级数");
 			AddVote("", "null", ClientID);
-			if (m_apPlayers[ClientID]->AccData()->m_Quest == 1)
+			AddVote_Localization(ClientID, "null", "统计数据(升级点 - {int:up} / 技能点 - {int:sp})", "up", &m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade, "sp", &m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint);
+			AddVoteMenu_Localization(ClientID, GETUP, MENUONLY, _("-> 获取升级点"));
+			AddVote("············", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "♛ {str:psevdo}", "psevdo", LocalizeText(ClientID, "升级选项"));
+			AddVote_Localization(ClientID, "uhealth", "☞ [{int:sum}] 生命值上限 +40(20升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Health, "bonus", m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER ? "C+10" : "C+0");
+			AddVote_Localization(ClientID, "udamage", "☞ [{int:sum}] 伤害 +1(50升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Damage, "bonus", "C+0");
+			AddVote_Localization(ClientID, "uammoregen", "☞ [{int:sum}] 子弹回复速度 +1(50升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_AmmoRegen, "bonus", "C+0");
+			AddVote_Localization(ClientID, "uammo", "☞ [{int:sum}] 子弹 +1(100升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Ammo, "bonus", "C+0");
+			AddVote_Localization(ClientID, "uhpregen", "☞ [{int:sum}] 生命恢复速度 +1(20升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HPRegen, "bonus", "C+0");
+			AddVote_Localization(ClientID, "uhandle", "☞ [{int:sum}] 射速 +1(50升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Speed, "bonus", "C+0");
+			AddVote_Localization(ClientID, "umana", "☞ [{int:sum}] 魔能 +1(10升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Mana, "bonus", "C+0");
+			AddVote_Localization(ClientID, "uspray", "☞ [{int:sum}] 子弹散射 +1(100升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Spray, "bonus", "C+0");
+			AddVote("············", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "♞ {str:psevdo}", "psevdo", LocalizeText(ClientID, "职业被动技"));
+
+			int Need = HAMMERRANGE;
+			if (m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER)
 			{
-				int Need = QUEST1, Counts = Server()->GetItemCount(ClientID, PIGPORNO);
-				AddVote_Localization(ClientID, "null", "可爱的佩奇 I");
-				AddVote_Localization(ClientID, "null", "拿起你的杀猪刀朝可爱的小猪砍去，");
-				AddVote_Localization(ClientID, "null", "你将有机会会获得它的肉。");
-				AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "任务奖励: {str:got}, 解锁Boss:捣蛋猪", "got", "4000经验/200000白银");
+				AddVote_Localization(ClientID, "ushammerrange", "☞ ({int:need}技能点) 生命值 +4% ({str:act}) ({int:sum})", "need", &Need, "act",
+									 m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange);
+				AddVote_Localization(ClientID, "upasive2", "☞ ({int:need}技能点) 伤害减免 +2% ({str:act}) ({int:sum})", "need", &Need, "act",
+									 m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2 ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2);
 			}
-			else if (m_apPlayers[ClientID]->AccData()->m_Quest == 2)
+			else if (m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_ASSASINS)
 			{
-				int Need = QUEST2, Counts = Server()->GetItemCount(ClientID, PIGPORNO);
-				AddVote_Localization(ClientID, "null", "可爱的佩奇 II");
-				AddVote_Localization(ClientID, "null", "拿起你的杀猪刀朝可爱的小猪砍去，");
-				AddVote_Localization(ClientID, "null", "你将有机会会获得它的肉。");
-				AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "4000经验/250000白银");
+				AddVote_Localization(ClientID, "ushammerrange", "☞ ({int:need}技能点) 暴击率 +6.67% ({str:act}) ({int:sum})", "need", &Need, "act",
+									 m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange);
+				AddVote_Localization(ClientID, "upasive2", "☞ ({int:need}技能点) 暴击伤害 +3% ({str:act}) ({int:sum})", "need", &Need, "act",
+									 m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2 ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2);
 			}
-			else if (m_apPlayers[ClientID]->AccData()->m_Quest == 3)
+			else if (m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_BERSERK)
 			{
-				int Need = QUEST3, Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
-				AddVote_Localization(ClientID, "null", "Kwah I");
-				AddVote_Localization(ClientID, "null", "杀死盘踞在矿坑中部的kwah们,");
-				AddVote_Localization(ClientID, "null", "把它们的头给我带过来!");
-				AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "任务奖励: {str:got},解锁Boss:Slime", "got", "8000经验/500000白银");
+				AddVote_Localization(ClientID, "ushammerrange", "☞ ({int:need}技能点) 锤子范围 ({str:act}) ({int:sum})", "need", &Need, "act",
+									 m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HammerRange);
+				AddVote_Localization(ClientID, "upasive2", "☞ ({int:need}技能点) 伤害 +3% ({str:act}) ({int:sum})", "need", &Need, "act",
+									 m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2 ? "✔" : "x", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Pasive2);
 			}
-			else if (m_apPlayers[ClientID]->AccData()->m_Quest == 4)
+			AddVote("············", "null", ClientID);
+
+			AddVote_Localization(ClientID, "null", "☭ {str:psevdo}", "psevdo", "主动技能");
+			AddVote_Localization(ClientID, "uskillwall", "☞ (70技能点) 魔能-激光墙 ({str:act})", "act", Server()->GetItemCount(ClientID, SKWALL) ? "30 Mana ✔" : "x");
+
+			SkillSettings(ClientID, SKWALL, "sskillwall");
+			AddVote_Localization(ClientID, "uskillheal", "☞ (60技能点) 治疗 ({str:act})", "act", Server()->GetItemCount(ClientID, SKHEAL) ? "50 魔能 ✔" : "x");
+			SkillSettings(ClientID, SKHEAL, "sskillheal");
+			AddVote_Localization(ClientID, "uskillsword", "☞ (20技能点) 光剑 ({str:act})", "act", Server()->GetItemCount(ClientID, SSWORD) ? "1 魔能(持续消耗) ✔" : "x");
+			SkillSettings(ClientID, SSWORD, "sskillsword");
+			SkillSettings(ClientID, SHEALSUMMER, "sskillsummer");
+			AddBack(ClientID);
+			return;
+		}
+
+		// ############################### Клан основное меню
+		break;
+		case CLAN:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			int ID = Server()->GetClanID(ClientID);
+			int Bank = Server()->GetClan(Clan::Money, Server()->GetClanID(ClientID));
+			int Count = Server()->GetClan(Clan::MemberNum, Server()->GetClanID(ClientID));
+			int Relevance = Server()->GetClan(Clan::Relevance, Server()->GetClanID(ClientID));
+			int MaxCount = Server()->GetClan(Clan::MaxMemberNum, Server()->GetClanID(ClientID));
+
+			Server()->InitClanID(Server()->GetClanID(ClientID), PLUS, "Init", 0, false);
+
+			AddVote_Localization(ClientID, "null", "公会名称: {str:name}(ID:{int:id})", "name", Server()->ClientClan(ClientID), "id", &ID);
+			AddVote_Localization(ClientID, "null", "黄金储量: {int:bank}", "bank", &Bank);
+			AddVote_Localization(ClientID, "null", "会长: {str:leader}", "leader", Server()->LeaderName(Server()->GetClanID(ClientID)));
+			AddVote_Localization(ClientID, "null", "管理员: {str:admin}", "admin", Server()->AdminName(Server()->GetClanID(ClientID)));
+			AddVote_Localization(ClientID, "null", "社会声誉: {int:revl}", "revl", &Relevance);
+			AddVote_Localization(ClientID, "null", "公会人数: {int:count}/{int:maxcount}", "count", &Count, "maxcount", &MaxCount);
+
+			int exp = Server()->GetClan(Clan::Exp, Server()->GetClanID(ClientID));
+			int bonus = Server()->GetClan(Clan::ExpAdd, Server()->GetClanID(ClientID));
+			int level = Server()->GetClan(Clan::Level, Server()->GetClanID(ClientID));
+			int dlvl = Server()->GetClan(Clan::MoneyAdd, Server()->GetClanID(ClientID)) * 100;
+			int maxneed = Server()->GetClan(Clan::Level, Server()->GetClanID(ClientID)) * m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::Level);
+			AddVote_Localization(ClientID, "null", "等级: {int:lvl} 经验 ({int:exp}/{int:maxneed})", "lvl", &level, "exp", &exp, "maxneed", &maxneed);
+			AddVote_Localization(ClientID, "null", "奖金: +{int:exp} 经验. +{int:money} 黄金", "exp", &bonus, "money", &dlvl);
+			AddVote("", "null", ClientID);
+			AddVoteMenu_Localization(ClientID, CMONEY, MENUONLY, "- 捐赠黄金给公会");
+			AddVoteMenu_Localization(ClientID, CSHOP, MENUONLY, "- 公会升级");
+			AddVoteMenu_Localization(ClientID, CHOUSE, MENUONLY, "- 房屋菜单与升级");
+
+			AddVoteMenu_Localization(ClientID, CLANLIST, MENUONLY, "- 公会列表");
+
+			AddVote_Localization(ClientID, "null", "- 公会战（敬请期待）");
+
+			AddVote_Localization(ClientID, "cexit", "- 退出公会!");
+			AddBack(ClientID);
+			return;
+		}
+
+		// ############################### Дом клана
+		break;
+		case CHOUSE:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = CLAN;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "数一数二的公会才能拥有房屋");
+
+			if (Server()->GetHouse(ClientID))
 			{
-				int Need = QUEST4, Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
-				AddVote_Localization(ClientID, "null", "Kwah II");
-				AddVote_Localization(ClientID, "null", "杀死盘踞在矿坑中部的kwah们,");
-				AddVote_Localization(ClientID, "null", "把它们的头给我带过来!");
-				AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "任务奖励: {str:got},解锁Boss:吸血鬼", "got", "8000经验/550000白银");
+				AddVote("", "null", ClientID);
+				AddVote_Localization(ClientID, "null", "房屋设置");
+				AddVote_Localization(ClientID, "chouseopen", "房屋的门 [{str:stat}]", "stat", Server()->GetOpenHouse(Server()->GetOwnHouse(ClientID)) ? "打开" : "关闭");
+				AddVote("", "null", ClientID);
+				AddVote_Localization(ClientID, "null", "公会成员的房屋升级");
+
+				int Count = 499999;
+				AddVote_Localization(ClientID, "uspawnhouse", "- 购买在房屋内的出生点 [{int:price}]", "price", &Count);
+
+				int MaxCount = Server()->GetClan(Clan::ChairLevel, Server()->GetClanID(ClientID));
+				Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::ChairLevel) * 2;
+				AddVote_Localization(ClientID, "uchair", "- 升级挂机所获 [{int:max}*(+1) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
+
+				AddVote("", "null", ClientID);
+				AddVote_Localization(ClientID, "null", "房屋里的家具 - 你的房屋-- 1 级");
+				AddVote("Comming", "null", ClientID);
 			}
-			else if (m_apPlayers[ClientID]->AccData()->m_Quest == 5)
+			else
+				AddVote_Localization(ClientID, "null", "你所在的公会还没有房屋呢!");
+
+			AddBack(ClientID);
+			return;
+		}
+
+		// ############################### Лист клана
+		break;
+		case CLANLIST:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = CLAN;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "这是会长处置玩家的菜单");
+			// AddVote_Localization(ClientID, "null", "For open player settings");
+			Server()->ListClan(ClientID, Server()->GetClanID(ClientID));
+			AddBack(ClientID);
+			AddVote("", "null", ClientID);
+			return;
+		}
+
+		// ############################### Выбор действия над игроком с клана
+		break;
+		case CSETTING:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = CLANLIST;
+
+			AddVote_Localization(ClientID, "null", "▶ 选择了玩家 {str:name}", "name", m_apPlayers[ClientID]->m_aSelectPlayer);
+			AddVote_Localization(ClientID, "cgetleader", "▹ 转让公会");
+			bool IsAdmin = false;
+			if (str_comp_nocase(m_apPlayers[ClientID]->m_aSelectPlayer, Server()->AdminName(Server()->GetClanID(ClientID))) == 0)
 			{
-				int Need = QUEST5;
-				int Counts = Server()->GetItemCount(ClientID, PIGPORNO);
-				int Counts2 = Server()->GetItemCount(ClientID, KWAHGANDON);
-				AddVote_Localization(ClientID, "null", "佩奇与Kwah [第一步] - 猪肉, Kwah 头 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
-				AddVote_Localization(ClientID, "null", "你一共有 {str:got} 个所需物品", "got", "Kwah 耳环, 1000000白银");
+				IsAdmin = true;
 			}
-			else if (m_apPlayers[ClientID]->AccData()->m_Quest == 6)
+			if (!IsAdmin)
 			{
-				int Need = QUEST6;
-				int Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
-				int Counts2 = Server()->GetItemCount(ClientID, FOOTKWAH);
-				AddVote_Localization(ClientID, "null", "Kwah [第一步] - Kwah 头, Kwah 脚 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
-				AddVote_Localization(ClientID, "null", "你一共有 {str:got} 个所需物品", "got", "武器的蓝图, 1050000白银");
-				AddVote_Localization(ClientID, "null", "+ 称号 ♥任务_#");
-			}
-			else if (m_apPlayers[ClientID]->AccData()->m_Quest == 7)
-			{
-				int Need = QUEST7;
-				int Counts = Server()->GetItemCount(ClientID, GUARDHEAD);
-				AddVote_Localization(ClientID, "null", "贪污的守卫 - 守卫头 [{int:get}/{int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "有三个守卫贪了我900万卷心菜!");
-				AddVote_Localization(ClientID, "null", "把他们杀了!杀掉1个另一个就会出来!");
-				AddVote_Localization(ClientID, "null", "已获得：守卫头 [{int:get}/{int:need}]", "get", &Counts, "need", &Need);
-				AddVote_Localization(ClientID, "null", "任务奖励：称号-守卫, Boss:守卫");
+				AddVote_Localization(ClientID, "cgetadmin", "▹ 授予公会管理员");
 			}
 			else
 			{
-				Trying = false;
-				AddVote_Localization(ClientID, "null", "任务不可用");
+				AddVote_Localization(ClientID, "cremadmin", "▹ 移除公会管理员");
 			}
-			if (Trying)
-				AddVote_Localization(ClientID, "passquest", "- 提交通过任务");
+			AddVote_Localization(ClientID, "ckickoff", "▹ 踢出公会");
+
+			AddBack(ClientID);
+			return;
 		}
-		else
-			AddVote_Localization(ClientID, "null", "你不在任务大厅(Quest Room)");
 
-		AddBack(ClientID);
-		return;
-	}
-
-	// ############################### Крафтинг меню
-	else if (Type == CRAFTING)
-	{
-		m_apPlayers[ClientID]->m_LastVotelist = AUTH;
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
-		AddVote_Localization(ClientID, "null", "合成菜单");
-		AddVote("", "null", ClientID);
-		AddVote_Localization(ClientID, "scr1", "▹ 基础物品");
-		AddVote_Localization(ClientID, "scr2", "▹ 神器");
-		AddVote_Localization(ClientID, "scr3", "▹ 配件与武器");
-		AddVote_Localization(ClientID, "scr4", "▹ 增益与食物");
-		AddVote_Localization(ClientID, "scr5", "▹ 工作专长相关");
-		AddVote_Localization(ClientID, "scr6", "▹ 装备");
-
-		AddBack(ClientID);
-		AddVote("", "null", ClientID);
-
-		if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InCrafted())
+		// ############################### Магазин клана
+		break;
+		case CSHOP:
 		{
-			if (m_apPlayers[ClientID]->m_SortedSelectCraft == 1)
+			m_apPlayers[ClientID]->m_LastVotelist = CLAN;
+
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "公会成员相关的商店");
+			AddVote_Localization(ClientID, "null", "只能由会长来购买");
+			AddVote("", "null", ClientID);
+
+			int Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::MaxMemberNum) * 4;
+			int MaxCount = Server()->GetClan(Clan::MaxMemberNum, Server()->GetClanID(ClientID));
+			AddVote_Localization(ClientID, "null", "公会核心升级");
+			AddVote_Localization(ClientID, "uccount", "- 升级公会最大人数 [{int:maxcount}(+1) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
+
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "升级公会给公会成员的奖金");
+			MaxCount = Server()->GetClan(Clan::ExpAdd, Server()->GetClanID(ClientID));
+			Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::ExpAdd);
+			AddVote_Localization(ClientID, "uaddexp", "- 升级挂机的经验奖励 [{int:max}*(+1) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
+
+			MaxCount = Server()->GetClan(Clan::MoneyAdd, Server()->GetClanID(ClientID));
+			Count = m_apPlayers[ClientID]->GetNeedForUpgClan(Clan::MoneyAdd);
+			AddVote_Localization(ClientID, "uaddmoney", "- 升级挂机的白银奖励 [{int:max}*(+100) {int:coin}]", "maxcount", &MaxCount, "coin", &Count);
+			AddBack(ClientID);
+			return;
+		}
+
+		// ############################### Добавка монет в клан
+		break;
+		case CMONEY:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = CLAN;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "这个菜单可以捐赠黄金给公会");
+			AddVote_Localization(ClientID, "null", "钱是为了大家的");
+			AddVote_Localization(ClientID, "null", "在投票的理由填写处填写数量");
+			AddVote_Localization(ClientID, "null", "为空则默认捐赠1000黄金");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "cm1", "- 捐赠黄金给公会");
+
+			AddBack(ClientID);
+			return;
+		}
+		// ############################### Инвент лист
+		break;
+		case EVENTLIST:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "事件列表");
+			AddVote("", "null", ClientID);
+
+			bool found = false;
+			if (g_Config.m_SvEventSummer)
 			{
-				AddNewCraftVote(ClientID, "与黄金1:100兑换", GOLDTICKET);
-				AddNewCraftVote(ClientID, "骷髅骨头x30", SKELETSSBONE);
-				AddNewCraftVote(ClientID, "僵尸眼x30", ZOMIBEBIGEYE);
-				AddNewCraftVote(ClientID, "铁矿x100, 铜矿x100", FORMULAEARRINGS);
-				AddNewCraftVote(ClientID, "铁矿x125, 铜矿x125", FORMULAFORRING);
-				AddNewCraftVote(ClientID, "铁矿x150, 铜矿x150", FORMULAWEAPON);
-				AddNewCraftVote(ClientID, "钻石矿x1, 铁矿x10", IRON);
+				found = true;
+				AddVote_Localization(ClientID, "null", "事件汇总(summer):");
+				AddVote_Localization(ClientID, "null", "杀死怪物时随机获得合成物品");
+				AddVote_Localization(ClientID, "null", "如果成功的话将会随机合成");
+				AddVote_Localization(ClientID, "null", "你将得到称号与技能汇总(summer)");
+				AddVote("", "null", ClientID);
 			}
-			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 2)
+			if (g_Config.m_SvEventHammer)
 			{
-				if (g_Config.m_SvEventSummer)
+				found = true;
+				AddVote_Localization(ClientID, "null", "事件物品(地上掉的锤子):");
+				AddVote_Localization(ClientID, "null", "当杀死怪物时随机获得一种盒子");
+				AddVote("", "null", ClientID);
+			}
+			if (g_Config.m_SvEventSchool)
+			{
+				found = true;
+				AddVote_Localization(ClientID, "null", "在线奖励(Back to School):");
+				AddVote_Localization(ClientID, "null", "每30分钟你会得到一次在线奖励");
+			}
+			if (!found)
+				AddVote_Localization(ClientID, "null", "肥肠豹潜! 现在没有活动的事件."); // az ——翻译员
+
+			AddBack(ClientID);
+			return;
+		}
+		// ############################### Лист разыскиваемых
+		break;
+		case RESLIST:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "这是被通缉玩家的列表");
+			AddVote_Localization(ClientID, "null", "如果你击败了列表里的玩家");
+			AddVote_Localization(ClientID, "null", "你将会得到回报(白银)，而那个玩家将会被打入大牢");
+			AddVote("", "null", ClientID);
+
+			bool Found = false;
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				if (m_apPlayers[i])
 				{
-					AddVote_Localization(ClientID, "null", "注意:合成成功率4%,15次失败后必定合成成功");
-					AddNewCraftVote(ClientID, "日耀x20", SHEALSUMMER);
+					if (m_apPlayers[i]->m_Search)
+					{
+						char aBuf[64];
+						str_format(aBuf, sizeof(aBuf), "-%s (%d 白银)", Server()->ClientName(i), m_apPlayers[i]->AccData()->m_Level * 1000);
+						AddVote(aBuf, "null", ClientID);
+
+						Found = true;
+					}
+				}
+			}
+			if (!Found)
+			{
+				AddVote_Localization(ClientID, "null", "正义照耀在MMOTee的世界里");
+				AddVote_Localization(ClientID, "null", "罪恶暂时离开了这个世界\\(^o^)/~");
+			}
+			AddBack(ClientID);
+			return;
+		}
+
+		// ############################### Топ меню
+		break;
+		case TOPMENU:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "玩家/公会排名");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "★ 玩家 - {str:psevdo}", "psevdo", LocalizeText(ClientID, "Players"));
+			AddVote_Localization(ClientID, "sort1", "☞ 等级排名 "); // WARNING! Don't remove the following space!!
+			AddVote_Localization(ClientID, "sort2", "☞ 黄金排名 "); // WARNING! Don't remove the following space!!
+			AddVote_Localization(ClientID, "sort3", "☞ 任务排名 "); // WARNING! Don't remove the following space!!
+			AddVote_Localization(ClientID, "sort6", "☞ 击杀排名");
+			AddVote_Localization(ClientID, "sort7", "☞ 竞技场胜利次数排名");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "★ 公会 - {str:psevdo}", "psevdo", LocalizeText(ClientID, "Clans"));
+			AddVote_Localization(ClientID, "sort4", "☞ 等级排名");
+			AddVote_Localization(ClientID, "sort5", "☞ 黄金排名");
+			AddVote_Localization(ClientID, "sort8", "☞ 声誉排名");
+
+			AddBack(ClientID);
+			AddVote("", "null", ClientID);
+
+			if (m_apPlayers[ClientID]->m_SortedSelectTop == 1)
+				Server()->ShowTop10(ClientID, "Level", 1);
+			else if (m_apPlayers[ClientID]->m_SortedSelectTop == 2)
+				Server()->ShowTop10(ClientID, "Gold", 1);
+			else if (m_apPlayers[ClientID]->m_SortedSelectTop == 3)
+				Server()->ShowTop10(ClientID, "Quest", 1);
+			else if (m_apPlayers[ClientID]->m_SortedSelectTop == 4)
+				Server()->ShowTop10Clans(ClientID, "Level", 1);
+			else if (m_apPlayers[ClientID]->m_SortedSelectTop == 5)
+				Server()->ShowTop10Clans(ClientID, "Money", 1);
+			else if (m_apPlayers[ClientID]->m_SortedSelectTop == 6)
+				Server()->ShowTop10(ClientID, "Killing", 1);
+			else if (m_apPlayers[ClientID]->m_SortedSelectTop == 7)
+				Server()->ShowTop10(ClientID, "WinArea", 1);
+			else if (m_apPlayers[ClientID]->m_SortedSelectTop == 8)
+				Server()->ShowTop10Clans(ClientID, "Relevance", 1);
+
+			return;
+		}
+
+		// ############################### Инвентарь
+		break;
+		case INVENTORY:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "这是你的物品栏");
+			AddVote_Localization(ClientID, "null", "选择类型在 () 数量");
+			AddVote("", "null", ClientID);
+
+			int Counts = Server()->GetItemCountType(ClientID, 6);
+			AddVote_Localization(ClientID, "its6", "☞ 专长与工作 ({int:got})", "got", &Counts);
+			Counts = Server()->GetItemCountType(ClientID, 5);
+			AddVote_Localization(ClientID, "its5", "☞ 合成与蓝图 ({int:got})", "got", &Counts);
+			Counts = Server()->GetItemCountType(ClientID, 4);
+			AddVote_Localization(ClientID, "its4", "☞ 消耗品 ({int:got})", "got", &Counts);
+			Counts = Server()->GetItemCountType(ClientID, 3);
+			AddVote_Localization(ClientID, "its3", "☞ 任务与其他 ({int:got})", "got", &Counts);
+			Counts = Server()->GetItemCountType(ClientID, 2);
+			AddVote_Localization(ClientID, "its2", "☞ 稀有物品 ({int:got})", "got", &Counts);
+			Counts = Server()->GetItemCountType(ClientID, 1);
+			AddVote_Localization(ClientID, "its1", "☞ 武器与升级 ({int:got})", "got", &Counts);
+			AddBack(ClientID);
+			AddVote("", "null", ClientID);
+			if (m_apPlayers[ClientID]->m_SelectItemType == 1)
+				Server()->ListInventory(ClientID, 1);
+			else if (m_apPlayers[ClientID]->m_SelectItemType == 2)
+				Server()->ListInventory(ClientID, 2);
+			else if (m_apPlayers[ClientID]->m_SelectItemType == 3)
+				Server()->ListInventory(ClientID, 3);
+			else if (m_apPlayers[ClientID]->m_SelectItemType == 4)
+				Server()->ListInventory(ClientID, 4);
+			else if (m_apPlayers[ClientID]->m_SelectItemType == 5)
+				Server()->ListInventory(ClientID, 5);
+			else if (m_apPlayers[ClientID]->m_SelectItemType == 6)
+				Server()->ListInventory(ClientID, 6);
+			// 1 - Weapon Upgradins, 2 - Rare Artifacts, 3 - Quest Item's, 4 - Useds Items, 5 - Crafted Item, 6 - Work item
+			return;
+		}
+
+		// ############################### Донат меню
+		break;
+		case CDONATE:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "充钱与特权");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "null", _("{int:rmb} 人民币 - {int:donate} 点券"), "rmb", &g_Config.m_InfRmb, "donate", &g_Config.m_InfDonate);
+			AddVote_Localization(ClientID, "null", " ");
+			AddVote_Localization(ClientID, "null", "向管理员 FFS或Minjun 捐赠(打钱)");
+			AddVote_Localization(ClientID, "null", "FFS联系方式, QQ: 1562151175, 微信: teeffs");
+			AddVote_Localization(ClientID, "null", "Minjun联系方式QQ: 2398396911");
+			if(!g_Config.m_SvDonate) AddVote_Localization(ClientID, "null", "服务器目前资金足够,暂时不需要充值");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "$ 你充了 {int:don}", "don", &m_apPlayers[ClientID]->AccData()->m_Donate);
+			AddVote_Localization(ClientID, "null", " ");
+			AddVote_Localization(ClientID, "bvip", "☞ VIP 包 [400]");
+			AddVote_Localization(ClientID, "null", "物品 禁止PVP, 技能点(SP)盒子, 10,000 钱袋");
+			AddVote_Localization(ClientID, "null", "VIP 称号(吃菜经验/打怪掉落X2) + 专属特效");
+			AddVote_Localization(ClientID, "null", "VIP可叠加!");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bsp", "☞ 技能点盒子 [200]");
+			AddVote_Localization(ClientID, "null", "获得 10 升级点 + 10  技能点");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bantipvp", "☞ 物品 禁止PVP [200]");
+			AddVote_Localization(ClientID, "null", "你将会获得禁止PVP设置");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bjuicer", "☞ 物品 榨汁儿机 [200]");
+			AddVote_Localization(ClientID, "null", "一次性吃完所有蔬菜水果");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bcustomized", "☞ 物品 个性化包 [300]");
+			AddVote_Localization(ClientID, "null", "让你使用自己的皮肤和颜色");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote("", "null", ClientID);
+			AddBack(ClientID);
+			return;
+		}
+
+		break;
+		case LABOURDAY:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "劳动节限定");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "null", _("{int:rmb} 人民币 - {int:donate} 点券"), "rmb", &g_Config.m_InfRmb, "donate", &g_Config.m_InfDonate);
+			AddVote_Localization(ClientID, "null", " ");
+			AddVote_Localization(ClientID, "null", "向管理员 FFS或Minjun 捐赠获得点卷");
+			AddVote_Localization(ClientID, "null", "FFS联系方式, QQ: 1562151175, 微信: teeffs");
+			AddVote_Localization(ClientID, "null", "Minjun联系方式QQ: 2398396911");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "$ 你充了 {int:don}", "don", &m_apPlayers[ClientID]->AccData()->m_Donate);
+			AddVote_Localization(ClientID, "null", " ");
+			AddVote_Localization(ClientID, "blabourpack", "☞ 劳动节捆绑包 [1800]");
+			AddVote_Localization(ClientID, "null", "获得以下所有称号");
+			AddVote_Localization(ClientID, "null", "可以节省720点卷");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bwf", "☞ 称号:工人爷爷 [300]");
+			AddVote_Localization(ClientID, "null", "挖矿速度提升100%");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bwm", "☞ 称号:工人奶奶 [300]");
+			AddVote_Localization(ClientID, "null", "挖矿所得增加100%");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bff", "☞ 称号:农民爷爷 [300]");
+			AddVote_Localization(ClientID, "null", "种地速度提升100%");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bfm", "☞ 称号:农民奶奶 [300]");
+			AddVote_Localization(ClientID, "null", "种地所得增加100%");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bsgy", "☞ 称号:手工业 [300]");
+			AddVote_Localization(ClientID, "null", "合成成功率提升20%");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bgshy", "☞ 称号:公私合营: [200]");
+			AddVote_Localization(ClientID, "null", "打怪爆率提升30%");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bwhdgm", "☞ 称号:文化大革命 [100]");
+			AddVote_Localization(ClientID, "null", "杀人不增加愤怒值");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "brmgs", "☞ 称号:人民公社 [220]");
+			AddVote_Localization(ClientID, "null", "吃菜获得的经验*1.5");
+			AddVote_Localization(ClientID, "null", "-----");
+			AddVote_Localization(ClientID, "bdyj", "☞ 称号:大跃进 [200]");
+			AddVote_Localization(ClientID, "null", "移动速度增加，具有'浮夸风'");
+			AddVote("", "null", ClientID);
+			AddBack(ClientID);
+			return;
+		}
+		break;
+
+		// ############################### Инвентарь действие -- 选择物品后的操作
+		case SELITEM:
+		{
+			int SelectItem = m_apPlayers[ClientID]->m_SelectItem;
+			if (Server()->GetItemType(ClientID, SelectItem) == 15 || Server()->GetItemType(ClientID, SelectItem) == 16 || Server()->GetItemType(ClientID, SelectItem) == 17)
+				m_apPlayers[ClientID]->m_LastVotelist = ARMORMENU;
+			else
+				m_apPlayers[ClientID]->m_LastVotelist = INVENTORY;
+
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", Server()->GetItemDesc(ClientID, SelectItem));
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "在投票的理由填写处填写数量");
+			AddVote_Localization(ClientID, "null", "为空则默认使用一个");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "null", "▶ 你选中了物品 {str:name}", "name", Server()->GetItemName(ClientID, m_apPlayers[ClientID]->m_SelectItem));
+
+			if (Server()->GetItemType(ClientID, SelectItem) == 4)
+				AddVote_Localization(ClientID, "useitem", "▹ 使用该物品");
+
+			if (Server()->GetItemPrice(ClientID, SelectItem, 1) > 0 && m_apPlayers[ClientID]->GetWork())
+				AddVote_Localization(ClientID, "sellitem", "▹ 卖出该物品");
+
+			if (Server()->GetItemType(ClientID, SelectItem) != 6)
+				AddVote_Localization(ClientID, "dropitem", "▹ 丢掉该物品 (╯°Д°)╯");
+
+			if (Server()->GetItemType(ClientID, SelectItem) == 15 || Server()->GetItemType(ClientID, SelectItem) == 16 || Server()->GetItemType(ClientID, SelectItem) == 17)
+			{
+				AddVote("", "null", ClientID);
+				AddVote_Localization(ClientID, "enchantitem", "▹ 附魔该物品 (需要 1000 个材料)");
+				AddVote("", "null", ClientID);
+			}
+			AddVote_Localization(ClientID, "destitem", "▹ 摧毁物品 ㄟ( ▔, ▔ )ㄏ ");
+			AddBack(ClientID);
+			return;
+		}
+
+		// ############################### Квесты меню -- 任务相关
+		break;
+		case MAINQUEST:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = QUESTMENU;
+			if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InQuest())
+			{
+				bool Trying = true;
+				AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+				AddVote_Localization(ClientID, "null", "主任务菜单");
+				AddVote("", "null", ClientID);
+				switch (m_apPlayers[ClientID]->AccData()->m_Quest)
+				{
+					case EMainQuests::QUEST1_PIGGY1:
+					{
+						int Need = EMainQuestNeed::QUEST1, Counts = Server()->GetItemCount(ClientID, PIGPORNO);
+						AddVote_Localization(ClientID, "null", "第一阶仪式 I");
+						AddVote_Localization(ClientID, "null", "我需要一些没有被污染的猪肉..");
+						AddVote_Localization(ClientID, "null", "那些猪大多被污染了，你或许需要多杀一些。");
+						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}, 解锁Boss:捣蛋猪", "got", "4000经验/200000白银");
+					}
+					break;
+					
+					case EMainQuests::QUEST2_PIGGY2:
+					{
+						int Need = EMainQuestNeed::QUEST2, Counts = Server()->GetItemCount(ClientID, PIGPORNO);
+						AddVote_Localization(ClientID, "null", "第一阶仪式 II");
+						AddVote_Localization(ClientID, "null", "我估错了所需的数量");
+						AddVote_Localization(ClientID, "null", "我还需要更多的干净猪肉");
+						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "4000经验/250000白银");
+					}
+					break;
+					
+					case EMainQuests::QUEST3_KWAH1:
+					{
+						int Need = EMainQuestNeed::QUEST3, Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
+						AddVote_Localization(ClientID, "null", "第一阶仪式 III");
+						AddVote_Localization(ClientID, "null", "猪肉已经不足以满足祂了");
+						AddVote_Localization(ClientID, "null", "我需要Kwah的头，尚未被污染的");
+						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got},解锁Boss:Slime", "got", "8000经验/500000白银");
+					}
+					break;
+					
+					case EMainQuests::QUEST4_KWAH2:
+					{
+						int Need = EMainQuestNeed::QUEST4, Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
+						AddVote_Localization(ClientID, "null", "第一阶仪式 IV");
+						AddVote_Localization(ClientID, "null", "Kwah的头效果很好");
+						AddVote_Localization(ClientID, "null", "祂还需要更多");
+						AddVote_Localization(ClientID, "null", "[已获得: {int:get}/共需要: {int:need}]", "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got},解锁Boss:吸血鬼", "got", "8000经验/550000白银");
+					}
+					break;
+					
+					case EMainQuests::QUEST5_PIGGYNKWAHSTEP1:
+					{
+						int Need = EMainQuestNeed::QUEST5;
+						int Counts = Server()->GetItemCount(ClientID, PIGPORNO);
+						int Counts2 = Server()->GetItemCount(ClientID, KWAHGANDON);
+						AddVote_Localization(ClientID, "null", "登阶 [第一步]");
+						AddVote_Localization(ClientID, "null", "成功了！哈哈哈哈哈！");
+						AddVote_Localization(ClientID, "null", "现在..我们可以...");
+						AddVote(" ", "null", ClientID);
+						AddVote_Localization(ClientID, "null", "更进一步");
+						AddVote(" ", "null", ClientID);
+						AddVote_Localization(ClientID, "null", "任务需求: 猪肉, Kwah 头 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "Kwah 耳环, 1000000白银");
+					}
+					break;
+					
+					case EMainQuests::QUEST6_KWAHSTEP1:
+					{
+						int Need = EMainQuestNeed::QUEST6;
+						int Counts = Server()->GetItemCount(ClientID, KWAHGANDON);
+						int Counts2 = Server()->GetItemCount(ClientID, FOOTKWAH);
+						AddVote_Localization(ClientID, "null", "登阶 [第二步]");
+						AddVote_Localization(ClientID, "null", "我看见祂了!");
+						AddVote_Localization(ClientID, "null", "我看见祂了!!!");
+						AddVote_Localization(ClientID, "null", "啊啊啊啊啊啊啊啊啊");
+						AddVote_Localization(ClientID, "null", "更多！更多！！");
+						AddVote_Localization(ClientID, "null", "任务需求: Kwah 头, Kwah 脚 [{int:get}/{int:need} & {int:get2}/{int:need2}]", "get", &Counts, "need", &Need, "get2", &Counts2, "need2", &Need);
+						AddVote_Localization(ClientID, "null", "任务奖励: {str:got}", "got", "武器的蓝图, 1050000白银");
+						AddVote_Localization(ClientID, "null", "+ 称号:眷属");
+					}
+					break;
+					
+					case EMainQuests::QUEST7_BADGUARD:
+					{
+						int Need = EMainQuestNeed::QUEST7;
+						int Counts = Server()->GetItemCount(ClientID, GUARDHEAD);
+						AddVote_Localization(ClientID, "null", _("第二阶仪式 I"));
+						AddVote_Localization(ClientID, "null", _("VVDieevruiumtm 5 5 4"));
+						AddVote_Localization(ClientID, "null", _("任务需求：守卫头 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("任务奖励：称号-守卫, Boss:守卫"));
+					}
+					break;
+
+					case EMainQuests::QUEST8_ZOMBIE:
+					{
+						int Need = EMainQuestNeed::QUEST8;
+						int Counts = Server()->GetItemCount(ClientID, ZOMBIEBRAIN);
+						AddVote_Localization(ClientID, "null", _("第二阶仪式 II"));
+						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
+						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
+						AddVote_Localization(ClientID, "null", _("神说: 要有ω☪′▶"));
+						AddVote_Localization(ClientID, "null", _("任务需求：僵尸的脑子 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("任务奖励: 升级点1000,Boss:Skelet"));
+					}
+					break;
+
+					case EMainQuests::QUEST8_SKELET:
+					{
+						int Need = EMainQuestNeed::QUEST9;
+						int Counts = Server()->GetItemCount(ClientID, SKELETSKULL);
+						AddVote_Localization(ClientID, "null", _("第二阶仪式 III"));
+						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了Lmg"));
+						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了aiå"));
+						AddVote_Localization(ClientID, "null", _("神说: 于是，便有了dg"));
+						AddVote_Localization(ClientID, "null", _("任务需求：骷髅的头骨 [{int:get}/{int:need}]"), "get", &Counts, "need", &Need);
+						AddVote_Localization(ClientID, "null", _("任务奖励: 升级点3000"));
+					}
+					break;
+					
+					default:
+					{
+						Trying = false;
+						AddVote_Localization(ClientID, "null", "任务不可用");
+					}
+					break;
+					
 				}
 
-				AddNewCraftVote(ClientID, "戒指蓝图x1, Slime的尸体x1", RARERINGSLIME);
-				AddNewCraftVote(ClientID, "戒指蓝图x1, Boomer的尸体x100", RINGBOOMER);
-				AddNewCraftVote(ClientID, "耳环蓝图x1, Kwah的脚x100", EARRINGSKWAH);
-				AddNewCraftVote(ClientID, "灵魂碎片x25", CUSTOMSKIN);
-				AddNewCraftVote(ClientID, "灵魂碎片x50", CUSTOMCOLOR);
-				AddNewCraftVote(ClientID, "土豆x60, 番茄x60, 萝卜x60", JUMPIMPULS);
-				AddNewCraftVote(ClientID, "守卫锤子碎片x10", GUARDHAMMER);
-				AddNewCraftVote(ClientID, "锡矿x50, 精铁x300", COREBASE);
-				AddNewCraftVote(ClientID, "核心基座x2, 木头x500, 金券x300", WOODCORE);
-				AddNewCraftVote(ClientID, "核心基座x2, 龙矿x500, 金券x500", MINECORE);
+				if (Trying)
+					AddVote_Localization(ClientID, "passquest", "- 提交通过任务");
 			}
-			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 3)
+			else
+				AddVote_Localization(ClientID, "null", "你不在任务大厅(Quest Room)");
+
+			AddBack(ClientID);
+			return;
+		}
+
+		case QUESTMENU:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InQuest())
 			{
-				AddNewCraftVote(ClientID, "眼睛表情 (快乐, 愤怒, 惊讶, 眨眼, 痛苦)", MODULEEMOTE);
-				AddNewCraftVote(ClientID, "手枪x1, 散弹枪x1, 榴弹炮x1, 激光枪x1", WEAPONPRESSED);
-				AddNewCraftVote(ClientID, "武器蓝图x1, Boomer的戒指x1", MODULESHOTGUNSLIME);
-				AddNewCraftVote(ClientID, "武器蓝图x25", ENDEXPLOSION);
-			}
-			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 4)
-			{
-			}
-			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 5)
-			{
-				AddNewCraftVote(ClientID, "木头x30, 铜矿x60", COOPERPIX);
-				AddNewCraftVote(ClientID, "木头x40, 铁矿x60", IRONPIX);
-				AddNewCraftVote(ClientID, "木头x50, 金矿x80", GOLDPIX);
-				AddNewCraftVote(ClientID, "木头x65, 钻石矿x100", DIAMONDPIX);
-				AddNewCraftVote(ClientID, "木头x80, 龙矿x150", DRAGONPIX);
-				AddNewCraftVote(ClientID, "木头x80, 龙矿x150", DRAGONAXE);
-				AddNewCraftVote(ClientID, "木头x80, 龙矿x150", DRAGONHOE);
-			}
-			else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 6)
-			{
-				AddNewCraftVote(ClientID, "皮革x50, 木头x150", LEATHERBODY);
-				AddNewCraftVote(ClientID, "皮革x40, 木头x120", LEATHERFEET);
-				AddNewCraftVote(ClientID, "铜矿x500, 木头x150", COOPERBODY);
-				AddNewCraftVote(ClientID, "铜矿x400, 木头x120", COOPERFEET);
-				AddNewCraftVote(ClientID, "铁矿x500, 木头x150", IRONBODY);
-				AddNewCraftVote(ClientID, "铁矿x400, 木头x120", IRONFEET);
-				AddNewCraftVote(ClientID, "金矿x500, 木头x150", GOLDBODY);
-				AddNewCraftVote(ClientID, "金矿x400, 木头x120", GOLDFEET);
-				AddNewCraftVote(ClientID, "钻石矿x500, 木头x150", DIAMONDBODY);
-				AddNewCraftVote(ClientID, "钻石矿x400, 木头x120", DIAMONDFEET);
-				AddNewCraftVote(ClientID, "龙矿x500, 木头x150", DRAGONBODY);
-				AddNewCraftVote(ClientID, "龙矿x400, 木头x120", DRAGONFEET);
-				AddNewCraftVote(ClientID, "铜矿x100, 铁矿x10", STCLASIC);
+				int Progress = m_apPlayers[ClientID]->AccData()->m_Quest - 1;
+				int Num = EMainQuests::NUM_MAIN_QUEST;
+				AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+				AddVote_Localization(ClientID, "null", "任务大厅！aw..!");
+				AddVote("", "null", ClientID);
+				AddVoteMenu_Localization(ClientID, MAINQUEST, MENUONLY, _("-> 主任务列表[{int:progress}/{int:num}]"), "progress", &Progress, "num", &Num);
+				AddVoteMenu_Localization(ClientID, DAYQUEST, MENUONLY, _("-> 每日任务"));
+				AddVote("更多任务敬请期待...", "null", ClientID);
+				AddBack(ClientID);
 			}
 		}
-		else
-			AddVote_Localization(ClientID, "null", "你不在合成室(Craft Room)");
+		break;
 
-		return;
-	}
-	else if (Type == CREATEBOSS)
-	{
-		AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?");
-		AddVote_Localization(ClientID, "null", "发起Boss战");
-		AddVote_Localization(ClientID, "null", "在投票的理由填写处填写等待时间");
-		AddVote_Localization(ClientID, "null", "为空则默认20秒(至少20秒)");
-		AddVote_Localization(ClientID, "null", "单挑Boss难度会降低哦");
-		AddVote_Localization(ClientID, "null", "");
-		if(m_apPlayers[ClientID]->AccData()->m_Quest > 1)
-			AddNewBossVote(ClientID, "简单", "奖励:钱袋, 猪肉, 木材", BOT_BOSSPIGKING);
-		if(m_apPlayers[ClientID]->AccData()->m_Quest > 3)
-			AddNewBossVote(ClientID, "困难", "奖励:钱袋, Slime材料, 盲盒(概率掉)", BOT_BOSSSLIME);
-		if(m_apPlayers[ClientID]->AccData()->m_Quest > 4)
-			AddNewBossVote(ClientID, "极难", "奖励:钱袋, 高级消耗品(概率掉)", BOT_BOSSVAMPIRE);
-		if(m_apPlayers[ClientID]->AccData()->m_Quest > 7)
-			AddNewBossVote(ClientID, "地狱", "奖励:钱袋，猪肉，守卫锤子碎片", BOT_BOSSGUARD);
-		if(m_apPlayers[ClientID]->AccData()->m_Quest <= 1)
-			AddVote_Localization(ClientID, "null", "你需要完成任务来解锁Boss!");
+		case DAYQUEST:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = QUESTMENU;
+			int RandomNumber = m_DailyQuest.m_RandomNumber;
+			int Item = GetDailyQuestItem(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
+			int Num = GetDailyQuestNeed(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
+			int Upgr = GetDailyQuestUpgr(m_apPlayers[ClientID]->m_SelectQuest, m_apPlayers[ClientID]->m_SelectSubQuest);
 
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "每日任务!");
+			AddVote_Localization(ClientID, "null", "今日任务序列：{int:randomNum}", "randomNum", &RandomNumber);
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "que0", "☞ 收集任务");
+			AddVote_Localization(ClientID, "que1", "☞ 击杀任务");
+			AddVote_Localization(ClientID, "que2", "☞ 挑战任务");
+
+			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE1_COLLECT)
+			{
+				AddVote("", "null", ClientID);
+				if(Server()->GetItemSettings(ClientID, COLLECTQUEST) == GetDailyID())
+					AddVote_Localization(ClientID, "que0", "- 收集任务已完成");
+				else
+				{
+					int Have = Server()->GetItemCount(ClientID, Item);
+
+					AddVote_Localization(ClientID, "sque0", "- 农业经济");
+					if(random_prob(0.005))
+						AddVote_Localization(ClientID, "sque2", "- 食品...?");
+					else
+						AddVote_Localization(ClientID, "sque1", "- 食品");
+					AddVote_Localization(ClientID, "sque3", "- 矿业经济");
+					AddVote("", "null", ClientID);
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT1)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT2)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT3)
+					{
+						AddVote_Localization(ClientID, "null", "Vivit为DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "Vivit神DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "Vivit献DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "Vivit上DerumDeumVivitDerumDeumVivitDerumDeum");
+						AddVote_Localization(ClientID, "null", "THA{str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("enruw奖ails：???升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- S贡品S -");
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::COLLECT4)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					}
+				}
+				AddVote("", "null", ClientID);
+				AddVote("", "null", ClientID);
+			}
+			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE2_KILL)
+			{
+				if(Server()->GetItemSettings(ClientID, KILLQUEST) == GetDailyID())
+					AddVote_Localization(ClientID, "que0", "- 挑战任务已完成");
+				else
+				{
+					int Have = Server()->GetItemCount(ClientID, KILLQUEST);
+					AddVote_Localization(ClientID, "null", "击杀 {str:iname} [{int:num}/{int:need}]", "iname", GetBotName(Item), "num", &Have, "need", &Num);
+					AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+					AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					AddVote("", "null", ClientID);
+					AddVote("", "null", ClientID);
+				}
+			}
+			if(m_apPlayers[ClientID]->m_SelectQuest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+			{
+				AddVote("", "null", ClientID);
+				if(Server()->GetItemSettings(ClientID, CHALLENGEQUEST) == GetDailyID())
+					AddVote_Localization(ClientID, "que0", "- 挑战任务已完成");
+				else
+				{
+					int Have = Server()->GetItemCount(ClientID, Item);
+
+					AddVote_Localization(ClientID, "sque0", "- 农业经济");
+					if(random_prob(0.01f))
+						AddVote_Localization(ClientID, "sque1", "- 祭品");
+					AddVote_Localization(ClientID, "sque2", "- 矿业经济");
+					AddVote_Localization(ClientID, "sque3", "- 击杀挑战");
+					AddVote("", "null", ClientID);
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE1)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE2)
+					{
+						AddVote_Localization(ClientID, "null", "VDD献上 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 贡品");
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE3)
+					{
+						AddVote_Localization(ClientID, "null", "收集 {str:iname} [{int:num}/{int:need}]", "iname", Server()->GetItemName(ClientID, Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					}
+
+					if(m_apPlayers[ClientID]->m_SelectSubQuest == EDailyQuests::CHALLENGE4)
+					{
+						Have = Server()->GetItemCount(ClientID, CHALLENGEQUEST);
+						AddVote_Localization(ClientID, "null", "击杀 {str:iname} [{int:num}/{int:need}]", "iname", GetBotName(Item), "num", &Have, "need", &Num);
+						AddVote_Localization(ClientID, "null", _("任务奖励：{int:num}升级点"), "num", &Upgr);
+						AddVote_Localization(ClientID, "passdayquest", "- 提交任务");
+					}
+				}
+				AddVote("", "null", ClientID);
+			}
+			AddBack(ClientID);
+		}
+		break;
+
+		case GETUP:
+		{
+			AddVote_Localization(ClientID, "null", _("敬请期待..."));
+			AddBack(ClientID);
+		}
+		break;
+
+		// ############################### Крафтинг меню
+		break;
+		case CRAFTING:
+		{
+			m_apPlayers[ClientID]->m_LastVotelist = AUTH;
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?:");
+			AddVote_Localization(ClientID, "null", "合成菜单");
+			AddVote("", "null", ClientID);
+			AddVote_Localization(ClientID, "scr1", "▹ 基础物品");
+			AddVote_Localization(ClientID, "scr2", "▹ 神器");
+			AddVote_Localization(ClientID, "scr3", "▹ 配件与武器");
+			AddVote_Localization(ClientID, "scr4", "▹ 增益与食物");
+			AddVote_Localization(ClientID, "scr5", "▹ 工作专长相关");
+			AddVote_Localization(ClientID, "scr6", "▹ 装备");
+
+			AddBack(ClientID);
+			AddVote("", "null", ClientID);
+
+			if (m_apPlayers[ClientID]->GetCharacter() && m_apPlayers[ClientID]->GetCharacter()->InCrafted())
+			{
+				if (m_apPlayers[ClientID]->m_SortedSelectCraft == 1)
+				{
+					AddNewCraftVote(ClientID, "与黄金1:100兑换", GOLDTICKET);
+					AddNewCraftVote(ClientID, "骷髅骨头x30", SKELETSSBONE);
+					AddNewCraftVote(ClientID, "僵尸眼x30", ZOMIBEBIGEYE);
+					AddNewCraftVote(ClientID, "铁矿x100, 铜矿x100", FORMULAEARRINGS);
+					AddNewCraftVote(ClientID, "铁矿x125, 铜矿x125", FORMULAFORRING);
+					AddNewCraftVote(ClientID, "铁矿x150, 铜矿x150", FORMULAWEAPON);
+					AddNewCraftVote(ClientID, "钻石矿x1, 铁矿x10", IRON);
+				}
+				else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 2)
+				{
+					if (g_Config.m_SvEventSummer)
+					{
+						AddVote_Localization(ClientID, "null", "注意:合成成功率4%,15次失败后必定合成成功");
+						AddNewCraftVote(ClientID, "日耀x20", SHEALSUMMER);
+					}
+
+					AddNewCraftVote(ClientID, "戒指蓝图x1, Slime的尸体x1", RARERINGSLIME);
+					AddNewCraftVote(ClientID, "戒指蓝图x1, Boomer的尸体x100", RINGBOOMER);
+					AddNewCraftVote(ClientID, "耳环蓝图x1, Kwah的脚x100", EARRINGSKWAH);
+					AddNewCraftVote(ClientID, "灵魂碎片x25", CUSTOMSKIN);
+					AddNewCraftVote(ClientID, "灵魂碎片x50", CUSTOMCOLOR);
+					AddNewCraftVote(ClientID, "土豆x60, 番茄x60, 萝卜x60", JUMPIMPULS);
+					AddNewCraftVote(ClientID, "守卫锤子碎片x10", GUARDHAMMER);
+					AddNewCraftVote(ClientID, "锡矿x50, 精铁x300", COREBASE);
+					AddNewCraftVote(ClientID, "核心基座x2, 木头x500, 金券x300", WOODCORE);
+					AddNewCraftVote(ClientID, "核心基座x2, 龙矿x500, 金券x500", MINECORE);
+				}
+				else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 3)
+				{
+					AddNewCraftVote(ClientID, "眼睛表情 (快乐, 愤怒, 惊讶, 眨眼, 痛苦)", MODULEEMOTE);
+					AddNewCraftVote(ClientID, "手枪x1, 散弹枪x1, 榴弹炮x1, 激光枪x1", WEAPONPRESSED);
+					AddNewCraftVote(ClientID, "武器蓝图x1, Boomer的戒指x1", MODULESHOTGUNSLIME);
+					AddNewCraftVote(ClientID, "武器蓝图x25", ENDEXPLOSION);
+					AddVote_Localization(ClientID, "null", "==================");
+					AddVote_Localization(ClientID, "null", _("以下模块的额外需要: 被污染4物品x5000,"));
+					AddVote_Localization(ClientID, "null", _("僵尸眼x100,骷髅的骨头x100"));
+					AddVote_Localization(ClientID, "null", "------------------");
+					AddNewCraftVote(ClientID, "守卫锤子x1,龙矿x208424", ELECTROLASER);
+					AddNewCraftVote(ClientID, "被污染的守卫头x50,龙矿x4240208", LIGHTNINGLASER);
+				}
+				else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 4)
+				{
+				}
+				else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 5)
+				{
+					AddNewCraftVote(ClientID, "木头x30, 铜矿x60", COOPERPIX);
+					AddNewCraftVote(ClientID, "木头x40, 铁矿x60", IRONPIX);
+					AddNewCraftVote(ClientID, "木头x50, 金矿x80", GOLDPIX);
+					AddNewCraftVote(ClientID, "木头x65, 钻石矿x100", DIAMONDPIX);
+					AddNewCraftVote(ClientID, "木头x80, 龙矿x150", DRAGONPIX);
+					AddNewCraftVote(ClientID, "木头x80, 龙矿x150", DRAGONAXE);
+					AddNewCraftVote(ClientID, "木头x80, 龙矿x150", DRAGONHOE);
+				}
+				else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 6)
+				{
+					AddNewCraftVote(ClientID, "皮革x50, 木头x150", LEATHERBODY);
+					AddNewCraftVote(ClientID, "皮革x40, 木头x120", LEATHERFEET);
+					AddNewCraftVote(ClientID, "铜矿x500, 木头x150", COOPERBODY);
+					AddNewCraftVote(ClientID, "铜矿x400, 木头x120", COOPERFEET);
+					AddNewCraftVote(ClientID, "铁矿x500, 木头x150", IRONBODY);
+					AddNewCraftVote(ClientID, "铁矿x400, 木头x120", IRONFEET);
+					AddNewCraftVote(ClientID, "金矿x500, 木头x150", GOLDBODY);
+					AddNewCraftVote(ClientID, "金矿x400, 木头x120", GOLDFEET);
+					AddNewCraftVote(ClientID, "钻石矿x500, 木头x150", DIAMONDBODY);
+					AddNewCraftVote(ClientID, "钻石矿x400, 木头x120", DIAMONDFEET);
+					AddNewCraftVote(ClientID, "龙矿x500, 木头x150", DRAGONBODY);
+					AddNewCraftVote(ClientID, "龙矿x400, 木头x120", DRAGONFEET);
+					AddNewCraftVote(ClientID, "铜矿x100, 铁矿x10", STCLASIC);
+				}
+			}
+			else
+				AddVote_Localization(ClientID, "null", "你不在合成室(Craft Room)");
+
+			return;
+		}
+		break;
+		case CREATEBOSS:
+		{
+			AddVote_Localization(ClientID, "null", "☪ 信息 ( ′ ω ` )?");
+			AddVote_Localization(ClientID, "null", "发起Boss战");
+			AddVote_Localization(ClientID, "null", "在投票的理由填写处填写等待时间");
+			AddVote_Localization(ClientID, "null", "为空则默认20秒(至少20秒)");
+			AddVote_Localization(ClientID, "null", "单挑Boss难度会降低哦");
+			AddVote_Localization(ClientID, "null", "");
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 1)
+				AddNewBossVote(ClientID, "简单", "奖励:钱袋, 猪肉, 木材", BOT_BOSSPIGKING);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 3)
+				AddNewBossVote(ClientID, "困难", "奖励:钱袋, Slime材料, 盲盒(概率掉)", BOT_BOSSSLIME);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 4)
+				AddNewBossVote(ClientID, "极难", "奖励:钱袋, 高级消耗品(概率掉)", BOT_BOSSVAMPIRE);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 7)
+				AddNewBossVote(ClientID, "地狱", "奖励:钱袋，猪肉，守卫锤子碎片", BOT_BOSSGUARD);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 7)
+				AddNewBossVote(ClientID, "地狱", "奖励:钱袋，僵尸头/眼睛", BOT_BOSSZOMBIE);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest > 8)
+				AddNewBossVote(ClientID, "地狱", "奖励:钱袋，骷髅头/眼睛", BOT_BOSSSKELET);
+			AddVote("", "null", ClientID);
+			if(m_apPlayers[ClientID]->AccData()->m_Quest <= 8)
+				AddVote_Localization(ClientID, "null", "完成任务将解锁更多Boss");
+		}
+		break;
 	}
 }
 
 void CGameContext::AddNewBossVote(int ClientID, const char *NanDu, const char *Reward, int Boss)
 {
-	AddVote_Localization(ClientID, "null", "Boss名: {str:name}", "name", GetBossName(Boss));
+	AddVote_Localization(ClientID, "null", "Boss名: {str:name}", "name", GetBotName(Boss));
 	AddVote_Localization(ClientID, "null", "难度: {str:nandu}", "nandu", NanDu);
 	AddVote_Localization(ClientID, "null", "奖励: {str:reward}", "reward", Reward);
-	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSONLY, "- 挑战{str:name}!", "name", GetBossName(Boss));
-	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSSOLO, "..或者单挑{str:name}!(点我单挑)", "name", GetBossName(Boss));
+	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSONLY, "- 挑战{str:name}!", "name", GetBotName(Boss));
+	AddVoteMenu_Localization(ClientID, Boss, CREATEBOSSSOLO, "..或者单挑{str:name}!(点我单挑)", "name", GetBotName(Boss));
 	AddVote("--------------------", "null", ClientID);
 	AddVote("  ", "null", ClientID);
 }
@@ -5179,6 +5675,7 @@ void CGameContext::OnInit(int MapID)
 		Server()->GetTopClanHouse();
 		Server()->InitMaterialID();
 	}
+	RefreshDailyQuest(GetRealTime());
 }
 
 void CGameContext::OnShutdown()
@@ -5308,6 +5805,14 @@ void CGameContext::UpdateBotInfo(int ClientID)
 			str_copy(NameSkin, "twinbop", sizeof(NameSkin));
 		else
 			str_copy(NameSkin, "coala", sizeof(NameSkin));
+	}
+	else if (BotType == BOT_BOSSZOMBIE)
+	{
+		str_copy(NameSkin, "twintri", sizeof(NameSkin));
+	}
+	else if (BotType == BOT_BOSSSKELET)
+	{
+		str_copy(NameSkin, "cammostripes", sizeof(NameSkin));
 	}
 
 	Server()->ResetBotInfo(ClientID, BotType, BotSubType, m_CityStart);
@@ -5508,8 +6013,8 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 		}
 		else if (ItemID == SKILLUPBOX)
 		{
-			m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade += 10 * Count;
-			m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint += 10 * Count;
+			m_apPlayers[ClientID]->GiveUpPoint(50 * Count);
+			m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint += 50 * Count;
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你使用了物品:{str:items}x{int:num}"), "items", Server()->GetItemName(ClientID, ItemID), "num", &Count, NULL);
 			UpdateUpgrades(ClientID);
 		}
@@ -5666,8 +6171,8 @@ void CGameContext::StartBoss(int ClientID, int WaitTime, int BossType)
 	if (WaitTime > 10)
 	{
 		SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 创建了Boss战, Boss 是 {str:names}"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
-		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("欲加入的玩家, 请进入Boss房(boss room)"), "name", Server()->ClientName(ClientID), "names", GetBossName(m_BossType), NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 创建了Boss战, Boss 是 {str:names}"), "name", Server()->ClientName(ClientID), "names", GetBotName(m_BossType), NULL);
+		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("欲加入的玩家, 请进入Boss房(boss room)"), "name", Server()->ClientName(ClientID), "names", GetBotName(m_BossType), NULL);
 		SendChatTarget(-1, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	}
 }
@@ -5721,10 +6226,22 @@ int CGameContext::GetBossCount()
 	return Count;
 }
 
-const char *CGameContext::GetBossName(int BossType)
+const char *CGameContext::GetBotName(int BotType)
 {
-	switch (BossType)
+	switch (BotType)
 	{
+	case BOT_L1MONSTER:
+		return "猪";
+		break;
+	
+	case BOT_L2MONSTER:
+		return "Kwah";
+		break;
+
+	case BOT_L3MONSTER:
+		return "Boomer";
+		break;
+
 	case BOT_BOSSSLIME:
 		return "Slime";
 		break;
@@ -5736,6 +6253,14 @@ const char *CGameContext::GetBossName(int BossType)
 	case BOT_BOSSPIGKING:
 		return "捣蛋猪";
 		break;
+	
+	case BOT_BOSSZOMBIE:
+		return "僵尸";
+		break;
+	
+	case BOT_BOSSSKELET:
+		return "骷髅";
+		break;
 
 	case BOT_BOSSGUARD:
 		return "守卫";
@@ -5744,6 +6269,7 @@ const char *CGameContext::GetBossName(int BossType)
 	default:
 		break;
 	}
+	return "邪恶FFS";
 }
 
 // change the world
@@ -5810,4 +6336,224 @@ void CGameContext::SendChatTarget_World(int To, int Category, const char *pText,
 
 	Buffer.clear();
 	va_end(VarArgs);
+}
+
+void CGameContext::DailyQuestTick()
+{
+	if(GetRealTime()->tm_hour != m_DailyQuest.m_LastHour)
+	{
+		tm *pTime = GetRealTime();
+		if(m_DailyQuest.m_LastHour > pTime->tm_hour)
+		{
+			RefreshDailyQuest(pTime, true);
+			SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("每日任务已更新！"));
+		}
+		m_DailyQuest.m_LastHour = pTime->tm_hour;
+	}
+}
+
+void CGameContext::RefreshDailyQuest(tm *pTime, bool Reset)
+{
+	srand(GetDailyID());
+	m_DailyQuest.m_RandomNumber = rand();
+	if(Reset)
+	{
+		Server()->Execute("UPDATE tw_uItems SET item_count = 1,item_settings = 0 WHERE il_id = 159");
+		Server()->Execute("UPDATE tw_uItems SET item_count = 0,item_settings = 0 WHERE il_id = 164");
+		Server()->Execute("UPDATE tw_uItems SET item_count = 0,item_settings = 0 WHERE il_id = 165");
+	}
+}
+
+tm *CGameContext::GetRealTime()
+{
+	time_t nowtime;
+	time(&nowtime);
+	return localtime(&nowtime);
+}
+
+int CGameContext::GetDailyQuestItem(int Quest, int SubType)
+{
+	int RandomNumber = m_DailyQuest.m_RandomNumber;
+	if(Quest == EDailyQuests::QUESTTYPE1_COLLECT)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::COLLECT1:
+		{
+			int Items[] = {POTATO, TOMATE, CARROT, CABBAGE};
+			return Items[RandomNumber%4];
+		}
+
+		case EDailyQuests::COLLECT2:
+		{
+			int Items[] = {PIGPORNO, KWAHGANDON, HEADBOOMER, FOOTKWAH};
+			return Items[RandomNumber%4];
+		}
+
+		case EDailyQuests::COLLECT3:
+		{
+			int Items[] = {DIRTYPIG, DIRTYKWAHHEAD, DIRTYBOOMERBODY, DIRTYKWAHFEET, DIRTYGUARDHEAD, GUARDHEAD};
+			return Items[RandomNumber%6];
+		}
+
+		case EDailyQuests::COLLECT4:
+		{
+			int Items[] = {COOPERORE, IRONORE, GOLDORE, DIAMONDORE, DRAGONORE, IRON, STANNUM};
+			return Items[RandomNumber%7];
+		}
+
+		default:
+			break;
+		}
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE2_KILL)
+	{
+		int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD};
+		return Items[(RandomNumber*17)%7];
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::CHALLENGE1:
+		{
+			int Items[] = {POTATO, TOMATE, CARROT, CABBAGE};
+			return Items[RandomNumber%4];
+		}
+
+		case EDailyQuests::CHALLENGE2:
+		{
+			int Items[] = {PIGPORNO, KWAHGANDON, HEADBOOMER, FOOTKWAH, DIRTYPIG, DIRTYKWAHHEAD, DIRTYBOOMERBODY, DIRTYKWAHFEET, DIRTYGUARDHEAD, GUARDHEAD};
+			return Items[RandomNumber%10];
+		}
+
+		case EDailyQuests::CHALLENGE3:
+		{
+			int Items[] = {COOPERORE, IRONORE, GOLDORE, DIAMONDORE, DRAGONORE, IRON, STANNUM};
+			return Items[RandomNumber%7];
+		}
+
+		case EDailyQuests::CHALLENGE4:
+		{
+			int Items[] = {BOT_L1MONSTER, BOT_L2MONSTER, BOT_L3MONSTER, BOT_BOSSSLIME, BOT_BOSSPIGKING, BOT_BOSSVAMPIRE, BOT_BOSSGUARD, BOT_BOSSZOMBIE, BOT_BOSSSKELET};
+			return Items[(RandomNumber*18)%9];
+		}
+
+		default:
+			break;
+		}
+	}
+	return 1;
+}
+
+int CGameContext::GetDailyQuestNeed(int Quest, int SubType)
+{
+	int RandomNumber = m_DailyQuest.m_RandomNumber;
+	if(Quest == EDailyQuests::QUESTTYPE1_COLLECT)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::COLLECT1:
+			return (RandomNumber%10 + 8) * 1000000;
+
+		case EDailyQuests::COLLECT2:
+			return RandomNumber%50+30;
+
+		case EDailyQuests::COLLECT3:
+			if(RandomNumber%6 == 4 || RandomNumber%6 == 5)
+				return RandomNumber%300;
+			return RandomNumber%2000+300;
+
+		case EDailyQuests::COLLECT4:
+			return (RandomNumber%23 + 8) * 100000;
+		
+		default:
+			break;
+		}
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE2_KILL)
+	{
+		return (RandomNumber*17)%500+500;
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::CHALLENGE1:
+			return (RandomNumber%10 + 8) * 10000000;
+
+		case EDailyQuests::CHALLENGE2:
+			return RandomNumber%1000+2000;
+
+		case EDailyQuests::CHALLENGE3:
+			return (RandomNumber%23 + 8) * 10000000;
+
+		case EDailyQuests::CHALLENGE4:
+			return (RandomNumber%23 + 19) * 200;
+
+		default:
+			break;
+		}
+	}
+	return 1145141919;
+}
+
+int CGameContext::GetDailyQuestUpgr(int Quest, int SubType)
+{
+	int RandomNumber = m_DailyQuest.m_RandomNumber;
+	if(Quest == EDailyQuests::QUESTTYPE1_COLLECT)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::COLLECT1:
+			return 50;
+
+		case EDailyQuests::COLLECT2:
+			return 70;
+
+		case EDailyQuests::COLLECT3:
+			if(RandomNumber%6 == 4 || RandomNumber%6 == 5)
+				return RandomNumber%2000 + 1000;
+			return RandomNumber%1000;
+
+		case EDailyQuests::COLLECT4:
+			return 150;
+		
+		default:
+			break;
+		}
+	}
+	else if (Quest == EDailyQuests::QUESTTYPE2_KILL)
+	{
+		return RandomNumber%100 + 150;
+	}
+	else if(Quest == EDailyQuests::QUESTTYPE3_CHALLENGE)
+	{
+		switch (SubType)
+		{
+		case EDailyQuests::CHALLENGE1:
+			return 1000;
+
+		case EDailyQuests::CHALLENGE2:
+			return 1000;
+
+		case EDailyQuests::CHALLENGE3:
+			return 1000;
+
+		case EDailyQuests::CHALLENGE4:
+			if(RandomNumber%6 == 4 || RandomNumber%6 == 5)
+				return 1000;
+			return RandomNumber%1000+400;
+		
+		default:
+			break;
+		}
+	}
+	return 1;
+}
+
+int CGameContext::GetDailyID()
+{
+	tm *pTime = GetRealTime();
+	return pTime->tm_year + pTime->tm_mday + pTime->tm_mon + pTime->tm_yday + pTime->tm_wday + pTime->tm_mday;
 }

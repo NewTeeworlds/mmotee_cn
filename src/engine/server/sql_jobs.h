@@ -2730,3 +2730,31 @@ public:
 		m_pServer->m_aClients[m_ClientID].m_LogInstance = -1;
 	}
 };
+
+class CSqlJob_Server_Execute : public CSqlJob
+{
+private:
+	CServer* m_pServer;
+	char m_aSql[128];
+	
+public:
+	CSqlJob_Server_Execute(CServer* pServer, char *pSql)
+	{
+		m_pServer = pServer;
+		str_copy(m_aSql, pSql, sizeof(m_aSql));
+	}
+
+	virtual bool Job(CSqlServer* pSqlServer)
+	{
+		try
+		{
+			pSqlServer->executeSql(m_aSql);
+		}
+		catch (sql::SQLException const &e)
+		{
+			dbg_msg("sql", "Error (%s)", e.what());
+			return false;
+		}
+		return true;
+	}
+};

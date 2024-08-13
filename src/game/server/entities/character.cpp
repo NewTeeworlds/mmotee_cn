@@ -29,6 +29,11 @@
 #include "items/pickup.h"
 #include "sword/pizdamet.h"
 
+#include "electro.h"
+#include "lightning.h"
+
+#include "doctor-funnel.h"
+
 //input count
 struct CInputCount
 {
@@ -86,6 +91,8 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_NinjaVelocityBuff = 0;
 	m_NinjaStrengthBuff = 0;
 	m_NinjaAmmoBuff = 0;
+
+	m_SummonByBoss = false;
 }
 
 bool CCharacter::FindPortalPosition(vec2 Pos, vec2& Res)
@@ -128,7 +135,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Pos = Pos;
 	
 	if(m_pPlayer->IsBot())
-		LockBotPos = m_Pos;
+		m_LockBotPos = m_Pos;
 	
 	if(m_pPlayer->AccData()->m_Jail)
 	{
@@ -192,6 +199,8 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	{
 		OpenClassChooser();
 	}
+
+
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
 	return true;
@@ -657,7 +666,15 @@ void CCharacter::FireWeapon()
 		case WEAPON_RIFLE:
 		{
 			bool Explode = Server()->GetItemSettings(m_pPlayer->GetCID(), EXLASER) != 0;
-						
+			bool Electro = Server()->GetItemSettings(m_pPlayer->GetCID(), ELECTROLASER) != 0;
+			bool Lightning = Server()->GetItemSettings(m_pPlayer->GetCID(), LIGHTNINGLASER) != 0;
+
+			if(GetPlayer()->GetBotType() == BOT_BOSSZOMBIE || GetPlayer()->GetBotType() == BOT_BOSSSKELET)
+				Electro = true;
+			
+			if(GetPlayer()->GetBotType() == BOT_BOSSSKELET)
+				Lightning = true;
+			
 			int ShotSpread = m_pPlayer->m_InArea ? 2 : 2 + m_pPlayer->AccUpgrade()->m_Spray/3;
 			if(ShotSpread > 10)
 				ShotSpread = 10;
@@ -673,8 +690,44 @@ void CCharacter::FireWeapon()
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 20;
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 				
-				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
+				if(!Electro)
+					new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
+				else
+				{
+					vec2 Start = m_Pos;
+					Start += Direction*50;
+
+					float Reach = 400;
+
+					vec2 To = m_Pos + vec2(cosf(a), sinf(a))*Reach;
+
+					GameServer()->Collision()->IntersectLine(Start, To, 0x0, &To);
+
+					// character collision
+					vec2 At;
+					CCharacter *pHit = GameServer()->m_World.IntersectCharacter(Start, To, 70.0f, At, this);
+					if(pHit)
+					{
+						To = pHit->m_Pos;
+						pHit->ElectroShock();
+						pHit->TakeDamage(Direction, 10, GetPlayer()->GetCID(), WEAPON_RIFLE, TAKEDAMAGEMODE_INFECTION);
+					}
+
+					int A = distance(Start, To) / 100;
+
+					if (A > 4)
+						A = 4;
+
+					if (A < 2)
+						A = 2;
+
+					new CElectro(GameWorld(), Start, To, vec2(cosf(a+i*1.2f), sinf(a+i*1.2f))*40, A);
+				}
+
+				if(Lightning)
+					new CLightning(GameWorld(), m_Pos, vec2(cosf(a), sinf(a)), 200, 100, m_pPlayer->GetCID(), 12, 2);
 			}
+
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 		} break;
 
@@ -887,21 +940,27 @@ void CCharacter::Tick()
 			switch (m_pPlayer->GetBotType())
 			{
 			case BOT_BOSSSLIME:
-				m_Health = 10+GameServer()->GetBossLeveling()*500;
+				m_Health += 10+GameServer()->GetBossLeveling()*500;
 				break;
 			
 			case BOT_BOSSVAMPIRE:
-				m_Health = 10+GameServer()->GetBossLeveling()*1000;
+				m_Health += 10+GameServer()->GetBossLeveling()*1000;
 				break;
 
 			case BOT_BOSSPIGKING:
-				m_Health = 10+GameServer()->GetBossLeveling()*100;
-				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling();
+				m_Health += 10+GameServer()->GetBossLeveling()*100;
+				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling();
 				break;
 
 			case BOT_BOSSGUARD:
-				m_Health = 10+GameServer()->GetBossLeveling()*1250;
-				m_pPlayer->AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*50;
+				m_Health += 10+GameServer()->GetBossLeveling()*1250;
+				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling()*5;
+				break;
+
+			case BOT_BOSSZOMBIE:
+			case BOT_BOSSSKELET:
+				m_Health += 10+GameServer()->GetBossLeveling()*1500;
+				m_pPlayer->AccUpgrade()->m_Damage += GameServer()->GetBossLeveling()/GameServer()->GetBossCount();
 				break;
 
 			default:
@@ -1076,7 +1135,6 @@ void CCharacter::Tick()
 			else
 			{
 				vec2 CursorPos = vec2(m_Input.m_TargetX, m_Input.m_TargetY);
-				bool Broadcast = false;
 
 				if(length(CursorPos) > 50.0f)
 				{
@@ -1088,15 +1146,12 @@ void CCharacter::Tick()
 					{
 						case CMapConverter::MENUCLASS_ASSASINS:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("刺客"), NULL);
-							Broadcast = true;	
 							break;
 						case CMapConverter::MENUCLASS_BERSERK:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("战士"), NULL);
-							Broadcast = true;
 							break;
 						case CMapConverter::MENUCLASS_HEALER:
 							GameServer()->SendBroadcast_Localization(m_pPlayer->GetCID(), BROADCAST_PRIORITY_INTERFACE, BROADCAST_DURATION_REALTIME, _("医师"), NULL);
-							Broadcast = true;
 							break;
 						default:
 							m_pPlayer->m_MapMenuItem = -1;
@@ -1308,16 +1363,27 @@ void CCharacter::Die(int Killer, int Weapon)
 		if(m_pPlayer->IsBoss() && !GameServer()->m_WinWaitBoss)
 		{
 			int CountWin = GameServer()->GetBossCount();
-			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Boss {str:bossn} 被{int:cwin}个玩家击败."), "bossn", GameServer()->GetBossName(GameServer()->m_BossType), "cwin", &CountWin, NULL);			
+			GameServer()->SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("Boss {str:bossn} 被{int:cwin}个玩家击败."), "bossn", GameServer()->GetBotName(GameServer()->m_BossType), "cwin", &CountWin, NULL);			
 			
 			GameServer()->m_WinWaitBoss = 1000;
+
+			for (int i = MAX_PLAYERS; i < MAX_CLAN_LENGTH; i++)
+			{
+				CPlayer *pP = GameServer()->m_apPlayers[i];
+				if(!pP || !pP->GetCharacter())
+					continue;
+
+				if(pP->IsBot() && pP->GetBotType() == BOT_L2MONSTER && pP->GetCharacter()->m_SummonByBoss)
+					pP->GetCharacter()->Die_Bot();
+			}
+			
 		}
 		
 		// 如果玩家死了，就会离开boss房间
 		if(m_pPlayer->m_InBossed)
 		{	
 			m_pPlayer->m_InBossed = false;
-			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你被 Boss {str:name}击败."), "name", GameServer()->GetBossName(GameServer()->m_BossType), NULL);
+			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你被 Boss {str:name}击败."), "name", GameServer()->GetBotName(GameServer()->m_BossType), NULL);
 		}
 	}
 
@@ -1405,7 +1471,8 @@ void CCharacter::Die_Bot() //机器人(如 Pig)因为进入 non-PvP 区域而判
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
 	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCID());
 	
-
+	if(m_SummonByBoss)
+		GameServer()->m_BossSummonNum--;
 }
 
 
@@ -1710,6 +1777,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 	// check for death
 	if(m_Health <= 0)
 	{
+		if(GameServer()->GetDailyQuestItem(EDailyQuests::QUESTTYPE2_KILL, -1) == m_pPlayer->GetBotType())
+			GameServer()->GiveItem(From, KILLQUEST, 1);
+		if(GameServer()->GetDailyQuestItem(EDailyQuests::QUESTTYPE3_CHALLENGE, EDailyQuests::CHALLENGE4) == m_pPlayer->GetBotType())
+			GameServer()->GiveItem(From, CHALLENGEQUEST, 1);
+
 		int randforce = random_int(0, 30);
 		if(pFrom)
 		{
@@ -1733,6 +1805,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 
 			if(m_pPlayer->GetBotType() == BOT_L1MONSTER)
 			{
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(1,20));
+					GameServer()->UpdateStats(From);
+				}
 				if(!GameServer()->m_CityStart)
 				{
 					CreateDropRandom(AHAPPY, 1, 2000, From, Force/(50+randforce));
@@ -1740,8 +1817,12 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 					CreateDropRandom(APAIN, 1, 2000, From, Force/(50+randforce));
 					CreateDropRandom(ABLINK, 1, 2000, From, Force/(50+randforce));
 					CreateDropRandom(ASUPRRISE, 1, 2000, From, Force/(50+randforce));
-					CreateDropRandom(PIGPORNO, 1, 40, From, Force/(50+randforce));
+					if(random_prob(1.0f/40))
+						CreateDropRandom(PIGPORNO, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYPIG, 1, 20, From, Force/(50+randforce));
 					CreateDropRandom(LEATHER, 1, 60, From, Force/(50+randforce));
+
 				}
 				else if(GameServer()->m_CityStart == 1)
 				{
@@ -1752,10 +1833,22 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 		
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L2MONSTER)
 			{
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(10,20));
+					GameServer()->UpdateStats(From);
+				}
 				if(!GameServer()->m_CityStart)
 				{
-					CreateDropRandom(KWAHGANDON, 1, 44, From, Force/(50+randforce));
-					CreateDropRandom(FOOTKWAH, 1, 44, From, Force/(40+randforce));
+					if(random_prob(1.0f/44))
+						CreateDropRandom(KWAHGANDON, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYKWAHHEAD, 1, 20, From, Force/(50+randforce));
+					
+					if(random_prob(1.0f/44))
+						CreateDropRandom(FOOTKWAH, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYKWAHFEET, 1, 20, From, Force/(50+randforce));
 				}
 				else if(GameServer()->m_CityStart == 1)
 				{
@@ -1765,9 +1858,17 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 			if(pFrom && m_pPlayer->GetBotType() == BOT_L3MONSTER)
 			{
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(20,50));
+					GameServer()->UpdateStats(From);
+				}
 				if(!GameServer()->m_CityStart)
 				{
-					CreateDropRandom(HEADBOOMER, 1, 42, From, Force/(50+randforce));
+					if(random_prob(1.0f/44))
+						CreateDropRandom(HEADBOOMER, 1, false, From, Force/(50+randforce));
+					else
+						CreateDropRandom(DIRTYBOOMERBODY, 1, 20, From, Force/(50+randforce));
 				}
 				else if(GameServer()->m_CityStart == 1)
 				{
@@ -1778,13 +1879,22 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 			if(pFrom && m_pPlayer->GetBotType() == BOT_GUARD)
 			{
-				CreateDropRandom(GUARDHEAD, 1, 20, From, Force/(50+randforce));
-				CreateDropRandom(PIGPORNO, 4, 100, From, Force/(50+randforce));
+				if(m_pPlayer->m_BigBot)
+				{
+					GameServer()->m_apPlayers[From]->GiveUpPoint(random_int(1,5));
+					GameServer()->UpdateStats(From);
+				}
+				if(random_prob(1.0f/80))
+					CreateDropRandom(GUARDHEAD, 1, false, From, Force/(50+randforce));
+				else
+					CreateDropRandom(DIRTYGUARDHEAD, 1, false, From, Force/(50+randforce));
+				CreateDropRandom(PIGPORNO, 4, false, From, Force/(50+randforce));
 			}
 		}
 
 		if(m_pPlayer->IsBoss())
 		{
+			int BossCount = GameServer()->GetBossCount();
 			for(int i = 0; i < MAX_PLAYERS; ++i)
 			{
 				randforce = random_int(0, 80);
@@ -1807,6 +1917,8 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(FORMULAEARRINGS, 1, 90, i, Force/(35+randforce));
 							CreateDropRandom(FORMULAWEAPON, 1, 90, i, Force/(40+randforce));
 							CreateDropRandom(RANDOMCRAFTITEM, 1, 15, i, Force/(45+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(20/BossCount));
+							GameServer()->UpdateStats(From);
 							break;
 						
 						case BOT_BOSSVAMPIRE:
@@ -1814,18 +1926,44 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 							CreateDropRandom(BOOKEXPMIN, 1, 15, i, Force/(45+randforce));
 							CreateDropRandom(BOOKMONEYMIN, 1, 80, i, Force/(45+randforce));
 							CreateDropRandom(CLANBOXEXP, 1, 50, i, Force/(45+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(25/BossCount));
+							GameServer()->UpdateStats(From);
 							break;
 
 						case BOT_BOSSPIGKING:
 							CreateDropRandom(MONEYBAG, random_int(50, 200), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(1, 3), false, i, Force/(35+randforce));
 							CreateDropRandom(WOOD, random_int(20, 30), 15, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
+							GameServer()->UpdateStats(From);
 							break;
 
 						case BOT_BOSSGUARD:
 							CreateDropRandom(MONEYBAG, random_int(500, 1000), false, i, Force/(50+randforce));
 							CreateDropRandom(PIGPORNO, random_int(5, 10), false, i, Force/(35+randforce));
+							CreateDropRandom(GUARDHEAD, 5, false, i, Force/(35+randforce));
+							CreateDropRandom(DIRTYGUARDHEAD, 10, false, i, Force/(35+randforce)	);
 							CreateDropRandom(GUARDHAMFRAG, random_int(1, 4), 25, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
+							GameServer()->UpdateStats(From);
+							break;
+
+						case BOT_BOSSZOMBIE:
+							CreateDropRandom(MONEYBAG, random_int(50, 100), false, i, Force/(50+randforce));
+							CreateDropRandom(ZOMBIEEYE, random_int(3, 5), false, i, Force/(35+randforce));
+							CreateDropRandom(ZOMBIEBRAIN, 1, 40, From, Force/(50+randforce));
+							CreateDropRandom(DRAGONORE, random_int(20, 30), false, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
+							GameServer()->UpdateStats(From);
+							break;
+
+						case BOT_BOSSSKELET:
+							CreateDropRandom(MONEYBAG, random_int(50, 100), false, i, Force/(50+randforce));
+							CreateDropRandom(SKELETSBONE, random_int(3, 5), false, i, Force/(35+randforce));
+							CreateDropRandom(SKELETSKULL, random_int(1, 2), false, i, Force/(35+randforce));
+							CreateDropRandom(DRAGONORE, random_int(20, 30), false, i, Force/(12+randforce));
+							GameServer()->m_apPlayers[From]->GiveUpPoint(int(10/BossCount));
+							GameServer()->UpdateStats(From);
 							break;
 
 						default:
@@ -2132,6 +2270,9 @@ void CCharacter::ClassSpawnAttributes()
 	if (Server()->GetItemSettings(m_pPlayer->GetCID(), TITLEDNTHP))
 		m_Health *= 70;
 
+	if(Server()->GetItemSettings(GetPlayer()->GetCID(), TITLEGUARD))
+		m_Health += (int)(GetPlayer()->AccData()->m_Level * 50);
+
 	// 新手保护，禁用 PvP
 	m_pPlayer->m_AntiPvpSmall = false;
 	if(m_pPlayer->AccData()->m_Level < 20)
@@ -2200,7 +2341,7 @@ void CCharacter::ClassSpawnAttributes()
 
 				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_GUN, 15);
 				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_GUN, 1000);
-				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 500);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_GUN, 5000);
 	
 				GiveWeapon(WEAPON_HAMMER, 10000);
 				GiveWeapon(WEAPON_GUN, 15);
@@ -2212,6 +2353,15 @@ void CCharacter::ClassSpawnAttributes()
 				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_HAMMER, 0);
 	
 				GiveWeapon(WEAPON_HAMMER, 10000);
+				break;
+			
+			case BOT_BOSSZOMBIE:
+			case BOT_BOSSSKELET:
+				Server()->SetMaxAmmo(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 99999);
+				Server()->SetAmmoRegenTime(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 10);
+				Server()->SetFireDelay(m_pPlayer->GetCID(), INFWEAPON_RIFLE, 3000);
+
+				GiveWeapon(WEAPON_RIFLE, -1);
 				break;
 			
 			default:
@@ -2392,22 +2542,26 @@ void CCharacter::CreateDropItem(int ItemID, int Count, int HowID, int Enchant)
 
 void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, vec2 Force)
 {
-	if(!IsAlive())
+	if(!IsAlive() || HowID >= MAX_PLAYERS)
 		return; 
-	
+
+	vec2 DropPos = vec2(m_Pos.x, m_Pos.y - 28.f);
 	if(!Random) 
 	{
-		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
+		new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
 		return;
 	}
 	if (Server()->GetItemSettings(HowID, TITLEPPP))
-		Random += 20;
+		Random -= 20;
 	
-	if(Random > 100)
+	if(Random > 100 && random_prob(0.5f)) // Example: 0.05% or 1%
 		Random = 100;
+
+	if(Random < 1)
+		Random = 1;
 	
 	if(random_prob(1.0f/(float)Random))
-		new CDropItem(GameWorld(), m_Pos, Force, ItemID, Count, HowID, 0);
+		new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
 }
 
 void CCharacter::TakeItemChar(int ClientID)
@@ -2418,7 +2572,7 @@ void CCharacter::TakeItemChar(int ClientID)
 	for(auto *pDrop = (CDropItem*) GameWorld()->FindFirst(ENTTYPE_DROPITEM); pDrop; pDrop = (CDropItem*) pDrop->TypeNext()) {
         if (pDrop) {
             if (distance(pDrop->m_Pos, m_Pos) < 40) {
-                m_ReloadTimer = Server()->TickSpeed();
+                m_ReloadTimer = 5;
                 if (pDrop->TakeItem(ClientID)) {
                     pDrop->Reset();
                     return;
@@ -2506,6 +2660,26 @@ void CCharacter::ParseEmoticionButton(int ClientID, int Emtion)
 			}
 		}
 	}
+	else if(Server()->GetItemCount(ClientID, SFUNNEL) && Server()->GetItemSettings(ClientID, SFUNNEL) == Emtion)
+	{
+		if(m_pPlayer->m_Mana < 200)
+			return GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你的魔能不足.(200点)"), NULL);
+
+		m_pPlayer->m_Mana -= 200;
+
+		for(auto *pFunnel = (CDoctorFunnel*) GameWorld()->FindFirst(ENTTYPE_FUNNEL); pFunnel; pFunnel = (CDoctorFunnel*) pFunnel->TypeNext())
+		{
+			if(pFunnel->GetOwner() == m_pPlayer->GetCID())
+			{
+				pFunnel->m_FunnelState++;
+				if (pFunnel->m_FunnelState >= CDoctorFunnel::NUM_STATE)
+					pFunnel->m_FunnelState = CDoctorFunnel::STATE_FOLLOW;
+				return;
+			}
+		}
+		new CDoctorFunnel(GameWorld(), m_Pos, m_pPlayer->GetCID());
+		GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
+	}
 }
 
 void CCharacter::PressF3orF4(int ClientID, int Vote)
@@ -2588,32 +2762,6 @@ void CCharacter::HandleMapZone_Bonus()
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 			break;
-		case ZONE_INCLAN4:
-			if(!Server()->GetTopHouse(3))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋/月球门还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(3) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房/月球门不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
-		case ZONE_INCLAN5:
-			if(!Server()->GetTopHouse(4))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋/月球门还没有公会入驻,暂不开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-
-			if(!Server()->GetOpenHouse(4) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
-			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房/月球门不对外开放"), NULL);
-				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
-			}
-			break;
 		// 公会座椅
 		case ZONE_CHAIRCLAN1:
 			if(!m_ReloadOther)
@@ -2668,52 +2816,6 @@ void CCharacter::HandleMapZone_Bonus()
 
 				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2));
 				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(2))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
-
-				m_pPlayer->AccData()->m_Exp += Exp;
-				m_pPlayer->AccData()->m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN4:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(3))*50);
-
-				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
-				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;
-
-				m_pPlayer->AccData()->m_Exp += Exp;
-				m_pPlayer->AccData()->m_Money += Money;
-
-				GameServer()->SendBroadcast_LChair(m_pPlayer->GetCID(), Exp, Money);
-
-				if(m_pPlayer->AccData()->m_Exp > LegalExp || m_pPlayer->AccData()->m_Money > LegalMoney)
-				{
-					Server()->Kick(m_pPlayer->GetCID(), "You pidor");
-					return;
-				}
-			}
-			break;
-		case ZONE_CHAIRCLAN5:
-			if(!m_ReloadOther)
-			{
-				m_ReloadOther = Server()->TickSpeed();
-
-				int Exp = 20+Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4));
-				int Money = 500+(Server()->GetClan(Clan::ChairLevel, Server()->GetTopHouse(4))*50);
 
 				unsigned long int LegalExp = m_pPlayer->AccData()->m_Exp + Exp;
 				int LegalMoney = m_pPlayer->AccData()->m_Money + Money;

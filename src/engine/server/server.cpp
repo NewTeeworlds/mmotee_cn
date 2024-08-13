@@ -303,7 +303,7 @@ void CServer::CClient::Reset(bool ResetScore)
 		m_UserID = -1;
 
 		m_AntiPing = 0;
-		str_copy(m_aLanguage, "en", sizeof(m_aLanguage));
+		str_copy(m_aLanguage, "cn", sizeof(m_aLanguage));
 
 		m_WaitingTime = 0;
 	}
@@ -887,10 +887,10 @@ void CServer::SendMapData(int ClientID, int Chunk, int MapID)
  	int Last = 0;
  
  	// drop faulty map data requests
- 	if(Chunk < 0 || Offset > m_vMapData[MapID].m_CurrentMapSize)
+ 	if(Chunk < 0 || Offset > (unsigned int)m_vMapData[MapID].m_CurrentMapSize)
  		return;
  
- 	if(Offset+ChunkSize >= m_vMapData[MapID].m_CurrentMapSize)
+ 	if(Offset+ChunkSize >= (unsigned int)m_vMapData[MapID].m_CurrentMapSize)
  	{
  		ChunkSize = m_vMapData[MapID].m_CurrentMapSize-Offset;
  		Last = 1;
@@ -2241,6 +2241,12 @@ void CServer::ResetBotInfo(int ClientID, int BotType, int BotSubType, int CitySt
 	case BOT_BOSSGUARD:
 		str_copy(m_aClients[ClientID].m_aName, "GUARD", MAX_NAME_LENGTH);
 		break;
+	case BOT_BOSSZOMBIE:
+		str_copy(m_aClients[ClientID].m_aName, "Zombie", MAX_NAME_LENGTH);
+		break;
+	case BOT_BOSSSKELET:
+		str_copy(m_aClients[ClientID].m_aName, "Skelet", MAX_NAME_LENGTH);
+		break;
 	case BOT_FARMER:
 		str_copy(m_aClients[ClientID].m_aName, "Nesquik", MAX_NAME_LENGTH);
 		break;
@@ -2417,7 +2423,7 @@ const char *CServer::GetItemDesc_en(int ItemID)
 		return "(invalid)";
 	else return ItemName_en[ItemID].i_desc;
 }
-int CServer::GetItemCount(int ClientID, int ItemID)
+unsigned long long int CServer::GetItemCount(int ClientID, int ItemID)
 {
 	if(ClientID >= MAX_PLAYERS)
 		return 0;
@@ -3054,4 +3060,10 @@ void CServer::SyncPlayer(int ClientID, class CPlayer *pPlayer)
 	{
 		pGameServer.second->SyncPlayer(ClientID, pPlayer);
 	}
+}
+
+void CServer::Execute(const char *pSql)
+{
+	CSqlJob* pJob = new CSqlJob_Server_Execute(this, (char *)pSql);
+	pJob->Start();
 }

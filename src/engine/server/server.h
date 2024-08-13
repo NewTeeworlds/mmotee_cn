@@ -183,8 +183,8 @@ public:
 		char Creator [MAX_NAME_LENGTH];
 		char Admin [MAX_NAME_LENGTH];
 		int Level;
-		int Exp;
-		unsigned long int Money;
+		unsigned long long Exp;
+		unsigned long long Money;
 		int MemberNum;
 		int MaxMemberNum;
 		int Relevance;
@@ -236,7 +236,7 @@ public:
 		int i_id;
 		char i_name [32];
 		char i_desc [100];
-		int i_count;
+		unsigned long long int i_count;
 		int i_settings;
 		int i_type;
 		int i_nlevel;
@@ -263,7 +263,7 @@ public:
 	virtual const char *GetItemName_en(int ItemID);
 	virtual const char *GetItemDesc(int ClientID, int ItemID);
 	virtual const char *GetItemDesc_en(int ItemID);
-	virtual int GetItemCount(int ClientID, int ItemID);
+	virtual unsigned long long int GetItemCount(int ClientID, int ItemID);
 	virtual int GetItemSettings(int ClientID, int ItemID);
 	virtual int GetItemType(int ClientID, int ItemID);
 	virtual int GetBonusEnchant(int ClientID, int ItemID, int Armor);
@@ -474,6 +474,7 @@ public:
 	virtual void UpdClanCount(int ClanID);
 	
 	virtual void InitAuction();
+	virtual void Execute(const char *pSql);
 
 	virtual void Ban(int ClientID, int Seconds, const char* pReason);
 	

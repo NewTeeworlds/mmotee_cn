@@ -4,13 +4,13 @@
 #include <engine/shared/config.h>
 #include <game/server/gamecontext.h>
 #include <game/mapitems.h>
-#include "kwah.h"
+#include "bosszombie-skelet.h"
 #include "../character.h"
 #include "../projectile.h"
 
-MACRO_ALLOC_POOL_ID_IMPL(CKwah, MAX_CLIENTS)
+MACRO_ALLOC_POOL_ID_IMPL(CBossZS, MAX_CLIENTS)
 
-CKwah::CKwah(CGameWorld *pWorld)
+CBossZS::CBossZS(CGameWorld *pWorld)
 : CCharacter(pWorld)
 {
 	m_BotDir = 1;
@@ -25,18 +25,19 @@ CKwah::CKwah(CGameWorld *pWorld)
 	m_BotTimeLastSound = Server()->Tick();
 	m_BotTimeLastChat = Server()->Tick();
 	m_BotJumpTry = false;
+	m_SummonTick = 0;
 }
 
-void CKwah::Tick()
+void CBossZS::Tick()
 {
 	TickBotAI();
 	CCharacter::Tick();
 }
 
-bool CKwah::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
+bool CBossZS::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {		
 	if (CCharacter::TakeDamage(Force, Dmg, From, Weapon, 0))
-	{		
+	{
 		m_BotTimeLastDamage = Server()->Tick();
 		return true;
 	}
@@ -44,12 +45,7 @@ bool CKwah::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	return false;
 }
 
-void CKwah::PlaySound()
-{
-
-}
-
-void CKwah::RunAction()
+void CBossZS::RunAction()
 {
 	if (m_BotClientIDFix != -1 && GameServer()->m_apPlayers[m_BotClientIDFix])
 	{
@@ -70,12 +66,12 @@ void CKwah::RunAction()
 	}
 }
 
-void CKwah::TickBotAI()
+void CBossZS::TickBotAI()
 {
     // ЗВУКИ
     if (Server()->Tick() - m_BotTimeLastSound > Server()->TickSpeed()*5.0f && random_prob(0.02f))
     {
-        PlaySound();
+        //PlaySound();
         m_BotTimeLastSound = Server()->Tick();
     }
     
@@ -93,116 +89,56 @@ void CKwah::TickBotAI()
     bool PlayerClose = false;
     bool PlayerFound = false;
     bool PlayerNFound = false;
+   
     float LessDist = 500.0f;
-	int Action = random_int(0, 3);
 
     m_BotClientIDFix = -1;
-    
-   
-	int Dists = distance(m_LockBotPos, m_Pos);
-	if (Dists < LessDist)
-		LessDist = Dists;
-
-	
-	if (Dists >= 400.0f)
+	for (int i=0; i<g_Config.m_SvMaxClients; i++)
 	{
-		vec2 DirPlayer = normalize(m_LockBotPos - m_Pos);
-		if (DirPlayer.x < 0)
-			m_BotDir = -1;
-		else 
-			m_BotDir = 1;
+	    CPlayer *pPlayer = GameServer()->m_apPlayers[i];
+	    if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot() || pPlayer->IsBoss())
+            continue;
+
+		int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
+		if(Collide && pPlayer->AccData()->m_Class != PLAYERCLASS_HEALER)
+			continue;
+
+        int Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);
+        if (Dist < LessDist)
+            LessDist = Dist;
+        else
+            continue;
+
+        if (Dist < 800.0f)
+        {
+			if(Dist < 500)
+				m_Input.m_Hook = 1;
 			
-	
-		if (Dists >= 430.0f)
-		{
-		   //Interact with the envirionment
-			float radiusZ = ms_PhysSize/2.0f;
-			if (distance(m_Pos, m_BotLastPos) < radiusZ || abs(m_Pos.x-m_BotLastPos.x) < radiusZ)
-			{
-				if (Server()->Tick() - m_BotLastStuckTime > Server()->TickSpeed()*0.5f)
-				{
-					m_BotStuckCount++;
-					if (m_BotStuckCount == 15)
-					{
-						if (!m_BotJumpTry)
-						{
-							m_Input.m_Jump = 1;
-							m_BotJumpTry = true;
-						}
-						else
-						{
-							m_BotDir = random_prob(0.3333333333f)?1:-1;
-							m_BotJumpTry = false;
-						}
+			m_ActiveWeapon = WEAPON_RIFLE;
 
-						m_BotStuckCount = 0;
-						m_BotLastStuckTime = Server()->Tick();
-					}
-				}
-			}
-		}
-	}
-	else if(Dists < 400.0f)
-	{
-		for (int i=0; i<g_Config.m_SvMaxClients; i++)
-		{
-			CPlayer *pPlayer = GameServer()->m_apPlayers[i];
-			if (!pPlayer || !pPlayer->GetCharacter() || pPlayer->IsBot())
-				continue;
-
-			int Dist = distance(pPlayer->GetCharacter()->m_Pos, m_Pos);
-			if (Dist < LessDist)
-				LessDist = Dist;
-			else
-				continue;
-
-			if (Dist < 400.0f && Dists < 400.0f)
-			{
-				int Collide = GameServer()->Collision()->IntersectLine(pPlayer->GetCharacter()->m_Pos, m_Pos, 0, 0);
-				if(Collide)
-					continue;
-				
-				if (Dist > 50.0f)
-				{
-					vec2 DirPlayer = normalize(pPlayer->GetCharacter()->m_Pos - m_Pos);
-					if (DirPlayer.x < 0)
-						m_BotDir = -1;
-					else
-						m_BotDir = 1;
-						
-					m_Input.m_Hook = 1;
-				}
+            if (Dist > 300.0f)
+            {
+                vec2 DirPlayer = normalize(pPlayer->GetCharacter()->m_Pos - m_Pos);
+				if (DirPlayer.x < 0)
+					m_BotDir = -1;
 				else
-				{
-					PlayerClose = true;
-					m_BotClientIDFix = pPlayer->GetCID();
-				}
-
-				m_Input.m_TargetX = static_cast<int>(pPlayer->GetCharacter()->m_Pos.x - m_Pos.x);
-				m_Input.m_TargetY = static_cast<int>(pPlayer->GetCharacter()->m_Pos.y - m_Pos.y);
-
-				PlayerFound = true;
-			}
-		}	
-	}
-
-	// РАНДОМНЫЙ СЦЕНАРИЙ
-	if (!PlayerFound)
-	{
-		if (Server()->Tick()-m_BotTimeLastOption > Server()->TickSpeed()*1.0f)
-		{
-			if (Action == 0)
-				m_BotDir = -1;
-			else if (Action == 1)
-				m_BotDir = 1;
-			else if (Action == 2)
+					m_BotDir = 1;
+            }
+            else
+            {
+                PlayerClose = true;
+                
 				m_BotDir = 0;
+				m_BotClientIDFix = pPlayer->GetCID();
+            }
 
-			m_BotTimeLastOption = Server()->Tick();
-			
-			if(Action == 2)
-				m_BotTimeLastOption = Server()->Tick();
-		}
+            m_Input.m_TargetX = static_cast<int>(pPlayer->GetCharacter()->m_Pos.x - m_Pos.x);
+            m_Input.m_TargetY = static_cast<int>(pPlayer->GetCharacter()->m_Pos.y - m_Pos.y);
+
+			m_Input.m_Fire = 1;
+
+            PlayerFound = true;
+        }
 	}
 
     //Fix target
@@ -216,6 +152,49 @@ void CKwah::TickBotAI()
     	CPlayer *pPlayer = GameServer()->m_apPlayers[m_BotClientIDFix];
     	if (pPlayer && pPlayer->GetCharacter() && m_Pos.y > pPlayer->GetCharacter()->m_Pos.y) // Jump to player
     		m_Input.m_Jump = 1;
+    }
+
+    //Random Actions
+	if (!PlayerFound)
+	{
+        if (Server()->Tick()-m_BotTimeLastOption > Server()->TickSpeed()*10.0f)
+        {
+            int Action = random_int(0, 3);
+            if (Action == 0)
+                m_BotDir = -1;
+            else if (Action == 1)
+                m_BotDir = 1;
+            else if (Action == 2)
+                m_BotDir = 0;
+
+            m_BotTimeLastOption = Server()->Tick();
+        }
+	}
+
+    //Interact with the envirionment
+	float radiusZ = ms_PhysSize/2.0f;
+    if (distance(m_Pos, m_BotLastPos) < radiusZ || abs(m_Pos.x-m_BotLastPos.x) < radiusZ)
+    {
+        if (Server()->Tick() - m_BotLastStuckTime > Server()->TickSpeed()*0.5f)
+        {
+            m_BotStuckCount++;
+            if (m_BotStuckCount == 15)
+            {
+            	if (!m_BotJumpTry)
+                {
+            		m_Input.m_Jump = 1;
+            		m_BotJumpTry = true;
+                }
+            	else
+            	{
+            		m_BotDir = random_prob(0.3333333333f)?1:-1;
+            		m_BotJumpTry = false;
+            	}
+
+                m_BotStuckCount = 0;
+                m_BotLastStuckTime = Server()->Tick();
+            }
+        }
     }
 
     //Fix Stuck
@@ -261,5 +240,33 @@ void CKwah::TickBotAI()
 	m_LatestPrevInput = m_LatestInput;
 	m_LatestInput = m_Input;
 	m_BotLastPos = m_Pos;
-	CCharacter::FireWeapon();
+
+	if(m_SummonTick <= 0)
+	{
+		if(GameServer()->m_BossSummonNum >= 6)
+			return;
+
+		for (int i = MAX_PLAYERS; i < MAX_CLIENTS; i++)
+		{
+			CPlayer *pPlayer = GameServer()->m_apPlayers[i];
+			if (!pPlayer || !pPlayer->GetCharacter())
+				continue;
+
+			// 如果是Kwah，就把它召唤到Boss战场地
+			if (pPlayer->IsBot() && random_prob(0.5f) && !pPlayer->GetCharacter()->m_SummonByBoss && pPlayer->GetBotType() == BOT_L2MONSTER)
+			{
+				GameServer()->m_BossSummonNum++;
+				pPlayer->GetCharacter()->m_SummonByBoss = true;
+				pPlayer->GetCharacter()->m_Core.m_Pos = m_Pos;
+				pPlayer->GetCharacter()->m_Core.m_Pos.y += 24;
+				pPlayer->GetCharacter()->m_LockBotPos = m_Pos;
+				continue;
+			}
+		}
+		// 在5-20秒后再次召唤
+		m_SummonTick = random_int(5, 20)*Server()->TickSpeed(); 
+	}
+	m_SummonTick--;
+	if(IsFrozen())
+		m_SummonTick -= 2;
 }

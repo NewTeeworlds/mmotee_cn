@@ -34,6 +34,8 @@ inline T mix(const T a, const T b, TB amount)
 	return a + (b-a)*amount;
 }
 
+inline float frandom() { return rand()/(float)(RAND_MAX); }
+
 // Get a random number type float between 0 and 1
 float random_float();
 

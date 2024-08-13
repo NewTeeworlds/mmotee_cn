@@ -336,7 +336,7 @@ void CPickup::StartFarm(int ClientID)
 
 		if(Server()->GetItemSettings(ClientID, TITLEGLF))
 			Temp *= 2;
-		Temp += min(65, Server()->GetItemCount(ClientID, WOODCORE) * 5);
+		Temp += min(65, int(Server()->GetItemCount(ClientID, WOODCORE)) * 5);
 		
 		m_Drop += Temp;
 

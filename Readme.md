@@ -36,7 +36,7 @@
 
 依赖: (Debian 10)
 
-	libmariadb-dev-compat libmariadb-dev libssl-dev libmysqlcppconn-dev libicu-dev
+	libmariadb-dev-compat libmariadb-dev libssl-dev libmysqlcppconn-dev libicu-dev build-essential cmake python3
 
 用 `bam` 构建 (需要版本 `0.4.x`)
 

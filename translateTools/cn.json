@@ -301,16 +301,16 @@
 			"value": "这里是禁止PVP的区域."
 		},
 		{
-			"key": "地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽",
-			"value": "地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽"
+			"key": "地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽, 王小睿",
+			"value": "地图修改：天际, 卖鱼强, Ninecloud, Flower\n开发者: 天上的星星, Flower, Ninecloud\n服务器管理: Flower, 籽抽, 王小睿"
 		},
 		{
 			"key": "你不是会长或者你没有足够的钱",
 			"value": "你不是会长或者你没有足够的钱"
 		},
 		{
-			"key": "武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 20% - 守卫锤子碎片",
-			"value": "武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 20% - 守卫锤子碎片"
+			"key": "武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 4% - 守卫锤子碎片",
+			"value": "武器:锤子 射速:无限\n奖励:\n- 钱袋 x500-1000\n- 猪肉\n- 4% - 守卫锤子碎片"
 		},
 		{
 			"key": "你没有足够的升级点",
