@@ -1249,6 +1249,21 @@ void CCharacter::Tick()
 			}
 		}
 	}
+
+	if(m_InSpace && Server()->Tick()%50 == 0)
+	{
+		unsigned long long m_O2 = Server()->GetItemCount(GetPlayer()->GetCID(), MOONO2);
+		if(m_O2 <= 0)
+		{
+			TakeDamage(vec2(0, 0), m_Health/2 + 500, GetPlayer()->GetCID(), WEAPON_SELF, TAKEDAMAGEMODE_INFECTION);
+			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 107, 100, LOWO2);
+		}
+		else
+		{
+			Server()->RemItem(GetPlayer()->GetCID(), MOONO2, 1, -1);
+			GameServer()->SendBroadcast_LStat(m_pPlayer->GetCID(), 107, 100, SPACEING);
+		}
+	}
 	m_PrevInput = m_Input;
 	return;
 }

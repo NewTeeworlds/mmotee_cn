@@ -71,6 +71,8 @@ enum
 	INSPACE,
 	EXITSPACE,
 	INCREATEBOSS,
+	SPACEING,
+	LOWO2,
 };
 
 enum
@@ -265,7 +267,7 @@ public:
 
 	// Предметы апгрейды
 	// 物品升级
-	void BuyItem(int ItemType, int ClientID, int Type = 0);
+	void BuyItem(int ItemType, int ClientID, int Type = 0, int Count = 1);
 	void GiveItem(int ClientID, int ItemID, int Count, int Enchant = 0);
 	void RemItem(int ClientID, int ItemID, int Count);
 

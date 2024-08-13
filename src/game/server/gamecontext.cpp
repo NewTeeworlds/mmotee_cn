@@ -680,11 +680,20 @@ void CGameContext::SendBroadcast_LStat(int To, int Priority, int LifeSpan, int T
 	case EXITSPACE:
 		Server()->Localization()->Format_L(Buffer, pLanguage, _("你离开了太空."), NULL), Buffer.append("\n");
 		break;
+	case SPACEING:
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("吸气...呼气...吸气...呼气..."), NULL), Buffer.append("\n");
+		break;
+	case LOWO2:
+		Server()->Localization()->Format_L(Buffer, pLanguage, _("吸...没氧气了！！！！！！"), NULL), Buffer.append("\n");
+		dbg_msg("sda", "1111111");
+		break;
 	default:
 		Buffer.clear();
 	}
 
-	SendBroadcast_Localization(To, Priority, LifeSpan, _(" \n\n等级: {int:lvl} | 经验: {int:exp}/{int:expl}\n----------------------\n{str:sdata} {int:getl}%\n{str:dataang} 怒气\n----------------------\n{str:mana} 魔能\n生命值: {int:hp}/{int:hpstart}\n\n\n\n\n\n\n\n\n\n\n\n{str:buff}{str:emp}"),
+	int O2 = Server()->GetItemCount(To, MOONO2);
+
+	SendBroadcast_Localization(To, Priority, LifeSpan, _(" \n\n等级: {int:lvl} | 经验: {int:exp}/{int:expl}\n----------------------\n{str:sdata} {int:getl}%\n{str:dataang} 怒气\n----------------------\n{str:mana} 魔能\n生命值: {int:hp}/{int:hpstart}\n氧气: {int:o2}\n\n\n\n\n\n\n\n\n\n\n\n{str:buff}{str:emp}"),
 							   "lvl", &m_apPlayers[To]->AccData()->m_Level,
 							   "exp", &m_apPlayers[To]->AccData()->m_Exp,
 							   "expl", &Optmem,
@@ -694,6 +703,7 @@ void CGameContext::SendBroadcast_LStat(int To, int Priority, int LifeSpan, int T
 							   "mana", LevelString(100, (int)((m_apPlayers[To]->m_Mana * 100.0) / m_apPlayers[To]->GetNeedMana()), 5, ':', ' '),
 							   "hp", &m_apPlayers[To]->m_Health,
 							   "hpstart", &m_apPlayers[To]->m_HealthStart,
+							   "o2", &O2,
 							   "buff", Buffer.buffer(),
 							   "emp", "                                                                                                                                                                    ");
 	Buffer.clear();
@@ -2805,7 +2815,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					str_format(aBuf, sizeof(aBuf), "bon%d", i);
 					if (str_comp(aCmd, aBuf) == 0)
 					{
-						BuyItem(i, ClientID);
+						BuyItem(i, ClientID, 0, chartoint(pReason, MAX_COUNT));
 						return;
 					}
 
@@ -3028,19 +3038,21 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 	}
 }
 
-void CGameContext::BuyItem(int ItemType, int ClientID, int Type)
+void CGameContext::BuyItem(int ItemType, int ClientID, int Type, int Count)
 {
 	if (!m_apPlayers[ClientID] || !m_apPlayers[ClientID]->GetCharacter() || (m_apPlayers[ClientID]->m_LastChangeInfo && m_apPlayers[ClientID]->m_LastChangeInfo + Server()->TickSpeed() > Server()->Tick()))
 		return;
 
+	Count = max(1, Count);
+
 	m_apPlayers[ClientID]->m_LastChangeInfo = Server()->Tick();
-	if (Server()->GetItemCount(ClientID, ItemType) && ItemType != CLANTICKET && ItemType != BOOKEXPMIN && ItemType != GOLDTICKET && ItemType != MONEYBAG && ItemType != EXTENDLIMIT)
+	if (Server()->GetItemCount(ClientID, ItemType) && ItemType != CLANTICKET && ItemType != BOOKEXPMIN && ItemType != GOLDTICKET && ItemType != MONEYBAG && ItemType != EXTENDLIMIT && ItemType != MOONO2)
 		return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你已购买."), NULL);
 
 	if (m_apPlayers[ClientID]->AccData()->m_Level < Server()->GetItemPrice(ClientID, ItemType, 0))
 		return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你没有达到规定的等级."), NULL);
 
-	if (Type == 0 && m_apPlayers[ClientID]->AccData()->m_Gold < (unsigned long)Server()->GetItemPrice(ClientID, ItemType, 1))
+	if (Type == 0 && m_apPlayers[ClientID]->AccData()->m_Gold < (unsigned long)Server()->GetItemPrice(ClientID, ItemType, 1)*Count)
 		return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你没有足够的黄金,小穷光蛋."), NULL);
 
 	if (Type == 1 && m_apPlayers[ClientID]->AccData()->m_Donate < Server()->GetItemPrice(ClientID, ItemType, 1))
@@ -3048,7 +3060,7 @@ void CGameContext::BuyItem(int ItemType, int ClientID, int Type)
 
 	if (Type == 0)
 	{
-		int NeedMaterial = Server()->GetItemPrice(ClientID, ItemType, 1);
+		int NeedMaterial = Server()->GetItemPrice(ClientID, ItemType, 1)*Count;
 		if (Server()->GetMaterials(0) < NeedMaterial)
 			return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("店里可没材料."), NULL);
 
@@ -3056,10 +3068,10 @@ void CGameContext::BuyItem(int ItemType, int ClientID, int Type)
 	}
 
 	if (Type == 0)
-		m_apPlayers[ClientID]->AccData()->m_Gold -= Server()->GetItemPrice(ClientID, ItemType, 1);
+		m_apPlayers[ClientID]->AccData()->m_Gold -= Server()->GetItemPrice(ClientID, ItemType, 1)*Count;
 	else if (Type == 1)
-		m_apPlayers[ClientID]->AccData()->m_Donate -= Server()->GetItemPrice(ClientID, ItemType, 1);
-	GiveItem(ClientID, ItemType, 1);
+		m_apPlayers[ClientID]->AccData()->m_Donate -= Server()->GetItemPrice(ClientID, ItemType, 1)*Count;
+	GiveItem(ClientID, ItemType, Count);
 	SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你成功地购买了商品"), NULL);
 
 	if (ItemType == IGUN)
@@ -3198,7 +3210,9 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 	if (ClientID > MAX_PLAYERS || ClientID < 0 || !m_apPlayers[ClientID])
 		return;
 
-	if ((ItemID >= AMULETCLEEVER && ItemID <= APAIN) || (ItemID >= SNAPDAMAGE && ItemID <= FORMULAFORRING) || (ItemID >= RINGBOOMER && ItemID <= EARRINGSKWAH) || (ItemID >= BOOKMONEYMIN && ItemID <= RELRINGS) || (ItemID >= CLANBOXEXP && ItemID <= CUSTOMSKIN) || (ItemID >= WHITETICKET && ItemID <= RANDOMCRAFTITEM) || (ItemID >= GUNBOUNCE && ItemID <= LAMPHAMMER) || ItemID == JUMPIMPULS || ItemID == FARMBOX || ItemID == PIZDAMET || (ItemID == WOODCORE || ItemID == MINECORE)) // rare iteems
+	if(ItemID == MOONO2)
+		SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你获得了 {str:items}x{int:counts}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID, false), "counts", &Count, NULL);
+	else if ((ItemID >= AMULETCLEEVER && ItemID <= APAIN) || (ItemID >= SNAPDAMAGE && ItemID <= FORMULAFORRING) || (ItemID >= RINGBOOMER && ItemID <= EARRINGSKWAH) || (ItemID >= BOOKMONEYMIN && ItemID <= RELRINGS) || (ItemID >= CLANBOXEXP && ItemID <= CUSTOMSKIN) || (ItemID >= WHITETICKET && ItemID <= RANDOMCRAFTITEM) || (ItemID >= GUNBOUNCE && ItemID <= LAMPHAMMER) || ItemID == JUMPIMPULS || ItemID == FARMBOX || ItemID == PIZDAMET || (ItemID == WOODCORE || ItemID == MINECORE)) // rare iteems
 	{
 		SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 获得了 {str:items}x{int:counts}"), "name", Server()->ClientName(ClientID), "items", Server()->GetItemName(ClientID, ItemID, false), "counts", &Count, NULL);
 
@@ -4087,7 +4101,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 				CreateNewShop(ClientID, RESETINGUPGRADE, 3, 1, 30000);
 				CreateNewShop(ClientID, RESETINGSKILL, 3, 1, 8000);
 				CreateNewShop(ClientID, WHITETICKET, 3, 100, 20000);
-				CreateNewShop(ClientID, MOONO2, 3, 100, 5);
+				CreateNewShop(ClientID, MOONO2, 2, 100, 5);
 				CreateNewShop(ClientID, BOOKEXPMIN, 2, 1, 100);
 				CreateNewShop(ClientID, CLANTICKET, 2, 15, 2500);
 
