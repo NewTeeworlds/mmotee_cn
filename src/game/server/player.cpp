@@ -1052,8 +1052,8 @@ void CPlayer::TryRespawn()
 
 			m_BigBot = true;
 
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
-			AccUpgrade()->m_Damage = 100;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 2)*(GameServer()->GetBossLeveling()/GameServer()->GetBossCount());
+			AccUpgrade()->m_Damage = 100*GameServer()->GetBossLeveling();
 			break;
 		case BOT_BOSSVAMPIRE:
 			m_pCharacter = new (AllocMemoryCell) CBossSlime(&GameServer()->m_World);
@@ -1061,25 +1061,29 @@ void CPlayer::TryRespawn()
 
 			m_BigBot = true;
 
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 3);
-			AccUpgrade()->m_Damage = 200;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level / 2)*(GameServer()->GetBossLeveling()/GameServer()->GetBossCount());
+			AccUpgrade()->m_Damage = 200*GameServer()->GetBossLeveling();
 			break;
 		case BOT_BOSSPIGKING:
 			m_pCharacter = new (AllocMemoryCell) CBossPig(&GameServer()->m_World);
 			AccData()->m_Level = 200 + random_int(3, 13);
+			
+			AccUpgrade()->m_Damage = (GameServer()->GetBossLeveling()/GameServer()->GetBossCount())*10;
 			m_BigBot = true;
 			break;
 		case BOT_BOSSGUARD:
 			m_pCharacter = new (AllocMemoryCell) CBossGuard(&GameServer()->m_World);
-			AccData()->m_Level = 1000 + random_int(0, 100);
-			AccUpgrade()->m_Damage = (int)(AccData()->m_Level * 5);
-			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 50);
+			AccData()->m_Level = GameServer()->GetBossLeveling() + 1000;
+			AccUpgrade()->m_Damage = GameServer()->GetBossLeveling()*100;
+			AccUpgrade()->m_Health = (int)(AccData()->m_Level * 100) + GameServer()->GetBossLeveling();
 			m_BigBot = true;
 			break;
 		case BOT_BOSSZOMBIE:
 		case BOT_BOSSSKELET:
 			m_pCharacter = new (AllocMemoryCell) CBossZS(&GameServer()->m_World);
 			AccData()->m_Level = 1000 + random_int(0, 1000);
+			AccUpgrade()->m_Damage = (GameServer()->GetBossLeveling()/GameServer()->GetBossCount())*20;
+			AccUpgrade()->m_Health = (GameServer()->GetBossLeveling()/GameServer()->GetBossCount())*25;
 			m_BigBot = true;
 			break;
 		case BOT_GUARD:

@@ -1,7 +1,7 @@
 /* (c) Alexandre Díaz. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#ifndef GAME_SERVER_ENTITIES_BOT_BOSSPIS_H
-#define GAME_SERVER_ENTITIES_BOT_BOSSPIS_H
+#ifndef GAME_SERVER_ENTITIES_BOT_BOSSPIG_H
+#define GAME_SERVER_ENTITIES_BOT_BOSSPIG_H
 
 #include <game/server/entity.h>
 #include <game/generated/server_data.h>
@@ -36,11 +36,7 @@ private:
     float m_BotTimeLastDamage;
     float m_BotTimeLastSound;
     bool m_BotJumpTry;
-
-    bool m_BotRush;
-    int m_BotRushPerpareTick;
-    int m_BotRushTick;
-    int m_BotRushCooldown;
+    int m_SummonTick;
 
 	void TickBotAI();
 	//void PlaySound();
