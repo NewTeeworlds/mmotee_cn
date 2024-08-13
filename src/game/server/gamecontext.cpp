@@ -1437,9 +1437,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						char aBuf[32];
 						str_copy(aBuf, Server()->GetClanName(Server()->GetClanID(ClientID)), sizeof(aBuf));
 						if(Server()->GetOpenHouse(Server()->GetOwnHouse(ClientID)))
-							SendChatTarget_Localization(-1, -1, _("公会 {str:name} 打开了房屋!"), "name", aBuf);
+							SendChatTarget_Localization(-1, -1, _("公会 {str:name} 打开了房屋/月球门!"), "name", aBuf);
 						else
-							SendChatTarget_Localization(-1, -1, _("公会 {str:name} 关闭了房屋!"), "name", aBuf);
+							SendChatTarget_Localization(-1, -1, _("公会 {str:name} 关闭了房屋/月球门!"), "name", aBuf);
 					}
 					ResetVotes(ClientID, CHOUSE);
 					return;
@@ -2378,7 +2378,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 					m_apPlayers[ClientID]->UpdateSnap();
 					UpdateStats(ClientID);
-					ResetVotes(ClientID, AUTH);
+					ResetVotes(ClientID, SETTINGS);
 					return;
 				}
 				else if (str_comp(aCmd, "sspawnsettings") == 0)
@@ -3957,57 +3957,45 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			if (Server()->GetClanID(ClientID) > 0)
 				Server()->UpdClanCount(Server()->GetClanID(ClientID));
 
-			const char *Data;
-			Data = "全部";
-			if (Server()->GetItemSettings(ClientID, SANTIPING) == 1)
-				Data = "少量";
-			else if (Server()->GetItemSettings(ClientID, SANTIPING) == 2)
-				Data = "很少!";
-			else if (Server()->GetItemSettings(ClientID, SANTIPING) == 3)
-				Data = "不显示";
+		AddVote_Localization(ClientID, "null", "☪ 账户: {str:Username}", "Username", Server()->ClientUsername(ClientID));
+		AddVote_Localization(ClientID, "null", "ღ 等级: {int:Level} / 经验: {int:Exp}", "Level", &m_apPlayers[ClientID]->AccData()->m_Level, "Exp", &m_apPlayers[ClientID]->AccData()->m_Exp);
+		AddVote_Localization(ClientID, "null", "ღ 黄金: {int:gold} 白银: {int:Money}", "gold", &m_apPlayers[ClientID]->AccData()->m_Gold, "Money", &m_apPlayers[ClientID]->AccData()->m_Money);
+		AddVote("······················· ", "null", ClientID);
+		AddVote_Localization(ClientID, "null", "# {str:psevdo}", "psevdo", LocalizeText(ClientID, "子菜单--信息"));
+		AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(MMOTee): 736636701");
+		AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(TeeFun 1群): 895105949");
+		AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(TeeFun 2群): 553903715");
+		AddVote_Localization(ClientID, "rules", "☞ 注意事项");
+		AddVoteMenu_Localization(ClientID, RESLIST, MENUONLY, "☞ 通缉犯");
+		AddVoteMenu_Localization(ClientID, EVENTLIST, MENUONLY, "☞ 事件与奖金");
+		if (g_Config.m_MtLabourDay)
+			AddVoteMenu_Localization(ClientID, LABOURDAY, MENUONLY, "☞ 劳动节限定称号购买！");
+		AddVoteMenu_Localization(ClientID, JOBSSET, MENUONLY, "☞ 工作与专长");
+		AddVoteMenu_Localization(ClientID, TOPMENU, MENUONLY, "☞ 玩家/公会排名");
 
-			AddVote_Localization(ClientID, "null", "☪ 账户: {str:Username}", "Username", Server()->ClientUsername(ClientID));
-			AddVote_Localization(ClientID, "null", "ღ 等级: {int:Level} / 经验: {int:Exp}", "Level", &m_apPlayers[ClientID]->AccData()->m_Level, "Exp", &m_apPlayers[ClientID]->AccData()->m_Exp);
-			AddVote_Localization(ClientID, "null", "ღ 黄金: {int:gold} 白银: {int:Money}", "gold", &m_apPlayers[ClientID]->AccData()->m_Gold, "Money", &m_apPlayers[ClientID]->AccData()->m_Money);
+		AddVote("······················· ", "null", ClientID);
+		AddVote_Localization(ClientID, "null", "♫ {str:psevdo}", "psevdo", LocalizeText(ClientID, "子菜单--账户"));
+		AddVoteMenu_Localization(ClientID, MAILMENU, MENUONLY, "☞ 邮箱 ✉");
+		AddVoteMenu_Localization(ClientID, ARMORMENU, MENUONLY, "☞ 装备 ☭");
+		AddVoteMenu_Localization(ClientID, INVENTORY, MENUONLY, "☞ 物品栏/背包 ✪");
+		AddVoteMenu_Localization(ClientID, CRAFTING, MENUONLY, "☞ 合成栏 ☺");
+		AddVoteMenu_Localization(ClientID, QUEST, MENUONLY, "☞ 任务与报酬 ⊹");
+
+		AddVote("······················· ", "null", ClientID);
+		AddVote_Localization(ClientID, "null", "✪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "子菜单--设置"));
+		AddVoteMenu_Localization(ClientID, CLMENU, MENUONLY, "☞ 升级与职业 [♣{str:class}♣]", "class", m_apPlayers[ClientID]->GetClassName());
+		AddVoteMenu_Localization(ClientID, SETTINGS, MENUONLY, "☞ 设置与安全");
+		AddVoteMenu_Localization(ClientID, CDONATE, MENUONLY, "☞ 充钱与特权");
+		AddVoteMenu_Localization(ClientID, INTITLE, MENUONLY, "☞ 成就与称号");
+
+		if (Server()->GetClanID(ClientID) > 0)
+			AddVoteMenu_Localization(ClientID, CLAN, MENUONLY, "☞ 公会菜单 {str:clan}", "clan", Server()->ClientClan(ClientID));
+		
+		if (Server()->GetItemCount(ClientID, JUICER))
+		{
 			AddVote("······················· ", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "# {str:psevdo}", "psevdo", LocalizeText(ClientID, "子菜单--信息"));
-			AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(MMOTee): 736636701");
-			AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(TeeFun 1群): 895105949");
-			AddVote_Localization(ClientID, "info", "☞ {str:chat}", "chat", "QQ群(TeeFun 2群): 553903715");
-			AddVote_Localization(ClientID, "rules", "☞ 注意事项");
-			AddVoteMenu_Localization(ClientID, RESLIST, MENUONLY, "☞ 通缉犯");
-			AddVoteMenu_Localization(ClientID, EVENTLIST, MENUONLY, "☞ 事件与奖金");
-			if (g_Config.m_MtLabourDay)
-				AddVoteMenu_Localization(ClientID, LABOURDAY, MENUONLY, "☞ 劳动节限定称号购买！");
-			AddVoteMenu_Localization(ClientID, JOBSSET, MENUONLY, "☞ 工作与专长");
-			AddVoteMenu_Localization(ClientID, TOPMENU, MENUONLY, "☞ 玩家/公会排名");
-			AddVote_Localization(ClientID, "ssantiping", "☞ 特效显示(减轻服务器负担): {str:stat}", "stat", Data);
-
-			AddVote("······················· ", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "♫ {str:psevdo}", "psevdo", LocalizeText(ClientID, "子菜单--账户"));
-			AddVoteMenu_Localization(ClientID, MAILMENU, MENUONLY, "☞ 邮箱 ✉");
-			AddVoteMenu_Localization(ClientID, ARMORMENU, MENUONLY, "☞ 装备 ☭");
-			AddVoteMenu_Localization(ClientID, INVENTORY, MENUONLY, "☞ 物品栏/背包 ✪");
-			AddVoteMenu_Localization(ClientID, CRAFTING, MENUONLY, "☞ 合成栏 ☺");
-			AddVoteMenu_Localization(ClientID, QUESTMENU, MENUONLY, "☞ 任务与报酬 ⊹");
-			AddVote_Localization(ClientID, "ssantiping", "☞ 特效显示(减轻服务器负担): {str:stat}", "stat", Data);
-
-			AddVote("······················· ", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "✪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "子菜单--设置"));
-			AddVote_Localization(ClientID, "ssantiping", "☞ 特效显示(减轻服务器负担): {str:stat}", "stat", Data);
-			AddVoteMenu_Localization(ClientID, CLMENU, MENUONLY, "☞ 升级与职业 [♣{str:class}♣]", "class", m_apPlayers[ClientID]->GetClassName());
-			AddVoteMenu_Localization(ClientID, SETTINGS, MENUONLY, "☞ 设置与安全");
-			AddVoteMenu_Localization(ClientID, CDONATE, MENUONLY, "☞ 充钱与特权");
-			AddVoteMenu_Localization(ClientID, INTITLE, MENUONLY, "☞ 成就与称号");
-
-			if (Server()->GetClanID(ClientID) > 0)
-				AddVoteMenu_Localization(ClientID, CLAN, MENUONLY, "☞ 公会菜单 {str:clan}", "clan", Server()->ClientClan(ClientID));
-
-			if (Server()->GetItemCount(ClientID, JUICER))
-			{
-				AddVote("······················· ", "null", ClientID);
-				AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机(1%损耗)");
-			}
+			AddVote_Localization(ClientID, "juicer", "☞ 使用水果榨汁儿机");
+		}
 
 			if (m_apPlayers[ClientID]->GetShop())
 			{
@@ -4261,11 +4249,21 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			CreateNewShop(ClientID, ELECTROLASER, 1, 0, 0);
 			CreateNewShop(ClientID, LIGHTNINGLASER, 1, 0, 0);
 
-			AddVote("························", "null", ClientID);
-			AddVote_Localization(ClientID, "null", "☪ {str:psevdo}", "psevdo", LocalizeText(ClientID, "设置"));
-			const char *Data;
-			Data = Server()->GetSecurity(ClientID) ? "☑" : "☐";
-			AddVote_Localization(ClientID, "sssecurity", "☞ 登录与密码 {str:stat}", "stat", Data);
+		AddVote("························", "null", ClientID);
+		
+		const char *Data;
+
+		Data = "全部";
+		if (Server()->GetItemSettings(ClientID, SANTIPING) == 1)
+			Data = "少量";
+		else if (Server()->GetItemSettings(ClientID, SANTIPING) == 2)
+			Data = "很少";
+		else if (Server()->GetItemSettings(ClientID, SANTIPING) == 3)
+			Data = "不显示";
+		AddVote_Localization(ClientID, "ssantiping", "☞ 特效显示(减轻服务器负担): {str:stat}", "stat", Data);
+
+		Data = Server()->GetSecurity(ClientID) ? "☑" : "☐";
+		AddVote_Localization(ClientID, "sssecurity", "☞ 登录与密码 {str:stat}", "stat", Data);
 
 			Data = Server()->GetItemSettings(ClientID, SANTIPVP) ? "☑" : "☐";
 			AddVote_Localization(ClientID, "ssantipvp", "☞ VIP特权: 禁止PVP {str:stat}", "stat", Data);
@@ -4705,7 +4703,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "null", "你将会获得禁止PVP设置");
 			AddVote_Localization(ClientID, "null", "-----");
 			AddVote_Localization(ClientID, "bjuicer", "☞ 物品 榨汁儿机 [200]");
-			AddVote_Localization(ClientID, "null", "一次性吃完所有蔬菜水果(5%损耗)");
+			AddVote_Localization(ClientID, "null", "一次性吃完所有蔬菜水果");
 			AddVote_Localization(ClientID, "null", "-----");
 			AddVote_Localization(ClientID, "bcustomized", "☞ 物品 个性化包 [300]");
 			AddVote_Localization(ClientID, "null", "让你使用自己的皮肤和颜色");

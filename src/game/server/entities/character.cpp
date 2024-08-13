@@ -1794,10 +1794,10 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			if(!pFrom->IsBot())
 			{
 				int woodcore = Server()->GetItemCount(pFrom->GetCID(), WOODCORE);
-				if(woodcore >= 5)
+				if(woodcore)
 				{
-					int Count = min(10, (int)woodcore / 5);
-					CreateDropRandom(BIGWOOD, Count, 5, From, Force/(50+randforce));
+					int Count = min(10, (int) woodcore / 10 + 1);
+					CreateDropRandom(BIGWOOD, Count, 40, From, Force/(50+randforce));
 				}
 					
 			}
@@ -2726,39 +2726,39 @@ void CCharacter::HandleMapZone_Bonus()
 		case ZONE_INCLAN1:
 			if(!Server()->GetTopHouse(0))
 			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋/月球门还没有公会入驻,暂不开放"), NULL);
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 
 			if(!Server()->GetOpenHouse(0) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(0))
 			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房/月球门不对外开放"), NULL);
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 			break;
 		case ZONE_INCLAN2:
 			if(!Server()->GetTopHouse(1))
 			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋/月球门还没有公会入驻,暂不开放"), NULL);
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 
 			if(!Server()->GetOpenHouse(1) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
 			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房/月球门不对外开放"), NULL);
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 			break;
 		case ZONE_INCLAN3:
 			if(!Server()->GetTopHouse(2))
 			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋还没有公会入驻,暂不开放"), NULL);
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间房屋/月球门还没有公会入驻,暂不开放"), NULL);
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 
 			if(!Server()->GetOpenHouse(2) && Server()->GetClanID(m_pPlayer->GetCID()) != Server()->GetTopHouse(1))
 			{
-				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房不对外开放"), NULL);
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), -1, _("这间公会房/月球门不对外开放"), NULL);
 				Die(m_pPlayer->GetCID(), WEAPON_WORLD);	
 			}
 			break;

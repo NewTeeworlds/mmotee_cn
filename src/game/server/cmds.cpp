@@ -227,7 +227,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id) && itemid > 0 && itemid < 500 && citem > 0)
 			GameServer()->GiveItem(id, itemid, citem, enchant);
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家物品%dx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), itemid, citem);
+		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家物品%sx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), GameServer()->Server()->GetItemName(ClientID, itemid), citem);
 		GameServer()->Server()->LogWarning(aBuf);
 		return;
 	}
@@ -246,7 +246,27 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			GameServer()->RemItem(id, itemid, citem);
 
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s删除了游戏名为%s的玩家物品%dx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), itemid, citem);
+		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s删除了游戏名为%s的玩家物品%sx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), GameServer()->Server()->GetItemName(ClientID, itemid), citem);
+		GameServer()->Server()->LogWarning(aBuf);
+		return;
+	}
+
+	else if (!strncmp(Msg->m_pMessage, "/sendmailall", 12) && GameServer()->Server()->IsAuthed(ClientID))
+	{
+		LastChat();
+		int itemid = 0, citem = 0;
+		if ((sscanf(Msg->m_pMessage, "/sendmailall %d %d", &itemid, &citem)) != 2)
+			return GameServer()->SendChatTarget(ClientID, "命令方法: /sendmailall <物品id> <物品数量>");
+
+		if (0 < itemid < MAX_ITEM && citem > 0){
+			for(int id = 0; id < MAX_PLAYERS; id++){
+				if(GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id))
+					GameServer()->SendMail(id, 12, itemid, citem);
+			}
+		}
+		
+		char aBuf[128];
+		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s邮给全体玩家物品%sx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->GetItemName(ClientID, itemid), citem);
 		GameServer()->Server()->LogWarning(aBuf);
 		return;
 	}
@@ -261,11 +281,11 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		{
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("输入的 ID 无效."), NULL);
 		}
-		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id) && itemid > 0 && itemid < 500 && citem > 0)
+		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id) && itemid > 0 && itemid < MAX_ITEM && citem > 0)
 			GameServer()->SendMail(id, 12, itemid, citem);
 		
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家物品%dx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), itemid, citem);
+		str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s邮给游戏名为%s的玩家物品%sx%d个", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), GameServer()->Server()->GetItemName(ClientID, itemid), citem);
 		GameServer()->Server()->LogWarning(aBuf);
 		return;
 	}
@@ -294,12 +314,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		}
 		if (GameServer()->m_apPlayers[id] && GameServer()->Server()->IsClientLogged(id))
 		{
-			GameServer()->SendChatTarget(ClientID, "你发出了点卷.");
-			GameServer()->SendChatTarget(id, "你的点卷数增加了.");
+			GameServer()->SendChatTarget(ClientID, "点券已发出.");
+			GameServer()->SendChatTarget(id, "你的点券数增加了.");
 			GameServer()->m_apPlayers[id]->AccData()->m_Donate += citem;
 
 			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家%d点卷", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), citem);
+			str_format(aBuf, sizeof(aBuf), "!警告! 管理员%s给了游戏名为%s的玩家%d点券", GameServer()->Server()->ClientName(ClientID), GameServer()->Server()->ClientName(id), citem);
 			GameServer()->Server()->LogWarning(aBuf);
 		}
 		return;
