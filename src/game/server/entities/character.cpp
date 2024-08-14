@@ -2612,7 +2612,10 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 	vec2 DropPos = vec2(m_Pos.x, m_Pos.y - 28.f);
 	if(!Random) 
 	{
-		new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
+		if(Server()->GetItemCount(HowID, SAUTOPICK) && Server()->GetItemSettings(HowID, SAUTOPICK))
+			Server()->GiveItem(HowID, ItemID, Count);
+		else
+			new CDropItem(GameWorld(), DropPos, Force, ItemID, Count, HowID, 0);
 		return;
 	}
 	if (Server()->GetItemSettings(HowID, TITLEPPP))
