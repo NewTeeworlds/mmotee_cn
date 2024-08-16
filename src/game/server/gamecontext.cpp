@@ -2561,16 +2561,17 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 					m_apPlayers[ClientID]->m_LastChangeInfo = Server()->Tick();
 
+					int SelectItem = m_apPlayers[ClientID]->m_SelectItem;
+
 					if(Server()->GetItemCount(ClientID, IMADMIN))
 					{
 						char aBuf[64];
-						str_format(aBuf, sizeof(aBuf), "管理员'%s'试图丢出%d个物品%d", Server()->ClientName(ClientID), Count, ItemID);
+						str_format(aBuf, sizeof(aBuf), "管理员'%s'试图丢出%d个物品%d", Server()->ClientName(ClientID), chartoint(pReason, MAX_COUNT), SelectItem);
 						Server()->LogWarning(aBuf);
 						SendChatTarget_Localization(ClientID, CHATCATEGORY_ACCUSATION, _("管理员不可丢出物品"));
 						return;
 					}
 
-					int SelectItem = m_apPlayers[ClientID]->m_SelectItem;
 					Server()->RemItem(ClientID, SelectItem, chartoint(pReason, MAX_COUNT), USEDDROP); // Выброс предметов для всех игроков
 					m_apPlayers[ClientID]->m_SelectItem = -1;
 					ResetVotes(ClientID, AUTH);
