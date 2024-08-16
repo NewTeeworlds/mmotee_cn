@@ -206,14 +206,14 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
 
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_HEALTH));
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_DMG));
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_AMMOREGAN));
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_AMMO));
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_HEALTHREGAN));
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_HANDLE));
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Mana, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_MANA));
-	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_SPRAY));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_HEALTH));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_DMG));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_AMMOREGAN));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_AMMO));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_HEALTHREGAN));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_HANDLE));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Mana, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_MANA));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_SPRAY));
 	return true;
 }
 
