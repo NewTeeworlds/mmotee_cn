@@ -1468,7 +1468,7 @@ void CCharacter::Die(int Killer, int Weapon)
 			
 			GameServer()->m_WinWaitBoss = 1000;
 
-			for (int i = MAX_PLAYERS; i < MAX_CLAN_LENGTH; i++)
+			for (int i = MAX_PLAYERS; i < MAX_CLIENTS; i++)
 			{
 				CPlayer *pP = GameServer()->m_apPlayers[i];
 				if(!pP || !pP->GetCharacter())
