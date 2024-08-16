@@ -737,9 +737,9 @@ void CCharacter::FireWeapon()
 				if(m_InSpace)
 					SelfKnockback += 0.5f;
 				
-				if(!Electro)
-					new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
-				else
+				new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
+				
+				if(Electro)
 				{
 					vec2 Start = m_Pos;
 					Start += Direction*50;
@@ -760,20 +760,23 @@ void CCharacter::FireWeapon()
 						pHit->TakeDamage(Direction, clamp(10/ShotSpread, 1, 10), GetPlayer()->GetCID(), WEAPON_RIFLE, TAKEDAMAGEMODE_INFECTION);
 					}
 
-					int A = distance(Start, To) / 100;
+					if(Electro)
+					{
+						int A = distance(Start, To) / 100;
 
-					if (A > 4)
-						A = 4;
+						if (A > 4)
+							A = 4;
 
-					if (A < 2)
-						A = 2;
+						if (A < 2)
+							A = 2;
 
-					new CElectro(GameWorld(), Start, To, vec2(cosf(a+i*1.2f), sinf(a+i*1.2f))*40, A);
+						new CElectro(GameWorld(), Start, To, vec2(cosf(a+i*1.2f), sinf(a+i*1.2f))*40, A);
+					}
 				}
-
-				if(Lightning)
-					new CLightning(GameWorld(), m_Pos, vec2(cosf(a), sinf(a)), 200, 100, m_pPlayer->GetCID(), clamp(12/ShotSpread, 1, 12), 2);
 			}
+
+			if(Lightning)
+				new CLightning(GameWorld(), m_Pos, Direction, 200, 100, m_pPlayer->GetCID(), g_Config.m_InfDoctorFunnelDamage, 2);
 
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 		} break;
