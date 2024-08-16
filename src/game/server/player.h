@@ -146,14 +146,12 @@ public:
 	} m_Latency;
 
 	int m_Authed;
-	bool m_aKnownClass[NB_PLAYERCLASS];
 	
 	int GetClass(); 
 	void SetClassSkin(int newClass, int State = 0);
 	void SetClass(int newClass);
 	void RandomBoxTick();
 	void BasicAuthedTick(); 
-	bool IsKownClass(int c);
 	
 	const char* GetLanguage();
 	const char* GetClassName();

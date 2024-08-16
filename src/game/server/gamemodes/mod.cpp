@@ -334,7 +334,7 @@ switch(PlayerClass)
 			return true;
 		case PLAYERCLASS_BERSERK:
 			return true;
-		case PLAYERCLASS_ASSASINS:
+		case PLAYERCLASS_ASSASSIN:
 			return true;
 		default:
 			return false;

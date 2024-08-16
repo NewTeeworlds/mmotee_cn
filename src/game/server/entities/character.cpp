@@ -206,40 +206,14 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
 
-	switch (GetClass())
-	{
-	case PLAYERCLASS_ASSASINS:
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, AMAXHEALTH);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, AMAXDAMAGE);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, AMAXAREGEN);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, AMAXAMMO);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, AMAXHPREGEN);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, AMAXHANDLE);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, AMAXSPREAD);
-
-	case PLAYERCLASS_BERSERK:
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, BMAXHEALTH);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, BMAXDAMAGE);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, BMAXAREGEN);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, BMAXAMMO);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, BMAXHPREGEN);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, BMAXHANDLE);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, BMAXSPREAD);
-
-	case PLAYERCLASS_HEALER:
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, HMAXHEALTH);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, HMAXDAMAGE);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, HMAXAREGEN);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, HMAXAMMO);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, HMAXHPREGEN);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, HMAXHANDLE);
-		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, HMAXSPREAD);
-		
-		break;
-	
-	default:
-		break;
-	}
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_HEALTH));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_DMG));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_AMMOREGAN));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_AMMO));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_HEALTHREGAN));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_HANDLE));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Mana, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_MANA));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, GameServer()->GetUpgrPrice(GetPlayer()->GetCID(), UPGRADE_SPRAY));
 	return true;
 }
 
@@ -554,7 +528,7 @@ void CCharacter::FireWeapon()
 			// ---------- 检查玩家职业是 Berserk(狂战士) 还是 Assasins(刺客)
 			int Range = 0;
 			if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_BERSERK)	Range = m_pPlayer->AccUpgrade()->m_HammerRange*20;
-			else if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS) 
+			else if(m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASSIN) 
 			{
 				Range = 100;
 				if(m_InSpace)
@@ -1144,16 +1118,16 @@ void CCharacter::Tick()
 		m_InAirTick = 0;
 	}
 	
-	if(GetClass() == PLAYERCLASS_ASSASINS && IsGrounded() && m_DartLifeSpan <= 0)
+	if(GetClass() == PLAYERCLASS_ASSASSIN && IsGrounded() && m_DartLifeSpan <= 0)
 	{
 		m_DartLeft = g_Config.m_InfNinjaJump;
 	}
-	if(GetClass() == PLAYERCLASS_ASSASINS && m_InAirTick <= Server()->TickSpeed())
+	if(GetClass() == PLAYERCLASS_ASSASSIN && m_InAirTick <= Server()->TickSpeed())
 	{
 		m_PositionLockAvailable = true;
 	}
 	
-	if(m_IsFrozen || (GetClass() == PLAYERCLASS_ASSASINS && m_PositionLocked))
+	if(m_IsFrozen || (GetClass() == PLAYERCLASS_ASSASSIN && m_PositionLocked))
 	{
 		m_Input.m_Jump = 0;
 		m_Input.m_Direction = 0;
@@ -1252,7 +1226,7 @@ void CCharacter::Tick()
 					switch(m_pPlayer->m_MapMenuItem)
 					{
 						case CMapConverter::MENUCLASS_ASSASINS:
-							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_ASSASINS;
+							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_ASSASSIN;
 							break;
 						case CMapConverter::MENUCLASS_BERSERK:
 							NewClass = m_pPlayer->AccData()->m_Class = PLAYERCLASS_BERSERK;
@@ -1796,11 +1770,11 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon, int Mode)
 			}
 		}
 		
-		auto getcount = (float)(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASINS ? 15-pFrom->AccUpgrade()->m_HammerRange : 15.0f);
+		auto getcount = (float)(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASSIN ? 15-pFrom->AccUpgrade()->m_HammerRange : 15.0f);
 		if(random_prob(1.0f/getcount))
 		{
 			int CritDamage = Dmg+pFrom->AccUpgrade()->m_Damage*2+random_int(0, 50);
-			if(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASINS)
+			if(pFrom->AccData()->m_Class == PLAYERCLASS_ASSASSIN)
 				CritDamage += (CritDamage/100)*pFrom->AccUpgrade()->m_Pasive2*3;
 			
 			Dmg = CritDamage;
@@ -2215,7 +2189,7 @@ void CCharacter::Snap(int SnappingClient)
 
 	// 武器：
 	// 在玩家被冻结时，或者玩家职业为 Assasins(刺客)且切换到锤子武器时，将玩家武器（外观）设置为 Ninja(忍者)
-	if((GetInfWeaponID(m_ActiveWeapon) == INFWEAPON_HAMMER && m_pPlayer && m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASINS && !m_pPlayer->m_InArea) || m_IsFrozen)
+	if((GetInfWeaponID(m_ActiveWeapon) == INFWEAPON_HAMMER && m_pPlayer && m_pPlayer->AccData()->m_Class == PLAYERCLASS_ASSASSIN && !m_pPlayer->m_InArea) || m_IsFrozen)
 	{
 		if(m_IsFrozen)
 			pCharacter->m_Emote = EMOTE_BLINK;
@@ -2317,26 +2291,14 @@ void CCharacter::ClassSpawnAttributes()
 				int Proc = (m_Health / 100)*m_pPlayer->AccUpgrade()->m_HammerRange*4;
 				m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*50+Proc;
 			}
-			if(!m_pPlayer->IsKownClass(PLAYERCLASS_HEALER))
-			{
-				m_pPlayer->m_aKnownClass[PLAYERCLASS_HEALER] = true;
-			}
 			break;
 		case PLAYERCLASS_BERSERK:
 			RemoveAllGun();
 			m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*40;
-			if(!m_pPlayer->IsKownClass(PLAYERCLASS_BERSERK))
-			{
-				m_pPlayer->m_aKnownClass[PLAYERCLASS_BERSERK] = true;
-			}
 			break;
-		case PLAYERCLASS_ASSASINS:
+		case PLAYERCLASS_ASSASSIN:
 			RemoveAllGun();
 			m_Health = 5+m_pPlayer->AccUpgrade()->m_Health*40;
-			if(!m_pPlayer->IsKownClass(PLAYERCLASS_ASSASINS))
-			{
-				m_pPlayer->m_aKnownClass[PLAYERCLASS_ASSASINS] = true;
-			}
 			break;
 		case PLAYERCLASS_NONE:
 			m_Health = 10;

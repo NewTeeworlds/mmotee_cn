@@ -104,6 +104,14 @@ enum
 	AMAXSPREAD = 30,
 	BMAXSPREAD = 30,
 	HMAXSPREAD = 30,
+
+	AMAXHAMMERRANGE = 7,
+	BMAXHAMMERRANGE = 4,
+	HMAXHAMMERRANGE = 5,
+
+	AMAXPASIVE2 = 7,
+	BMAXPASIVE2 = 4,
+	HMAXPASIVE2 = 10
 };
 
 enum EMainQuestNeed
@@ -156,11 +164,6 @@ enum EDailyQuests
 
 enum
 {
-	HAMMERRANGE = 15
-};
-
-enum
-{
 	PRICEHEALTH = 20,
 	PRICEDMG = 50,
 	PRICEAMMOREGAN = 50,
@@ -169,7 +172,24 @@ enum
 	PRICEHANDLE = 50,
 	PRICEMANA = 10,
 	PRICESPRAY = 100,
+	PRICEHAMMERRANGE = 15
 };
+
+enum
+{
+	UPGRADE_HEALTH = 0,
+	UPGRADE_DMG,
+	UPGRADE_AMMOREGAN,
+	UPGRADE_AMMO ,
+	UPGRADE_HEALTHREGAN,
+	UPGRADE_HANDLE,
+	UPGRADE_MANA,
+	UPGRADE_SPRAY,
+	UPGRADE_HAMMERRANGE,
+	UPGRADE_PASIVE2,
+	NUM_UPGRADE,
+};
+
 class CGameContext : public IGameServer
 {
 	IServer *m_pServer;
@@ -422,6 +442,14 @@ public:
 	
 	int m_BossSummonNum;
 
+	void SetUpgrMaxLevel(int Class, int Upgr, int Level);
+	int GetUpgrMaxLevel(int ClientID, int Upgr);
+	int GetMoreLevel(int ClientID);
+
+	void SetUpgrPrice(int Class, int Upgr, int Price);
+	int GetUpgrPrice(int ClientID, int Upgr);
+
+	void InitClassesUpgrs();
 private:
 	bool PrivateMessage(const char *pStr, int ClientID, bool TeamChat);
 	class CBroadcastState
@@ -440,6 +468,8 @@ private:
 	CBroadcastState m_aBroadcastStates[MAX_PLAYERS];
 
 	int m_MapID;
+	int m_aaUpgrMaxLevel[NUM_PLAYERCLASS][NUM_UPGRADE];
+	int m_aaUpgrPrice[NUM_PLAYERCLASS][NUM_UPGRADE];
 };
 
 inline int64_t CmaskAll() { return -1LL; }

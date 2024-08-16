@@ -1143,7 +1143,7 @@ void CPlayer::SetClassSkin(int newClass, int State)
 {
 	switch (newClass)
 	{
-	case PLAYERCLASS_ASSASINS:
+	case PLAYERCLASS_ASSASSIN:
 		m_TeeInfos.m_UseCustomColor = 0;
 		str_copy(m_TeeInfos.m_aSkinName, "bluekitty", sizeof(m_TeeInfos.m_aSkinName));
 		break;
@@ -1173,11 +1173,6 @@ void CPlayer::SetClass(int newClass)
 		m_pCharacter->SetClass(newClass);
 }
 
-bool CPlayer::IsKownClass(int c)
-{
-	return m_aKnownClass[c];
-}
-
 const char *CPlayer::GetLanguage()
 {
 	return m_aLanguage;
@@ -1185,7 +1180,7 @@ const char *CPlayer::GetLanguage()
 
 const char *CPlayer::GetClassName()
 {
-	if (AccData()->m_Class == PLAYERCLASS_ASSASINS)
+	if (AccData()->m_Class == PLAYERCLASS_ASSASSIN)
 		return "Assasin";
 	else if (AccData()->m_Class == PLAYERCLASS_BERSERK)
 		return "Berserk";
