@@ -1184,7 +1184,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 
 					if(!GetItemCount(ClientID, IMADMIN))
-						GiveItem(ClientID, IMADMIN, 1);
+						GameServer()->GiveItem(ClientID, IMADMIN, 1);
 				}
 				else if(g_Config.m_SvRconModPassword[0] && str_comp(pPw, g_Config.m_SvRconModPassword) == 0)
 				{
