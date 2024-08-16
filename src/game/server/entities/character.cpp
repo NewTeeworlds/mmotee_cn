@@ -2289,7 +2289,7 @@ void CCharacter::ClassSpawnAttributes()
 			if(m_pPlayer->AccUpgrade()->m_HammerRange)
 			{
 				int Proc = (m_Health / 100)*m_pPlayer->AccUpgrade()->m_HammerRange*4;
-				m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*50+Proc;
+				m_Health = 10+m_pPlayer->AccUpgrade()->m_Health*100+Proc;
 			}
 			break;
 		case PLAYERCLASS_BERSERK:

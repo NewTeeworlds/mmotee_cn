@@ -6638,7 +6638,7 @@ int CGameContext::GetUpgrPrice(int ClientID, int Upgr)
 	int Class = m_apPlayers[ClientID]->GetClass();
 	
 	// Avoid crash
-	Class = clamp(Class, 0, int(NUM_PLAYERCLASS) - 1);
+	Class = clamp(Class, PLAYERCLASS_NONE + 1, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);
 
 	return m_aaUpgrPrice[Class][Upgr];
@@ -6646,7 +6646,7 @@ int CGameContext::GetUpgrPrice(int ClientID, int Upgr)
 
 void CGameContext::SetUpgrPrice(int Class, int Upgr, int Price)
 {
-	Class = clamp(Class, 0, int(NUM_PLAYERCLASS) - 1);
+	Class = clamp(Class, PLAYERCLASS_NONE + 1, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);
 	m_aaUpgrPrice[Class][Upgr] = Price;
 }
