@@ -50,6 +50,8 @@ void CGameContext::Construct(int Resetting)
 	m_WinWaitBoss = 0;
 	m_ChatResponseTargetID = -1;
 	m_BossSummonNum = 0;
+
+	InitClassesUpgrs();
 }
 
 CGameContext::CGameContext(int Resetting)
