@@ -1182,6 +1182,9 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					char aBuf[256];
 					str_format(aBuf, sizeof(aBuf), "ClientID=%d authed (admin)", ClientID);
 					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+
+					if(!GetItemCount(ClientID, IMADMIN))
+						GiveItem(ClientID, IMADMIN, 1);
 				}
 				else if(g_Config.m_SvRconModPassword[0] && str_comp(pPw, g_Config.m_SvRconModPassword) == 0)
 				{
@@ -2613,7 +2616,7 @@ void CServer::InitMaterialID()
 	pJob->Start();
 }
 
-void CServer::RemItems(int ItemID, int ClientID, int Count, int Type)
+void CServer::RemItems(int ItemID, int ClientID, unsigned long long int Count, int Type)
 {
 	if(m_aClients[ClientID].m_UserID < 0 && m_vpGameServer[DEFAULT_MAP_ID])
 		return;
@@ -2622,7 +2625,7 @@ void CServer::RemItems(int ItemID, int ClientID, int Count, int Type)
 	pJob->Start();
 }
 
-void CServer::RemItem(int ClientID, int ItemID, int Count, int Type)
+void CServer::RemItem(int ClientID, int ItemID, unsigned long long int Count, int Type)
 {
 	RemItems(ItemID, ClientID, Count, Type);
 }

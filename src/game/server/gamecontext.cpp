@@ -3223,21 +3223,24 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 	{
 		if (ItemID == FARMLEVEL || ItemID == MINEREXP || ItemID == LOADEREXP)
 			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[专长] {str:items}"), "items", Server()->GetItemName(ClientID, ItemID), NULL);
-		else if((ItemID == KILLQUEST || ItemID == CHALLENGEQUEST) && !Server()->GetItemSettings(ClientID, SCHAT))
+		else if(ItemID == KILLQUEST || ItemID == CHALLENGEQUEST)
 		{
-			int Count = Server()->GetItemCount(ClientID, ItemID);
-			int Need = GetDailyQuestNeed((ItemID == KILLQUEST) ? EDailyQuests::QUESTTYPE2_KILL : EDailyQuests::QUESTTYPE3_CHALLENGE, (ItemID == KILLQUEST) ? 0 : EDailyQuests::CHALLENGE4);
-			if(Count % 50 == 0 && Count < Need)
-				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:item} [{int:num}/{int:need}]"), 
-				"item", Server()->GetItemName(ClientID, ItemID), 
-				"num", &Count,
-				"need", &Need);
-			
-			if(Count == Need)
+			if(!Server()->GetItemSettings(ClientID, SCHAT))
 			{
-				SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, (ItemID == KILLQUEST) ? _("[每日任务] 击杀任务已完成！") : _("[每日任务] 挑战任务已完成！"));
-				if(m_apPlayers[ClientID]->GetCharacter())
-					CreateSound(m_apPlayers[ClientID]->GetCharacter()->m_Pos, SOUND_CTF_CAPTURE);
+				int Count = Server()->GetItemCount(ClientID, ItemID);
+				int Need = GetDailyQuestNeed((ItemID == KILLQUEST) ? EDailyQuests::QUESTTYPE2_KILL : EDailyQuests::QUESTTYPE3_CHALLENGE, (ItemID == KILLQUEST) ? 0 : EDailyQuests::CHALLENGE4);
+				if(Count % 50 == 0 && Count < Need)
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("[每日任务] {str:item} [{int:num}/{int:need}]"), 
+					"item", Server()->GetItemName(ClientID, ItemID), 
+					"num", &Count,
+					"need", &Need);
+				
+				if(Count == Need)
+				{
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, (ItemID == KILLQUEST) ? _("[每日任务] 击杀任务已完成！") : _("[每日任务] 挑战任务已完成！"));
+					if(m_apPlayers[ClientID]->GetCharacter())
+						CreateSound(m_apPlayers[ClientID]->GetCharacter()->m_Pos, SOUND_CTF_CAPTURE);
+				}
 			}
 		}
 		else
@@ -3276,7 +3279,7 @@ void CGameContext::GiveItem(int ClientID, int ItemID, int Count, int Enchant)
 	Server()->GiveItem(ClientID, ItemID, Count, Settings, Enchant);
 }
 
-void CGameContext::RemItem(int ClientID, int ItemID, int Count)
+void CGameContext::RemItem(int ClientID, int ItemID, unsigned long long Count)
 {
 	if (ClientID > MAX_PLAYERS || ClientID < 0 || !m_apPlayers[ClientID])
 		return;
@@ -5930,7 +5933,7 @@ const char *CGameContext::LocalizeText(int ClientID, const char *pText)
 }
 
 /* Предметы все функции */
-void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
+void CGameContext::UseItem(int ClientID, int ItemID, unsigned long long int Count, int Type)
 {
 	CPlayer *pPlayer = m_apPlayers[ClientID];
 	if (!pPlayer || !pPlayer->GetCharacter())
@@ -6127,6 +6130,14 @@ void CGameContext::UseItem(int ClientID, int ItemID, int Count, int Type)
 	}
 	if (Type == USEDDROP)
 	{
+		if(Server()->GetItemCount(ClientID, IMADMIN))
+		{
+			char aBuf[64];
+			str_format(aBuf, sizeof(aBuf), "管理员'%s'试图丢出%d个物品%d", Server()->ClientName(ClientID), Count, ItemID);
+			Server()->LogWarning(aBuf);
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_ACCUSATION, _("管理员不可丢出物品"));
+			return;
+		}
 		int ClinID = -1;
 		if (ItemID == RANDOMCRAFTITEM || ItemID == POTATO || ItemID == TOMATE || ItemID == CARROT)
 			ClinID = ClientID;

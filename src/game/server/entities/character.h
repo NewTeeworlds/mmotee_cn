@@ -248,6 +248,8 @@ public:
 /* INFECTION MODIFICATION END *****************************************/
 	void HandleMapZone_Bonus();
 	void HandleMapZone_chMap();
+
+	void CheckUpgrsIfStrange(int *Count, int Max);
 };
 
 #endif

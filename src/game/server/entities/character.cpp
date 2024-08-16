@@ -205,6 +205,41 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 
 	m_pPlayer->m_HealthStart = m_Health;
 	m_pPlayer->m_Mana = 0;
+
+	switch (GetClass())
+	{
+	case PLAYERCLASS_ASSASINS:
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, AMAXHEALTH);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, AMAXDAMAGE);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, AMAXAREGEN);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, AMAXAMMO);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, AMAXHPREGEN);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, AMAXHANDLE);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, AMAXSPREAD);
+
+	case PLAYERCLASS_BERSERK:
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, BMAXHEALTH);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, BMAXDAMAGE);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, BMAXAREGEN);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, BMAXAMMO);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, BMAXHPREGEN);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, BMAXHANDLE);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, BMAXSPREAD);
+
+	case PLAYERCLASS_HEALER:
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Health, HMAXHEALTH);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Damage, HMAXDAMAGE);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_AmmoRegen, HMAXAREGEN);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Ammo, HMAXAMMO);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_HPRegen, HMAXHPREGEN);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, HMAXHANDLE);
+		CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, HMAXSPREAD);
+		
+		break;
+	
+	default:
+		break;
+	}
 	return true;
 }
 
@@ -593,7 +628,8 @@ void CCharacter::FireWeapon()
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime),
 					g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, Explode, 10, -1, WEAPON_GUN);
 			
-			SelfKnockback += 1.f;
+			if(m_InSpace)
+				SelfKnockback += 0.5f;
 
 			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
@@ -638,7 +674,8 @@ void CCharacter::FireWeapon()
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime*2), 20, Explode, 10, -1, WEAPON_SHOTGUN);
 				}
 
-				SelfKnockback += 0.2f;
+				if(m_InSpace)
+					SelfKnockback += 0.2f;
 			}
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), -1);
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
@@ -688,7 +725,8 @@ void CCharacter::FireWeapon()
 						(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime), 
 						g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
 
-					SelfKnockback += 1.f;
+					if(m_InSpace)
+						SelfKnockback += 0.5f;
 				}
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID(), -1);
 			}
@@ -722,7 +760,8 @@ void CCharacter::FireWeapon()
 				float v = 1 - (absolute(i) / (float)ShotSpread) / 20;
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.2f, v);
 
-				SelfKnockback += 0.5f;
+				if(m_InSpace)
+					SelfKnockback += 0.5f;
 				
 				if(!Electro)
 					new CBiologistLaser(GameWorld(), m_Pos, vec2(cosf(a), sinf(a))*Speed, m_pPlayer->GetCID(), 3, Explode);
@@ -744,7 +783,7 @@ void CCharacter::FireWeapon()
 					{
 						To = pHit->m_Pos;
 						pHit->ElectroShock();
-						pHit->TakeDamage(Direction, 10, GetPlayer()->GetCID(), WEAPON_RIFLE, TAKEDAMAGEMODE_INFECTION);
+						pHit->TakeDamage(Direction, clamp(10/ShotSpread, 1, 10), GetPlayer()->GetCID(), WEAPON_RIFLE, TAKEDAMAGEMODE_INFECTION);
 					}
 
 					int A = distance(Start, To) / 100;
@@ -759,7 +798,7 @@ void CCharacter::FireWeapon()
 				}
 
 				if(Lightning)
-					new CLightning(GameWorld(), m_Pos, vec2(cosf(a), sinf(a)), 200, 100, m_pPlayer->GetCID(), 12, 2);
+					new CLightning(GameWorld(), m_Pos, vec2(cosf(a), sinf(a)), 200, 100, m_pPlayer->GetCID(), clamp(12/ShotSpread, 1, 12), 2);
 			}
 
 			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
@@ -3103,4 +3142,9 @@ void CCharacter::HandleMapZone_chMap()
 			m_InChangMap = false;
 		}
 	}*/
+}
+
+void CCharacter::CheckUpgrsIfStrange(int *pCount, int Max)
+{
+	*pCount = clamp(*pCount, 0, Max); // wow wtf.
 }

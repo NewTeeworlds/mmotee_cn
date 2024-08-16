@@ -91,11 +91,11 @@ class CGameServerCmd_UseItem : public CServer::CGameServerCmd
 private:
 	int m_ClientID;
 	int m_ItemID;
-	int m_Count;
+	unsigned long long int m_Count;
 	int m_Type;
 	
 public:
-	CGameServerCmd_UseItem(int ClientID, int ItemID, int Count, int Type)
+	CGameServerCmd_UseItem(int ClientID, int ItemID, unsigned long long int Count, int Type)
 	{
 		m_ClientID = ClientID;
 		m_ItemID = ItemID;
@@ -637,11 +637,11 @@ private:
 	CServer* m_pServer;
 	int m_ItemID;
 	int m_ClientID;
-	int m_Count;
+	unsigned long long int m_Count;
 	int m_Type;
 	
 public:
-	CSqlJob_Server_RemItems(CServer* pServer, int ItemID, int ClientID, int Count, int Type)
+	CSqlJob_Server_RemItems(CServer* pServer, int ItemID, int ClientID, unsigned long long int Count, int Type)
 	{
 		m_pServer = pServer;
 		m_ItemID = ItemID; 

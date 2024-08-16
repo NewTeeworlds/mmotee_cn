@@ -269,7 +269,7 @@ public:
 	// 物品升级
 	void BuyItem(int ItemType, int ClientID, int Type = 0, int Count = 1);
 	void GiveItem(int ClientID, int ItemID, int Count, int Enchant = 0);
-	void RemItem(int ClientID, int ItemID, int Count);
+	void RemItem(int ClientID, int ItemID, unsigned long long int Count);
 
 	void CreateItem(int ClientID, int ItemID, int Count);
 	void BuyUpgradeClan(int ClientID, int Money, Clan Type, const char *SubType);
@@ -277,7 +277,7 @@ public:
 	void SkillSettings(int ClientID, int ItemType, const char *Msg);
 	void EyeEmoteSettings(int ClientID, int ItemType, const char *Msg);
 	void BuySkill(int ClientID, int Price, int ItemID);
-	void UseItem(int ClientID, int ItemID, int Count, int Type);
+	void UseItem(int ClientID, int ItemID, unsigned long long int Count, int Type);
 
 	void CreateSellWorkItem(int ClientID, int ItemID, int Price);
 

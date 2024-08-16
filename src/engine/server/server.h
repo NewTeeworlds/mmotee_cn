@@ -272,7 +272,7 @@ public:
 	virtual void SetItemSettingsCount(int ClientID, int ItemID, int Count);
 	virtual void UpdateItemSettings(int ClientID, int ItemID);
 	virtual void GiveItem(int ClientID, int ItemID, int Count, int Settings = 0, int Enchant = 0);
-	virtual void RemItem(int ClientID, int ItemID, int Count, int Type);
+	virtual void RemItem(int ClientID, int ItemID, unsigned long long int Count, int Type);
 	virtual void SetItemPrice(int ClientID, int ItemID, int Level, int Price);
 	virtual int GetItemPrice(int ClientID, int ItemID, int Type);
 	virtual int GetItemEnchant(int ClientID, int ItemID);
@@ -449,7 +449,7 @@ public:
 	// ----- Инвентарь
 	virtual void InitInvID(int ClientID = -1, int ItemID = -1);
 	virtual void GetItem(int ItemID, int ClientID, int Count, int Settings = 0, int Enchant = 0);
-	virtual void RemItems(int ItemID, int ClientID, int Count, int Type);
+	virtual void RemItems(int ItemID, int ClientID, unsigned long long int Count, int Type);
 	virtual void ListInventory(int ClientID, int Type, int GetCount = false);
 	virtual int GetItemCountType(int ClientID, int Type);
 	virtual void InitMailID(int ClientID);
