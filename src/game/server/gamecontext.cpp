@@ -2560,6 +2560,16 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("请稍候..."), NULL);
 
 					m_apPlayers[ClientID]->m_LastChangeInfo = Server()->Tick();
+
+					if(Server()->GetItemCount(ClientID, IMADMIN))
+					{
+						char aBuf[64];
+						str_format(aBuf, sizeof(aBuf), "管理员'%s'试图丢出%d个物品%d", Server()->ClientName(ClientID), Count, ItemID);
+						Server()->LogWarning(aBuf);
+						SendChatTarget_Localization(ClientID, CHATCATEGORY_ACCUSATION, _("管理员不可丢出物品"));
+						return;
+					}
+
 					int SelectItem = m_apPlayers[ClientID]->m_SelectItem;
 					Server()->RemItem(ClientID, SelectItem, chartoint(pReason, MAX_COUNT), USEDDROP); // Выброс предметов для всех игроков
 					m_apPlayers[ClientID]->m_SelectItem = -1;
@@ -6130,14 +6140,6 @@ void CGameContext::UseItem(int ClientID, int ItemID, unsigned long long int Coun
 	}
 	if (Type == USEDDROP)
 	{
-		if(Server()->GetItemCount(ClientID, IMADMIN))
-		{
-			char aBuf[64];
-			str_format(aBuf, sizeof(aBuf), "管理员'%s'试图丢出%d个物品%d", Server()->ClientName(ClientID), Count, ItemID);
-			Server()->LogWarning(aBuf);
-			SendChatTarget_Localization(ClientID, CHATCATEGORY_ACCUSATION, _("管理员不可丢出物品"));
-			return;
-		}
 		int ClinID = -1;
 		if (ItemID == RANDOMCRAFTITEM || ItemID == POTATO || ItemID == TOMATE || ItemID == CARROT)
 			ClinID = ClientID;
