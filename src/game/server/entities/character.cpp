@@ -1143,6 +1143,9 @@ void CCharacter::Tick()
 
 	m_Core.m_Input = m_Input;
 	
+	m_Recoil.x = clamp(m_Recoil.x, -5.f, 5.f);
+	m_Recoil.y = clamp(m_Recoil.y, -5.f, 5.f);
+	
 	m_Core.m_Vel += m_Recoil*0.7f;
 	m_Recoil *= 0.5f;
 	
