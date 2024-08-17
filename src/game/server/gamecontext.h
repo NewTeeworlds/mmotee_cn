@@ -443,7 +443,7 @@ public:
 	int m_BossSummonNum;
 
 	void SetUpgrMaxLevel(int Class, int Upgr, int Level);
-	int GetUpgrMaxLevel(int ClientID, int Upgr);
+	int GetUpgrMaxLevel(int ClientID, int Upgr, bool MoreLevel = true);
 	int GetMoreLevel(int ClientID);
 
 	void SetUpgrPrice(int Class, int Upgr, int Price);

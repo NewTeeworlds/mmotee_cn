@@ -1891,7 +1891,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						Get = atoi(pReason);
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_HEALTH))
-						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrMaxLevel(ClientID, UPGRADE_HEALTH))/GetUpgrMaxLevel(ClientID, UPGRADE_HEALTH));
+						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrPrice(ClientID, UPGRADE_HEALTH))/GetUpgrPrice(ClientID, UPGRADE_HEALTH));
 					// 血量的问题不修复
 
 					int GetSize = 0;
@@ -1946,7 +1946,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						Get = atoi(pReason);
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_DMG))
-						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrMaxLevel(ClientID, UPGRADE_DMG))/GetUpgrMaxLevel(ClientID, UPGRADE_DMG));
+						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrPrice(ClientID, UPGRADE_DMG))/GetUpgrPrice(ClientID, UPGRADE_DMG));
 
 					int GetSize = 0;
 					switch (m_apPlayers[ClientID]->GetClass())
@@ -1993,14 +1993,14 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				else if (str_comp(aCmd, "uammo") == 0)
 				{
-					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < PRICEAMMO)
+					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < GetUpgrPrice(ClientID, UPGRADE_AMMO))
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你没有足够的升级点"), NULL);
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Ammo >= GetUpgrMaxLevel(ClientID, UPGRADE_AMMO))
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("技能已满级"), NULL);
 
 					m_apPlayers[ClientID]->AccUpgrade()->m_Ammo++;
-					m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade -= PRICEAMMO;
+					m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade -= GetUpgrPrice(ClientID, UPGRADE_AMMO);
 					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你成功地获得了升级"), NULL);
 
 					int geta = (int)(5 + m_apPlayers[ClientID]->AccUpgrade()->m_Ammo);
@@ -2021,7 +2021,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						Get = atoi(pReason);
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_AMMOREGAN))
-						Get = ((m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % PRICEAMMOREGAN))/PRICEAMMOREGAN);
+						Get = ((m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrPrice(ClientID, UPGRADE_AMMOREGAN)))/GetUpgrPrice(ClientID, UPGRADE_AMMOREGAN));
 
 					int GetSize = 0;
 					switch (m_apPlayers[ClientID]->GetClass())
@@ -2078,7 +2078,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						Get = atoi(pReason);
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_HANDLE))
-						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % PRICEHANDLE)/PRICEHANDLE);
+						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrPrice(ClientID, UPGRADE_HANDLE))/GetUpgrPrice(ClientID, UPGRADE_HANDLE));
 
 					int GetSize = 0;
 					switch (m_apPlayers[ClientID]->GetClass())
@@ -2096,7 +2096,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					if (Get > GetSize)
 						Get = GetSize;
 
-					if (Get < PRICEHANDLE || Get > 1000)
+					if (Get < 1 || Get > 1000)
 						Get = 1;
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_HANDLE))
@@ -2138,9 +2138,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						Get = atoi(pReason);
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_MANA))
-						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % PRICEMANA)/PRICEMANA);
+						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrPrice(ClientID, UPGRADE_MANA))/GetUpgrPrice(ClientID, UPGRADE_MANA));
 
-					if (Get < PRICEMANA || Get > 1000)
+					if (Get < 1 || Get > 1000)
 						Get = 1;
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_MANA))
@@ -2183,7 +2183,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						Get = atoi(pReason);
 
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < Get*GetUpgrPrice(ClientID, UPGRADE_HEALTHREGAN))
-						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % PRICEHEALTHREGAN)/PRICEHEALTHREGAN);
+						Get = (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade - (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade % GetUpgrPrice(ClientID, UPGRADE_HEALTH))/GetUpgrPrice(ClientID, UPGRADE_HEALTH));
 
 					int GetSize = 0;
 					switch (m_apPlayers[ClientID]->GetClass())
@@ -4342,7 +4342,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote("············", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "♞ {str:psevdo}", "psevdo", LocalizeText(ClientID, "职业被动技"));
 
-			int Need = PRICEHAMMERRANGE;
+			int Need = GetUpgrPrice(ClientID, UPGRADE_HAMMERRANGE);
 			if (m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER)
 			{
 				AddVote_Localization(ClientID, "ushammerrange", "☞ ({int:need}技能点) 生命值 +4% ({str:act}) ({int:sum})", "need", &Need, "act",
@@ -6602,7 +6602,7 @@ int CGameContext::GetMoreLevel(int ClientID)
 	return (3 * Server()->GetItemCount(ClientID, EXTENDLIMIT));
 }
 
-int CGameContext::GetUpgrMaxLevel(int ClientID, int Upgr)
+int CGameContext::GetUpgrMaxLevel(int ClientID, int Upgr, bool MoreLevel)
 {
 	if(!m_apPlayers[ClientID])
 		return 1;
@@ -6616,7 +6616,11 @@ int CGameContext::GetUpgrMaxLevel(int ClientID, int Upgr)
 	int Return = m_aaUpgrMaxLevel[Class][Upgr];
 	if(Return == -1)
 		return 5000; // Bruh don't too big.
-	return m_aaUpgrMaxLevel[Class][Upgr] + GetMoreLevel(ClientID);
+	
+	if(Upgr == UPGRADE_SPRAY)
+		MoreLevel = false;
+
+	return m_aaUpgrMaxLevel[Class][Upgr] + (MoreLevel ? GetMoreLevel(ClientID) : 0);
 }
 
 void CGameContext::SetUpgrMaxLevel(int Class, int Upgr, int Level)
