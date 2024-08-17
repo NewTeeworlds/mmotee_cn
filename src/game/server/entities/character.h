@@ -166,7 +166,7 @@ public:
 
 	void ElectroShock()
 	{
-		m_Core.m_Vel /= 1.5f;
+		m_Core.m_Vel *= 0.25f;
 	}
 
 	bool m_SummonByBoss;
