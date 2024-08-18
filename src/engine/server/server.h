@@ -11,44 +11,10 @@
 /* DDNET MODIFICATION START *******************************************/
 #include "engine/server/sql_connector.h"
 #include "engine/server/sql_server.h"
+#include "snap_id_pool.h"
 /* DDNET MODIFICATION END *********************************************/
 
 #include <game/server/playerdata.h>
-
-class CSnapIDPool
-{
-	enum
-	{
-		MAX_IDS = 32*1024,
-	};
-
-	class CID
-	{
-	public:
-		short m_Next;
-		short m_State; // 0 = free, 1 = alloced, 2 = timed
-		int m_Timeout;
-	};
-
-	CID m_aIDs[MAX_IDS]{};
-
-	int m_FirstFree{};
-	int m_FirstTimed{};
-	int m_LastTimed{};
-	int m_Usage{};
-	int m_InUsage{};
-
-public:
-
-	CSnapIDPool();
-
-	void Reset();
-	void RemoveFirstTimeout();
-	int NewID();
-	void TimeoutIDs();
-	void FreeID(int ID);
-};
-
 
 class CServerBan : public CNetBan
 {
@@ -291,7 +257,7 @@ public:
 
 	CSnapshotDelta m_SnapshotDelta;
 	CSnapshotBuilder m_SnapshotBuilder;
-	CSnapIDPool m_IDPool;
+	CSnapIdPool m_IdPool;
 	CNetServer m_NetServer;
 	CEcon m_Econ;
 	CServerBan m_ServerBan;
