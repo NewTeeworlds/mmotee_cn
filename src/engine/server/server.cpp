@@ -1517,7 +1517,7 @@ int CServer::Run()
 {
 	m_PrintCBIndex = Console()->RegisterPrintCallback(g_Config.m_ConsoleOutputLevel, SendRconLineAuthed, this);
 
-	// read file data into buffer
+	/* read file data into buffer
 	char aFileBuf[512];
 	str_format(aFileBuf, sizeof(aFileBuf), "maps.json");
 	const IOHANDLE File = m_pStorage->OpenFile(aFileBuf, IOFLAG_READ, IStorage::TYPE_ALL);
@@ -1552,7 +1552,9 @@ int CServer::Run()
 	}
 
 	// clean up
-	json_value_free(pJsonData);
+	json_value_free(pJsonData);*/
+	
+	LoadMap(g_Config.m_SvMap);
 
 	// start server
 	NETADDR BindAddr;

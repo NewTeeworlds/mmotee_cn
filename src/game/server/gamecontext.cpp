@@ -6609,6 +6609,8 @@ int CGameContext::GetUpgrMaxLevel(int ClientID, int Upgr, bool MoreLevel)
 
 	int Class = m_apPlayers[ClientID]->GetClass();
 	
+	Class -= PLAYERCLASS_ASSASSIN;
+
 	// Avoid crash
 	Class = clamp(Class, 0, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);
@@ -6620,14 +6622,16 @@ int CGameContext::GetUpgrMaxLevel(int ClientID, int Upgr, bool MoreLevel)
 	if(Upgr == UPGRADE_SPRAY)
 		MoreLevel = false;
 
-	return m_aaUpgrMaxLevel[Class][Upgr] + (MoreLevel ? GetMoreLevel(ClientID) : 0);
+	return Return + (MoreLevel ? GetMoreLevel(ClientID) : 0);
 }
 
 void CGameContext::SetUpgrMaxLevel(int Class, int Upgr, int Level)
 {
+	Class -= PLAYERCLASS_ASSASSIN;
 	Class = clamp(Class, 0, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);
 	m_aaUpgrMaxLevel[Class][Upgr] = Level;
+	dbg_msg("sdasdad", "%d", Level);
 }
 
 int CGameContext::GetUpgrPrice(int ClientID, int Upgr)
@@ -6636,7 +6640,9 @@ int CGameContext::GetUpgrPrice(int ClientID, int Upgr)
 		return 1;
 
 	int Class = m_apPlayers[ClientID]->GetClass();
-	
+
+	Class -= PLAYERCLASS_ASSASSIN;
+
 	// Avoid crash
 	Class = clamp(Class, PLAYERCLASS_NONE + 1, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);

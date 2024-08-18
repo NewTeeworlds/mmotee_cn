@@ -96,6 +96,9 @@ void CLightning::Reset()
 
 void CLightning::Tick()
 {
+	if(!GameServer()->m_apPlayers[m_Owner] || !GameServer()->m_apPlayers[m_Owner]->GetCharacter())
+		Reset();
+
 	if(Server()->Tick() > m_EvalTick+(Server()->TickSpeed()*GameServer()->Tuning()->m_LaserBounceDelay)/2000.0f)
 		DoBounce();
 }
