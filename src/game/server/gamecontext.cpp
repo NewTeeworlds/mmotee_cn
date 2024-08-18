@@ -687,7 +687,6 @@ void CGameContext::SendBroadcast_LStat(int To, int Priority, int LifeSpan, int T
 		break;
 	case LOWO2:
 		Server()->Localization()->Format_L(Buffer, pLanguage, _("吸...没氧气了！！！！！！"), NULL), Buffer.append("\n");
-		dbg_msg("sda", "1111111");
 		break;
 	default:
 		Buffer.clear();
@@ -6632,7 +6631,6 @@ void CGameContext::SetUpgrMaxLevel(int Class, int Upgr, int Level)
 	Class = clamp(Class, 0, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);
 	m_aaUpgrMaxLevel[Class][Upgr] = Level;
-	dbg_msg("sdasdad", "%d", Level);
 }
 
 int CGameContext::GetUpgrPrice(int ClientID, int Upgr)
