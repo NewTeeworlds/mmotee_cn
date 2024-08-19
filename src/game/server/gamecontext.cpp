@@ -4329,15 +4329,16 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "null", "统计数据(升级点 - {int:up} / 技能点 - {int:sp})", "up", &m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade, "sp", &m_apPlayers[ClientID]->AccUpgrade()->m_SkillPoint);
 			AddVoteMenu_Localization(ClientID, GETUP, MENUONLY, _("-> 获取升级点"));
 			AddVote("············", "null", ClientID);
+			int PlayerClass = m_apPlayers[ClientID]->GetClass() - PLAYERCLASS_ASSASSIN;
 			AddVote_Localization(ClientID, "null", "♛ {str:psevdo}", "psevdo", LocalizeText(ClientID, "升级选项"));
-			AddVote_Localization(ClientID, "uhealth", "☞ [{int:sum}] 生命值上限 +40 ({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Health, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_HEALTH], "bonus", m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER ? "C+60" : "C+0");
-			AddVote_Localization(ClientID, "udamage", "☞ [{int:sum}] 伤害 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Damage, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_DMG], "bonus", "C+0");
-			AddVote_Localization(ClientID, "uammoregen", "☞ [{int:sum}] 子弹回复速度 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_AmmoRegen, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_AMMOREGAN], "bonus", "C+0");
-			AddVote_Localization(ClientID, "uammo", "☞ [{int:sum}] 子弹 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Ammo, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_AMMO], "bonus", "C+0");
-			AddVote_Localization(ClientID, "uhpregen", "☞ [{int:sum}] 生命恢复速度 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HPRegen, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_HEALTHREGAN], "bonus", "C+0");
-			AddVote_Localization(ClientID, "uhandle", "☞ [{int:sum}] 射速 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Speed, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_HANDLE], "bonus", "C+0");
-			AddVote_Localization(ClientID, "umana", "☞ [{int:sum}] 魔能 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Mana, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_MANA], "bonus", "C+0");
-			AddVote_Localization(ClientID, "uspray", "☞ [{int:sum}] 子弹散射 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Spray, "num", &m_aaUpgrPrice[m_apPlayers[ClientID]->GetClass()][UPGRADE_SPRAY], "bonus", "C+0");
+			AddVote_Localization(ClientID, "uhealth", "☞ [{int:sum}] 生命值上限 +40 ({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Health, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_HEALTH], "bonus", m_apPlayers[ClientID]->GetClass() == PLAYERCLASS_HEALER ? "C+60" : "C+0");
+			AddVote_Localization(ClientID, "udamage", "☞ [{int:sum}] 伤害 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Damage, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_DMG], "bonus", "C+0");
+			AddVote_Localization(ClientID, "uammoregen", "☞ [{int:sum}] 子弹回复速度 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_AmmoRegen, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_AMMOREGAN], "bonus", "C+0");
+			AddVote_Localization(ClientID, "uammo", "☞ [{int:sum}] 子弹 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Ammo, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_AMMO], "bonus", "C+0");
+			AddVote_Localization(ClientID, "uhpregen", "☞ [{int:sum}] 生命恢复速度 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HPRegen, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_HEALTHREGAN], "bonus", "C+0");
+			AddVote_Localization(ClientID, "uhandle", "☞ [{int:sum}] 射速 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Speed, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_HANDLE], "bonus", "C+0");
+			AddVote_Localization(ClientID, "umana", "☞ [{int:sum}] 魔能 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Mana, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_MANA], "bonus", "C+0");
+			AddVote_Localization(ClientID, "uspray", "☞ [{int:sum}] 子弹散射 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Spray, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_SPRAY], "bonus", "C+0");
 			AddVote("············", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "♞ {str:psevdo}", "psevdo", LocalizeText(ClientID, "职业被动技"));
 
@@ -6643,7 +6644,7 @@ int CGameContext::GetUpgrPrice(int ClientID, int Upgr)
 	Class -= PLAYERCLASS_ASSASSIN;
 
 	// Avoid crash
-	Class = clamp(Class, PLAYERCLASS_NONE + 1, int(NUM_PLAYERCLASS) - 1);
+	Class = clamp(Class, 0, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);
 
 	return m_aaUpgrPrice[Class][Upgr];
@@ -6653,7 +6654,7 @@ void CGameContext::SetUpgrPrice(int Class, int Upgr, int Price)
 {
 	Class -= PLAYERCLASS_ASSASSIN;
 
-	Class = clamp(Class, PLAYERCLASS_NONE + 1, int(NUM_PLAYERCLASS) - 1);
+	Class = clamp(Class, 0, int(NUM_PLAYERCLASS) - 1);
 	Upgr = clamp(Upgr, 0, int(NUM_UPGRADE) - 1);
 	m_aaUpgrPrice[Class][Upgr] = Price;
 }
