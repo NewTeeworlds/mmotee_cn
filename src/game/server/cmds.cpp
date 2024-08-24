@@ -414,7 +414,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->Server()->ChangeClientMap(ClientID, MapID);
 		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/setclass", 9))
+	else if (!strncmp(Msg->m_pMessage, "/setclass", 9) && GameServer()->Server()->IsAuthed(ClientID))
 	{
 		LastChat();
 		int CID, Class;
@@ -428,7 +428,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->UpdateStats(CID);
 		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/givepoint", 10))
+	else if (!strncmp(Msg->m_pMessage, "/givepoint", 10) && GameServer()->Server()->IsAuthed(ClientID))
 	{
 		LastChat();
 		int CID, Point;
@@ -442,7 +442,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->UpdateStats(CID);
 		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/giveskill", 10))
+	else if (!strncmp(Msg->m_pMessage, "/giveskill", 10) && GameServer()->Server()->IsAuthed(ClientID))
 	{
 		LastChat();
 		int CID, Point;
