@@ -2162,7 +2162,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < GetUpgrPrice(ClientID, UPGRADE_SPRAY))
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你没有足够的升级点"), NULL);
 
-					if (m_apPlayers[ClientID]->AccUpgrade()->m_Speed > GetUpgrMaxLevel(ClientID, UPGRADE_SPRAY))
+					if (m_apPlayers[ClientID]->AccUpgrade()->m_Spray > GetUpgrMaxLevel(ClientID, UPGRADE_SPRAY))
 						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("技能已满级"), NULL);
 
 					m_apPlayers[ClientID]->AccUpgrade()->m_Spray++;
