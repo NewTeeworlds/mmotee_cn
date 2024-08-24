@@ -232,6 +232,9 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		if ((sscanf(Msg->m_pMessage, "/remitem %d %d %d", &id, &itemid, &citem)) != 3)
 			return GameServer()->SendChatTarget(ClientID, "命令方法: /giveitem <玩家id> <物品id> <物品数量>");
 
+		if(itemid == IMADMIN)
+			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_ACCUSATION, _("啥比"), NULL);
+
 		if (id >= MAX_PLAYERS || !GameServer()->m_apPlayers[id])
 			return GameServer()->SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("输入的 ID 无效."), NULL);
 
