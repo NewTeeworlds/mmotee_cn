@@ -185,6 +185,7 @@ CREATE TABLE `tw_uClass` (
   `Mana` int(11) NOT NULL DEFAULT '0',
   `HammerRange` int(11) NOT NULL DEFAULT '0',
   `Pasive2` int(11) NOT NULL DEFAULT '0',
+  `ManaRegen` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`UserID`) USING BTREE,
   KEY `Username` (`Username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT;

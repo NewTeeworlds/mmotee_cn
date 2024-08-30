@@ -191,11 +191,11 @@ public:
 	int m_HouseClanID[COUNT_CLANHOUSE];
 	int m_HouseOldClanID[COUNT_CLANHOUSE];
 
-	int m_Materials[3];
+	unsigned long long int m_Materials[3];
 	virtual void InitMaterialID();
 	virtual void SaveMaterials(int ID);
-	virtual int GetMaterials(int ID);
-	virtual void SetMaterials(int ID, int Count);
+	virtual unsigned long long int GetMaterials(int ID);
+	virtual void SetMaterials(int ID, unsigned long long int Count);
 
 	struct _m_stInv
 	{

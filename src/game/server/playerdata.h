@@ -36,6 +36,7 @@ struct SAccUpgrade
     int m_Ammo;
     int m_Spray;
     int m_Mana;
+    int m_ManaRegen;
     int m_SkillPoint;
     int m_Upgrade;
 };

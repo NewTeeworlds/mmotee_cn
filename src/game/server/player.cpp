@@ -267,7 +267,7 @@ void CPlayer::BasicAuthedTick()
 	if (AccData()->m_Money >= 10000)
 	{
 		AccData()->m_Gold += AccData()->m_Money / 10000;
-		int Got = AccData()->m_Money / 10000;
+		unsigned long long int Got = AccData()->m_Money / 10000;
 
 		AccData()->m_Money -= Got * 10000;
 	}

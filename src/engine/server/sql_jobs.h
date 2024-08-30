@@ -1246,6 +1246,7 @@ public:
 				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Mana = pSqlServer->GetResults()->getInt("Mana");
 				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HammerRange = pSqlServer->GetResults()->getInt("HammerRange");
 				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Pasive2 = pSqlServer->GetResults()->getInt("Pasive2");
+				m_pServer->m_aClients[m_ClientID].AccUpgrade.m_ManaRegen = pSqlServer->GetResults()->getInt("ManaRegen");
 
 				CServer::CGameServerCmd *pCmd1 = new CGameServerCmd_SendChatTarget_Language(m_ClientID, CHATCATEGORY_DEFAULT, _("登录成功.按下esc界面中的“开始游戏”进入."));
 				m_pServer->AddGameServerCmd(pCmd1);
@@ -1342,11 +1343,12 @@ public:
 					"Spray = '%d', "
 					"Mana = '%d', "
 					"HammerRange = '%d', "
-					"Pasive2 = '%d' "
+					"Pasive2 = '%d', "
+					"ManaRegen = '%d' "
 					"WHERE UserID = '%d';"
 					, pSqlServer->GetPrefix(), m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Upgrade, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_SkillPoint, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Speed, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Health, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Damage,
 					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HPRegen, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_AmmoRegen, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Ammo, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Spray, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Mana, 
-					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HammerRange, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Pasive2, m_pServer->m_aClients[m_ClientID].m_UserID);
+					m_pServer->m_aClients[m_ClientID].AccUpgrade.m_HammerRange, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_Pasive2, m_pServer->m_aClients[m_ClientID].AccUpgrade.m_ManaRegen, m_pServer->m_aClients[m_ClientID].m_UserID);
 				
 				pSqlServer->executeSqlQuery(aBuf);
 			}

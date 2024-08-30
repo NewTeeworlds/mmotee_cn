@@ -2254,6 +2254,25 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					return;
 				}
 
+				else if (str_comp(aCmd, "umanaregen") == 0)
+				{
+					if (m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade < GetUpgrPrice(ClientID, UPGRADE_MANAREGEN))
+						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你没有足够的技能点"), NULL);
+
+					if (m_apPlayers[ClientID]->AccUpgrade()->m_ManaRegen > GetUpgrMaxLevel(ClientID, UPGRADE_MANAREGEN))
+						return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("技能已满级"), NULL);
+
+					m_apPlayers[ClientID]->AccUpgrade()->m_ManaRegen++;
+					m_apPlayers[ClientID]->AccUpgrade()->m_Upgrade -= GetUpgrPrice(ClientID, UPGRADE_MANAREGEN);
+					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你的技能成功地提升了"), NULL);
+
+					UpdateUpgrades(ClientID);
+
+					ResetVotes(ClientID, CLMENU);
+
+					return;
+				}
+
 				else if (str_comp(aCmd, "uskillwall") == 0)
 				{
 					BuySkill(ClientID, 70, SKWALL);
@@ -3049,10 +3068,10 @@ void CGameContext::BuyItem(int ItemType, int ClientID, int Type, int Count)
 	if (Type == 0)
 	{
 		int NeedMaterial = Server()->GetItemPrice(ClientID, ItemType, 1)*Count;
-		if (Server()->GetMaterials(0) < NeedMaterial)
+		if (Server()->GetMaterials(0) < (unsigned long long int)NeedMaterial)
 			return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("店里可没材料."), NULL);
 
-		Server()->SetMaterials(0, Server()->GetMaterials(0) - NeedMaterial);
+		Server()->SetMaterials(0, (unsigned long long int)(Server()->GetMaterials(0) - NeedMaterial));
 	}
 
 	if (Type == 0)
@@ -3848,8 +3867,21 @@ void CGameContext::CreateItem(int ClientID, int ItemID, int Count)
 		Server()->RemItem(ClientID, SKELETSBONE, 100, -1);
 	}
 	break;
+	case SFUNNEL:
+	{
+		if (Server()->GetItemCount(ClientID, SFUNNEL))
+			return SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你已经制作过浮游炮了，不可重复制作"), NULL);
+		Count = 1;
+		if (Server()->GetItemCount(ClientID, DRAGONORE) < 50000000 || Server()->GetItemCount(ClientID, LIGHTNINGLASER) < 1 || Server()->GetItemCount(ClientID, ELECTROLASER) < 1)
+		{
+			SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("为了合成你需要 {str:need}"), "need", "龙矿x50000000, 闪电模块x1, 电子模块x1", NULL);
+			return;
+		}
+		
+		Server()->RemItem(ClientID, DRAGONORE, 50000000, -1);
 	}
-
+	break;
+	}
 	SendChatTarget_Localization(-1, CHATCATEGORY_DEFAULT, _("{str:name} 合成了物品 {str:item}x{int:coun}"),
 								"name", Server()->ClientName(ClientID), "item", Server()->GetItemName(ClientID, ItemID, false), "coun", &Count, NULL);
 	GiveItem(ClientID, ItemID, Count, 0);
@@ -4032,8 +4064,8 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			{
 				if (Server()->GetItemCount(ClientID, MATERIAL))
 				{
-					int Count = Server()->GetItemCount(ClientID, MATERIAL);
-					int Gold = Count / 5;
+					unsigned long long int Count = Server()->GetItemCount(ClientID, MATERIAL);
+					unsigned long long int Gold = Count / 5;
 					SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你向商店提供了 {int:count} 个材料，获得了 {int:money} 黄金"),
 												"count", &Count, "money", &Gold, NULL);
 
@@ -4338,6 +4370,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			AddVote_Localization(ClientID, "uhpregen", "☞ [{int:sum}] 生命恢复速度 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_HPRegen, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_HEALTHREGAN], "bonus", "C+0");
 			AddVote_Localization(ClientID, "uhandle", "☞ [{int:sum}] 射速 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Speed, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_HANDLE], "bonus", "C+0");
 			AddVote_Localization(ClientID, "umana", "☞ [{int:sum}] 魔能 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Mana, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_MANA], "bonus", "C+0");
+			AddVote_Localization(ClientID, "umanaregen", "☞ [{int:sum}] 魔能恢复速度 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_ManaRegen, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_MANAREGEN], "bonus", "C+0");
 			AddVote_Localization(ClientID, "uspray", "☞ [{int:sum}] 子弹散射 +1({int:num}升级点 {str:bonus})", "sum", &m_apPlayers[ClientID]->AccUpgrade()->m_Spray, "num", &m_aaUpgrPrice[PlayerClass][UPGRADE_SPRAY], "bonus", "C+0");
 			AddVote("············", "null", ClientID);
 			AddVote_Localization(ClientID, "null", "♞ {str:psevdo}", "psevdo", LocalizeText(ClientID, "职业被动技"));
@@ -4811,7 +4844,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			if (Server()->GetItemPrice(ClientID, SelectItem, 1) > 0 && m_apPlayers[ClientID]->GetWork())
 				AddVote_Localization(ClientID, "sellitem", "▹ 卖出该物品");
 
-			if (Server()->GetItemType(ClientID, SelectItem) != 6)
+			if (Server()->GetItemType(ClientID, SelectItem) != 6 && SelectItem != SFUNNEL)
 				AddVote_Localization(ClientID, "dropitem", "▹ 丢掉该物品 (╯°Д°)╯");
 
 			if (Server()->GetItemType(ClientID, SelectItem) == 15 || Server()->GetItemType(ClientID, SelectItem) == 16 || Server()->GetItemType(ClientID, SelectItem) == 17)
@@ -5174,6 +5207,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 					AddNewCraftVote(ClientID, "锡矿x50, 精铁x300", COREBASE);
 					AddNewCraftVote(ClientID, "核心基座x2, 木头x500, 金券x300", WOODCORE);
 					AddNewCraftVote(ClientID, "核心基座x2, 龙矿x500, 金券x500", MINECORE);
+					AddNewCraftVote(ClientID, "龙矿x50000000, 电子+闪电模块x1", SFUNNEL);
 				}
 				else if (m_apPlayers[ClientID]->m_SortedSelectCraft == 3)
 				{
@@ -6672,6 +6706,7 @@ void CGameContext::InitClassesUpgrs()
 	SetUpgrMaxLevel(PLAYERCLASS_ASSASSIN, UPGRADE_SPRAY, AMAXSPREAD);
 	SetUpgrMaxLevel(PLAYERCLASS_ASSASSIN, UPGRADE_HAMMERRANGE, AMAXHAMMERRANGE);
 	SetUpgrMaxLevel(PLAYERCLASS_ASSASSIN, UPGRADE_PASIVE2, AMAXPASIVE2);
+	SetUpgrMaxLevel(PLAYERCLASS_ASSASSIN, UPGRADE_MANAREGEN, AMAXMANAREGEN);
 
 	SetUpgrPrice(PLAYERCLASS_ASSASSIN, UPGRADE_HEALTH, PRICEHEALTH);
 	SetUpgrPrice(PLAYERCLASS_ASSASSIN, UPGRADE_DMG, PRICEDMG);
@@ -6683,6 +6718,7 @@ void CGameContext::InitClassesUpgrs()
 	SetUpgrPrice(PLAYERCLASS_ASSASSIN, UPGRADE_SPRAY, PRICESPRAY);
 	SetUpgrPrice(PLAYERCLASS_ASSASSIN, UPGRADE_HAMMERRANGE, PRICEHAMMERRANGE);
 	SetUpgrPrice(PLAYERCLASS_ASSASSIN, UPGRADE_PASIVE2, PRICEHAMMERRANGE);
+	SetUpgrPrice(PLAYERCLASS_ASSASSIN, UPGRADE_MANAREGEN, PRICEMANAREGEN);
 
 	SetUpgrMaxLevel(PLAYERCLASS_BERSERK, UPGRADE_HEALTH, BMAXHEALTH);
 	SetUpgrMaxLevel(PLAYERCLASS_BERSERK, UPGRADE_DMG, BMAXDAMAGE);
@@ -6694,6 +6730,7 @@ void CGameContext::InitClassesUpgrs()
 	SetUpgrMaxLevel(PLAYERCLASS_BERSERK, UPGRADE_SPRAY, BMAXSPREAD);
 	SetUpgrMaxLevel(PLAYERCLASS_BERSERK, UPGRADE_HAMMERRANGE, BMAXHAMMERRANGE);
 	SetUpgrMaxLevel(PLAYERCLASS_BERSERK, UPGRADE_PASIVE2, BMAXPASIVE2);
+	SetUpgrMaxLevel(PLAYERCLASS_BERSERK, UPGRADE_MANAREGEN, BMAXMANAREGEN);
 
 	SetUpgrPrice(PLAYERCLASS_BERSERK, UPGRADE_HEALTH, PRICEHEALTH);
 	SetUpgrPrice(PLAYERCLASS_BERSERK, UPGRADE_DMG, PRICEDMG);
@@ -6705,6 +6742,7 @@ void CGameContext::InitClassesUpgrs()
 	SetUpgrPrice(PLAYERCLASS_BERSERK, UPGRADE_SPRAY, PRICESPRAY);
 	SetUpgrPrice(PLAYERCLASS_BERSERK, UPGRADE_HAMMERRANGE, PRICEHAMMERRANGE);
 	SetUpgrPrice(PLAYERCLASS_BERSERK, UPGRADE_PASIVE2, PRICEHAMMERRANGE);
+	SetUpgrPrice(PLAYERCLASS_BERSERK, UPGRADE_MANAREGEN, PRICEMANAREGEN);
 
 	SetUpgrMaxLevel(PLAYERCLASS_HEALER, UPGRADE_HEALTH, HMAXHEALTH);
 	SetUpgrMaxLevel(PLAYERCLASS_HEALER, UPGRADE_DMG, HMAXDAMAGE);
@@ -6716,6 +6754,7 @@ void CGameContext::InitClassesUpgrs()
 	SetUpgrMaxLevel(PLAYERCLASS_HEALER, UPGRADE_SPRAY, HMAXSPREAD);
 	SetUpgrMaxLevel(PLAYERCLASS_HEALER, UPGRADE_HAMMERRANGE, HMAXHAMMERRANGE);
 	SetUpgrMaxLevel(PLAYERCLASS_HEALER, UPGRADE_PASIVE2, HMAXPASIVE2);
+	SetUpgrMaxLevel(PLAYERCLASS_HEALER, UPGRADE_MANAREGEN, HMAXMANAREGEN);
 
 	SetUpgrPrice(PLAYERCLASS_HEALER, UPGRADE_HEALTH, PRICEHEALTH);
 	SetUpgrPrice(PLAYERCLASS_HEALER, UPGRADE_DMG, PRICEDMG);
@@ -6727,4 +6766,5 @@ void CGameContext::InitClassesUpgrs()
 	SetUpgrPrice(PLAYERCLASS_HEALER, UPGRADE_SPRAY, PRICESPRAY);
 	SetUpgrPrice(PLAYERCLASS_HEALER, UPGRADE_HAMMERRANGE, PRICEHAMMERRANGE);
 	SetUpgrPrice(PLAYERCLASS_HEALER, UPGRADE_PASIVE2, PRICEHAMMERRANGE);
+	SetUpgrPrice(PLAYERCLASS_HEALER, UPGRADE_MANAREGEN, PRICEMANAREGEN);
 }

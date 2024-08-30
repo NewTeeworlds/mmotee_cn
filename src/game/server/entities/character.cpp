@@ -2616,6 +2616,9 @@ void CCharacter::CreateDropRandom(int ItemID, int Count, int Random, int HowID, 
 	if(!IsAlive() || HowID >= MAX_PLAYERS)
 		return; 
 
+	if(Server()->GetItemCount(HowID, X2MONEYEXPVIP))
+		Count *= 2;
+
 	vec2 DropPos = vec2(m_Pos.x, m_Pos.y - 28.f);
 	if(!Random) 
 	{

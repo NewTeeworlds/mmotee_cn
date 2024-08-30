@@ -2414,12 +2414,12 @@ int CServer::GetItemPrice(int ClientID, int ItemID, int Type)
 ///////////////// ########################### MATERIALS #####
 ///////////////// ################################ ##########
 
-int CServer::GetMaterials(int ID)
+unsigned long long int CServer::GetMaterials(int ID)
 {
 	return m_Materials[ID];
 }
 
-void CServer::SetMaterials(int ID, int Count)
+void CServer::SetMaterials(int ID, unsigned long long int Count)
 {
 	m_Materials[ID] = Count;
 	SaveMaterials(ID);

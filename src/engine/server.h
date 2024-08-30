@@ -461,8 +461,8 @@ public:
 
 	virtual void InitMaterialID() = 0;
 	virtual void SaveMaterials(int ID) = 0;
-	virtual int GetMaterials(int ID) = 0;
-	virtual void SetMaterials(int ID, int Count) = 0;
+	virtual unsigned long long int GetMaterials(int ID) = 0;
+	virtual void SetMaterials(int ID, unsigned long long int Count) = 0;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID, int MapID) = 0;
 
