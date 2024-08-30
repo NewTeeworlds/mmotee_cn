@@ -864,7 +864,11 @@ void CGameContext::BossTick()
 			}
 		}
 		if (m_WinWaitBoss == 950)
+		{
 			DeleteBotBoss();
+			if(!GetBossCount())
+				m_WinWaitBoss = 2;
+		}
 	}
 
 	// таймер ожидания игроков для рейда

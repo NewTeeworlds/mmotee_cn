@@ -499,6 +499,10 @@ void CPlayer::Tick()
 				GameServer()->SendGuide(m_ClientID, GameServer()->m_BossType);
 			else if (GameServer()->m_BossStart)
 				GameServer()->SendBroadcast_LBossed(m_ClientID, 250, 100);
+			
+			if (!GameServer()->GetBossCount())
+				GameServer()->m_WinWaitBoss = 2;
+
 		}
 
 		// таймер синхронизации

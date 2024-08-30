@@ -1478,7 +1478,8 @@ void CCharacter::Die(int Killer, int Weapon)
 		if(m_pPlayer->m_InBossed)
 		{	
 			m_pPlayer->m_InBossed = false;
-			GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你被 Boss {str:name}击败."), "name", GameServer()->GetBotName(GameServer()->m_BossType), NULL);
+			if(!GameServer()->m_WinWaitBoss)
+				GameServer()->SendChatTarget_Localization(m_pPlayer->GetCID(), CHATCATEGORY_DEFAULT, _("你被 Boss {str:name}击败."), "name", GameServer()->GetBotName(GameServer()->m_BossType), NULL);
 		}
 	}
 
