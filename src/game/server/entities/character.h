@@ -116,7 +116,8 @@ private:
 
 	int m_LastWeapon;
 	int m_QueuedWeapon;
-	int HPRegenTick;
+	int m_HPRegenTick;
+	int m_ManaRegenTick;
 
 	bool m_AntiPVP;
 

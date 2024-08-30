@@ -214,6 +214,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Speed, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_HANDLE));
 	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Mana, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_MANA));
 	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_Spray, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_SPRAY));
+	CheckUpgrsIfStrange(&GetPlayer()->AccUpgrade()->m_ManaRegen, GameServer()->GetUpgrMaxLevel(GetPlayer()->GetCID(), UPGRADE_MANAREGEN));
 	return true;
 }
 
@@ -1022,11 +1023,24 @@ void CCharacter::Tick()
 		// 生命值恢复
 		if(m_pPlayer->AccUpgrade()->m_HPRegen && m_pPlayer->m_Health < m_pPlayer->m_HealthStart)
 		{
-			if(!HPRegenTick) HPRegenTick = 900-m_pPlayer->AccUpgrade()->m_HPRegen*3;
+			if(!m_HPRegenTick) m_HPRegenTick = 900-m_pPlayer->AccUpgrade()->m_HPRegen*3;
 			else
 			{
-				HPRegenTick--;
-				if(HPRegenTick == 1) m_Health += 50;
+				m_HPRegenTick--;
+				if(m_HPRegenTick == 1) m_Health += 50;
+			}
+		}
+
+		// 魔能恢复
+		if(m_pPlayer->AccUpgrade()->m_ManaRegen && m_pPlayer->m_Mana < m_pPlayer->GetNeedMana())
+		{
+			if(!m_ManaRegenTick)
+				m_ManaRegenTick = 950-m_pPlayer->AccUpgrade()->m_ManaRegen*3;
+			else
+			{
+				m_ManaRegenTick--;
+				if(m_ManaRegenTick == 1) 
+					m_pPlayer->m_Mana += 5;
 			}
 		}
 
