@@ -3078,13 +3078,13 @@ void CGameContext::BuyItem(int ItemType, int ClientID, int Type, int Count)
 		Server()->SetMaterials(0, (unsigned long long int)(Server()->GetMaterials(0) - NeedMaterial));
 	}
 
+	if(ItemType == EXTENDLIMIT)
+		Count = 1;
+
 	if (Type == 0)
 		m_apPlayers[ClientID]->AccData()->m_Gold -= Server()->GetItemPrice(ClientID, ItemType, 1)*Count;
 	else if (Type == 1)
 		m_apPlayers[ClientID]->AccData()->m_Donate -= Server()->GetItemPrice(ClientID, ItemType, 1)*Count;
-	
-	if(ItemType == EXTENDLIMIT)
-		Count = 1;
 
 	GiveItem(ClientID, ItemType, Count);
 	SendChatTarget_Localization(ClientID, CHATCATEGORY_DEFAULT, _("你成功地购买了商品"), NULL);
