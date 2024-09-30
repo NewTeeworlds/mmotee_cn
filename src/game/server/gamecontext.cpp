@@ -4266,6 +4266,7 @@ void CGameContext::ResetVotes(int ClientID, int Type)
 			CreateNewShop(ClientID, TITLECR, 1, 0, 0);
 			CreateNewShop(ClientID, TITLEPC, 1, 0, 0);
 			CreateNewShop(ClientID, TITLEGLF, 1, 0, 0);
+			CreateNewShop(ClientID, DONATETITLEWORK, 1, 0, 0);
 
 			AddBack(ClientID);
 			return;
