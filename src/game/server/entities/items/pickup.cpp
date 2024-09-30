@@ -128,6 +128,12 @@ void CPickup::StartFarm(int ClientID)
 		if(Server()->GetItemSettings(ClientID, TITLEFARMF))
 			Temp *= 2;
 		
+		if(Server()->GetItemSettings(ClientID, DONATETITLEWORK))
+		{
+			Temp += 100;
+			Temp *= 2;
+		}
+
 		m_Drop += Temp;
 		
 		GameServer()->CreateSound(m_Pos, 20); 
@@ -252,6 +258,12 @@ void CPickup::StartFarm(int ClientID)
 		if(Server()->GetItemSettings(ClientID, TITLEWORKF))
 			Temp *= 2;
 
+		if(Server()->GetItemSettings(ClientID, DONATETITLEWORK))
+		{
+			Temp += 100;
+			Temp *= 2;
+		}
+
 		m_Drop += Temp;
 
 		GameServer()->CreateSound(m_Pos, 20); 
@@ -330,6 +342,12 @@ void CPickup::StartFarm(int ClientID)
 		if(Server()->GetItemSettings(ClientID, TITLEGLF))
 			Temp *= 2;
 		Temp += min(65, int(Server()->GetItemCount(ClientID, WOODCORE)) * 5);
+
+		if(Server()->GetItemSettings(ClientID, DONATETITLEWORK))
+		{
+			Temp += 100;
+			Temp *= 2;
+		}
 		
 		m_Drop += Temp;
 

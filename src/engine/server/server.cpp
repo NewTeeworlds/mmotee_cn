@@ -746,8 +746,7 @@ int CServer::DelClientCallback(int ClientID, int Type, const char *pReason, void
 	pThis->m_aClients[ClientID].AccUpgrade.m_Upgrade = 0;
 	pThis->m_aClients[ClientID].AccUpgrade.m_SkillPoint = 0;
 
-	for(int i = 0; i < 7; i++)
-		pThis->m_aClients[ClientID].m_ItemCount[i] = 0;
+	pThis->m_aClients[ClientID].m_ItemCount.fill(0);
 
 	for(int i = 0; i < 20; i++)
 	{

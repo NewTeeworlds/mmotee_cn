@@ -394,7 +394,8 @@ INSERT INTO `tw_uItemList` VALUES
 (168,1,'武器模块: 闪电','- ..我搞不懂为什么这不需要魔能'),
 (169,1,'神器-浮游炮','- 哥们你走错片场了吧'),
 (170,1,'自动拾取','- 自动拾取掉落物'),
-(171,1,'我是管理员','- 我不能把东西丢给别人了');
+(171,1,'我是管理员','- 我不能把东西丢给别人了'),
+(172,10,'收割机','- 最新联合收割机 不用拿上工具了');
 /*!40000 ALTER TABLE `tw_uItemList` ENABLE KEYS */;
 UNLOCK TABLES
 
@@ -593,7 +594,8 @@ INSERT INTO `tw_uItemList_en` VALUES
 (168,1,'Weapon Module: Lightning','- ..Too expensive'),
 (169,1,'Funnel','- Bruh'),
 (170,1,'Auto Pick','- Auto pickup drops'),
-(171,1,'I am ADMIN','- I cant drop anything anymore');
+(171,1,'I am ADMIN','- I cant drop anything anymore'),
+(172,10,'Donate Title-Farm','- No need to pick');
 -- (131,10,'Title Moon','- Special Title for Mid-Autumn Festival'),
 -- (132,5,'Activity Item','For Crafting');
 /*!40000 ALTER TABLE `tw_uItemList_en` ENABLE KEYS */;

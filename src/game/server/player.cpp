@@ -1268,6 +1268,8 @@ const char *CPlayer::TitleGot()
 			return "#人上人#";
 		}
 	}
+	else if(Server()->GetItemSettings(m_ClientID, DONATETITLEWORK))
+		return "收割机";
 	else if (Server()->GetItemSettings(m_ClientID, TITLEQUESTS))
 		return "眷属";
 	else if (Server()->GetItemSettings(m_ClientID, BOSSDIE))

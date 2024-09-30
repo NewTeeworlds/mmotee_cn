@@ -1109,7 +1109,7 @@ void CGameContext::OnTick()
 	{
 		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, "制作者名单:", NULL);
 		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, "原作者:Kurosio", NULL);
-		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, "制作者/管理:天上的星星, Flower", NULL);
+		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, "制作者/管理:天上的星星, Flower, 王小睿, zi_chou", NULL);
 		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, "服主:Min-jun", NULL);
 		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, "汉化:MC_TYH、Ninecloud及MMOTEE全体国服玩家", NULL);
 		SendChatTarget_World(-1, CHATCATEGORY_DEFAULT, "地图制作:天际, 卖鱼强", NULL);

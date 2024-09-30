@@ -7,6 +7,7 @@
 #include <game/server/classes.h>
 #include <map>
 #include <vector>
+#include <array>
 
 /* DDNET MODIFICATION START *******************************************/
 #include "engine/server/sql_connector.h"
@@ -115,7 +116,7 @@ public:
 		int m_LogInstance;
 		int m_UserStatusID;
 
-		std::array<int, 18> m_ItemCount; // KIDDING ME?????
+		std::array<int, int(16)> m_ItemCount; // KIDDING ME?????
 		/*
 		m_ItemCount fuck me out!!!!!!!
 		it was 
