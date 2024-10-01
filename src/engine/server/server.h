@@ -116,7 +116,7 @@ public:
 		int m_LogInstance;
 		int m_UserStatusID;
 
-		std::array<int, int(16)> m_ItemCount; // KIDDING ME?????
+		std::array<int, int(18)> m_ItemCount; // KIDDING ME?????
 		/*
 		m_ItemCount fuck me out!!!!!!!
 		it was 
