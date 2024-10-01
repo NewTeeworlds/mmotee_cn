@@ -246,7 +246,7 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 	}
 	else
 	{
-		pP->m_TeeInfos.m_UseCustomColor = false;
+		pP->m_TeeInfos.m_UseCustomColor = true;
 	}
 
 	if (IsTeamplay())
