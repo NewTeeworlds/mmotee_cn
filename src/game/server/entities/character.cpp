@@ -168,7 +168,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 
 	if(!m_pPlayer->IsBot())
 	{
-		m_pPlayer->m_TeeInfos.m_UseCustomColor = true;
+		m_pPlayer->m_TeeInfos.m_UseCustomColor = Server()->GetItemSettings(m_pPlayer->GetCID(), CUSTOMCOLOR);
 		GameServer()->m_pController->OnPlayerInfoChange(m_pPlayer);
 	}
 	m_AntiFireTick = Server()->Tick();
@@ -557,17 +557,23 @@ void CCharacter::FireWeapon()
 			}
 
 			if (Server()->GetItemSettings(m_pPlayer->GetCID(), DONATETITLEBIGHAMMER))
-				Range += 500;
+				Range += 200;
 
 			int Num = GameServer()->m_World.FindEntities(ProjStartPos, m_ProximityRadius*2.0f+Range, (CEntity**)apEnts, MAX_CLIENTS, ENTTYPE_CHARACTER);
 			for (int i = 0; i < Num; ++i)
 			{
 				CCharacter *pTarget = apEnts[i];
-				bool Clip = true;
+				bool Collide = true;
+				bool Callback = true;
 				if (Server()->GetItemSettings(m_pPlayer->GetCID(), DONATETITLENOCLIPHAMMER))
-					Clip = false;
+				{
+					Collide = GameServer()->Collision()->IntersectLine_Unhookable(ProjStartPos, pTarget->m_Pos);
+					Callback = false;
+				}
+				else
+					Collide = GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, 0, 0);
 
-				if ((pTarget == this) || (GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL) && Clip))
+				if ((pTarget == this) || Collide)
 					continue;
 
 				// set his velocity to fast upward (for now)
@@ -582,7 +588,7 @@ void CCharacter::FireWeapon()
 				else
 					Dir = vec2(0.f, -1.f);
 
-				pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, m_pPlayer->m_InArea ? 0 : g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
+				pTarget->TakeDamage(Callback ? (vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f) : vec2(0, 0), m_pPlayer->m_InArea ? 0 : g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
 					m_pPlayer->GetCID(), m_ActiveWeapon, 0);
 				Hits++;
 			}
@@ -2465,7 +2471,7 @@ void CCharacter::ClassSpawnAttributes()
 		// Рисовка артифактов
 		if(m_pPlayer->m_BigBot || Server()->GetItemCount(m_pPlayer->GetCID(), SNAPAMMOREGEN))
 		{
-			m_pPlayer->m_TeeInfos.m_UseCustomColor = 1;
+			m_pPlayer->m_TeeInfos.m_UseCustomColor = true;
 			m_pPlayer->m_TeeInfos.m_ColorBody = 16711495;
 		}
 

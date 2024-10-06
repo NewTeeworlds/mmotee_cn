@@ -142,19 +142,19 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 
 	if (pP->GetBotType() == BOT_L1MONSTER && pP->GetBotSubType() == 1)
 	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_UseCustomColor = true;
 		pP->m_TeeInfos.m_ColorBody = 65387;
 		pP->m_TeeInfos.m_ColorFeet = 65387;
 	}
 	if (pP->GetBotType() == BOT_L2MONSTER && pP->GetBotSubType() == 1)
 	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_UseCustomColor = true;
 		pP->m_TeeInfos.m_ColorBody = 100;
 		pP->m_TeeInfos.m_ColorFeet = 100;
 	}
 	if (pP->GetBotType() == BOT_L3MONSTER && pP->GetBotSubType() == 1)
 	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_UseCustomColor = true;
 		pP->m_TeeInfos.m_ColorBody = 15387000;
 		pP->m_TeeInfos.m_ColorFeet = 15387000;
 	}
@@ -244,14 +244,10 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 		else
 			pP->m_TeeInfos.m_ColorFeet = 1000;
 	}
-	else
-	{
-		pP->m_TeeInfos.m_UseCustomColor = true;
-	}
 
 	if (IsTeamplay())
 	{
-		pP->m_TeeInfos.m_UseCustomColor = 1;
+		pP->m_TeeInfos.m_UseCustomColor = true;
 		if (pP->GetTeam() >= TEAM_RED && pP->GetTeam() <= TEAM_BLUE)
 		{
 			pP->m_TeeInfos.m_ColorBody = aTeamColors[pP->GetTeam()];

@@ -116,7 +116,7 @@ public:
 	struct
 	{
 		char m_aSkinName[64];
-		int m_UseCustomColor;
+		bool m_UseCustomColor;
 		int m_ColorBody;
 		int m_ColorFeet;
 	} m_TeeInfos;

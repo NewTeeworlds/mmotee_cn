@@ -45,6 +45,7 @@ public:
 	int GetWidth() { return m_PhysicsWidth; };
 	int GetHeight() { return m_PhysicsHeight; };
 	int IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision);
+	int IntersectLine_Unhookable(vec2 Pos0, vec2 Pos1);
 	void MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, int *pBounces);
 	void MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity);
 	bool TestBox(vec2 Pos, vec2 Size);

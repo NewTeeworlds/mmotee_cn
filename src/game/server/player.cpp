@@ -789,7 +789,7 @@ void CPlayer::Snap(int SnappingClient)
 	pClientInfo->m_Country = Server()->ClientCountry(m_ClientID);
 
 	StrToInts(&pClientInfo->m_Skin0, 6, m_TeeInfos.m_aSkinName);
-	pClientInfo->m_UseCustomColor = m_TeeInfos.m_UseCustomColor;
+	pClientInfo->m_UseCustomColor = (int)m_TeeInfos.m_UseCustomColor;
 	pClientInfo->m_ColorBody = m_TeeInfos.m_ColorBody;
 	pClientInfo->m_ColorFeet = m_TeeInfos.m_ColorFeet;
 
@@ -1145,23 +1145,21 @@ int CPlayer::GetClass()
 
 void CPlayer::SetClassSkin(int newClass, int State)
 {
+	m_TeeInfos.m_UseCustomColor = Server()->GetItemSettings(GetCID(), CUSTOMCOLOR);
 	switch (newClass)
 	{
 	case PLAYERCLASS_ASSASSIN:
-		m_TeeInfos.m_UseCustomColor = 0;
 		str_copy(m_TeeInfos.m_aSkinName, "bluekitty", sizeof(m_TeeInfos.m_aSkinName));
 		break;
 	case PLAYERCLASS_BERSERK:
-		m_TeeInfos.m_UseCustomColor = 0;
 		str_copy(m_TeeInfos.m_aSkinName, "coala", sizeof(m_TeeInfos.m_aSkinName));
 		break;
 	case PLAYERCLASS_HEALER:
-		m_TeeInfos.m_UseCustomColor = 0;
 		str_copy(m_TeeInfos.m_aSkinName, "redstripe", sizeof(m_TeeInfos.m_aSkinName));
 		break;
 	default:
-		m_TeeInfos.m_UseCustomColor = 0;
 		str_copy(m_TeeInfos.m_aSkinName, "default", sizeof(m_TeeInfos.m_aSkinName));
+		break;
 	}
 }
 

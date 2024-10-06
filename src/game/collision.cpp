@@ -108,6 +108,19 @@ int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *p
 	return 0;
 }
 
+int CCollision::IntersectLine_Unhookable(vec2 Pos0, vec2 Pos1)
+{
+	float Distance = distance(Pos0, Pos1);
+	int End(Distance+1);
+
+	for(int i = 0; i < End; i++)
+	{
+		vec2 Pos = mix(Pos0, Pos1, i/Distance);
+		return IsTileNoHook(Pos.x, Pos.y);
+	}
+	return 0;
+}
+
 // TODO: OPT: rewrite this smarter!
 void CCollision::MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, int *pBounces)
 {
