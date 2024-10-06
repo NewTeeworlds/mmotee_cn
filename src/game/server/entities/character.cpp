@@ -556,12 +556,18 @@ void CCharacter::FireWeapon()
 				}
 			}
 
+			if (Server()->GetItemSettings(m_pPlayer->GetCID(), DONATETITLEBIGHAMMER))
+				Range += 500;
+
 			int Num = GameServer()->m_World.FindEntities(ProjStartPos, m_ProximityRadius*2.0f+Range, (CEntity**)apEnts, MAX_CLIENTS, ENTTYPE_CHARACTER);
 			for (int i = 0; i < Num; ++i)
 			{
 				CCharacter *pTarget = apEnts[i];
+				bool Clip = true;
+				if (Server()->GetItemSettings(m_pPlayer->GetCID(), DONATETITLENOCLIPHAMMER))
+					Clip = false;
 
-				if ((pTarget == this) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
+				if ((pTarget == this) || (GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL) && Clip))
 					continue;
 
 				// set his velocity to fast upward (for now)

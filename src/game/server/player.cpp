@@ -1270,6 +1270,10 @@ const char *CPlayer::TitleGot()
 	}
 	else if(Server()->GetItemSettings(m_ClientID, DONATETITLEWORK))
 		return "收割机";
+	else if(Server()->GetItemSettings(m_ClientID, DONATETITLEBIGHAMMER))
+		return "大锤子";
+	else if(Server()->GetItemSettings(m_ClientID, DONATETITLENOCLIPHAMMER))
+		return "穿透锤";
 	else if (Server()->GetItemSettings(m_ClientID, TITLEQUESTS))
 		return "眷属";
 	else if (Server()->GetItemSettings(m_ClientID, BOSSDIE))
